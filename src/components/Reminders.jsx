@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { Edit2 } from 'lucide-react';
+import { Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function Reminders() {
   const [text, setText] = useState('');
@@ -55,6 +55,30 @@ export default function Reminders() {
     setEditingReminder(null);
   };
 
+  const handleMoveUp = async (e, index) => {
+    e.stopPropagation();
+    if (index <= 0) return;
+    const current = reminders[index];
+    const prev = reminders[index - 1];
+    
+    if (current.createdAt && prev.createdAt) {
+      await updateDoc(doc(db, 'reminders', current.id), { createdAt: prev.createdAt });
+      await updateDoc(doc(db, 'reminders', prev.id), { createdAt: current.createdAt });
+    }
+  };
+
+  const handleMoveDown = async (e, index) => {
+    e.stopPropagation();
+    if (index >= reminders.length - 1) return;
+    const current = reminders[index];
+    const next = reminders[index + 1];
+    
+    if (current.createdAt && next.createdAt) {
+      await updateDoc(doc(db, 'reminders', current.id), { createdAt: next.createdAt });
+      await updateDoc(doc(db, 'reminders', next.id), { createdAt: current.createdAt });
+    }
+  };
+
   return (
     <div className="tab-pane">
       <form className="input-group" onSubmit={handleSubmit}>
@@ -70,7 +94,7 @@ export default function Reminders() {
       <h2 className="tab-title">Reminders</h2>
 
       <div className="list-container">
-        {reminders.map((r) => (
+        {reminders.map((r, index) => (
           <div key={r.id} className="list-item reminder-item">
             <div className="item-content" style={{gap: '16px'}}>
               <label className="checkbox-container">
@@ -84,6 +108,24 @@ export default function Reminders() {
               <span className="item-text" style={{whiteSpace: 'normal', wordBreak: 'break-word'}}>{r.text}</span>
             </div>
             <div className="item-actions">
+              <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 4px', gap: '2px' }}>
+                <button
+                  className="icon-btn"
+                  onClick={(e) => handleMoveUp(e, index)}
+                  disabled={index === 0}
+                  style={{ padding: '0px', border: 'none', height: '14px', lineHeight: 1 }}
+                >
+                  <ChevronUp size={14} opacity={index === 0 ? 0.3 : 0.8} />
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={(e) => handleMoveDown(e, index)}
+                  disabled={index === reminders.length - 1}
+                  style={{ padding: '0px', border: 'none', height: '14px', lineHeight: 1 }}
+                >
+                  <ChevronDown size={14} opacity={index === reminders.length - 1 ? 0.3 : 0.8} />
+                </button>
+              </div>
               <button className="icon-btn" onClick={() => requestEdit(r)}>
                 <Edit2 size={14} />
               </button>

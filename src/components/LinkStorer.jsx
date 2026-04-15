@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2 } from 'lucide-react';
+import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links' }) {
   const [url, setUrl] = useState('');
@@ -115,6 +115,32 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     setEditingItem(null);
   };
 
+  const handleMoveUp = async (e, index) => {
+    e.stopPropagation();
+    if (index <= 0) return;
+    const current = links[index];
+    const prev = links[index - 1];
+    if (current.isFavorite !== prev.isFavorite) return;
+    
+    if (current.createdAt && prev.createdAt) {
+      await updateDoc(doc(db, collectionName, current.id), { createdAt: prev.createdAt });
+      await updateDoc(doc(db, collectionName, prev.id), { createdAt: current.createdAt });
+    }
+  };
+
+  const handleMoveDown = async (e, index) => {
+    e.stopPropagation();
+    if (index >= links.length - 1) return;
+    const current = links[index];
+    const next = links[index + 1];
+    if (current.isFavorite !== next.isFavorite) return;
+    
+    if (current.createdAt && next.createdAt) {
+      await updateDoc(doc(db, collectionName, current.id), { createdAt: next.createdAt });
+      await updateDoc(doc(db, collectionName, next.id), { createdAt: current.createdAt });
+    }
+  };
+
   return (
     <div className="tab-pane">
       <form className="input-group" onSubmit={handleSubmit}>
@@ -143,7 +169,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       <h2 className="tab-title">{title}</h2>
 
       <div className="list-container">
-        {links.map((link) => (
+        {links.map((link, index) => (
           <div key={link.id} className="list-item">
             <div className="item-content" onClick={() => handleOpen(link.url)}>
               <img
@@ -161,6 +187,25 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             </div>
 
             <div className="item-actions">
+              <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 4px', gap: '2px' }}>
+                <button
+                  className="icon-btn"
+                  onClick={(e) => handleMoveUp(e, index)}
+                  disabled={index === 0 || link.isFavorite !== links[index - 1]?.isFavorite}
+                  style={{ padding: '0px', border: 'none', height: '14px', lineHeight: 1 }}
+                >
+                  <ChevronUp size={14} opacity={(index === 0 || link.isFavorite !== links[index - 1]?.isFavorite) ? 0.3 : 0.8} />
+                </button>
+                <button
+                  className="icon-btn"
+                  onClick={(e) => handleMoveDown(e, index)}
+                  disabled={index === links.length - 1 || link.isFavorite !== links[index + 1]?.isFavorite}
+                  style={{ padding: '0px', border: 'none', height: '14px', lineHeight: 1 }}
+                >
+                  <ChevronDown size={14} opacity={(index === links.length - 1 || link.isFavorite !== links[index + 1]?.isFavorite) ? 0.3 : 0.8} />
+                </button>
+              </div>
+
               <button
                 className={`icon-btn ${link.isFavorite ? 'favorited' : ''}`}
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(link.id, link.isFavorite); }}
