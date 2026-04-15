@@ -24,7 +24,6 @@ function App() {
     <div className="app-layout">
       <header className="app-header">
         <div className="brand">
-          <img src="/logo-white.svg" className="brand-logo" width={24} height={24} alt="teno" />
           <h1>teno</h1>
         </div>
       </header>

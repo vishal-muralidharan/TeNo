@@ -13,7 +13,7 @@
   ],
   "action": {
     "default_title": "Open teno Side Panel",
-    "default_icon": "logo-white.svg"
+    "default_icon": "dollar-white.svg"
   },
   "side_panel": {
     "default_path": "index.html"
@@ -26,8 +26,8 @@
     "<all_urls>"
   ],
   "icons": {
-    "16": "logo-white.svg",
-    "48": "logo-white.svg",
-    "128": "logo-white.svg"
+    "16": "dollar-white.svg",
+    "48": "dollar-white.svg",
+    "128": "dollar-white.svg"
   }
 }
