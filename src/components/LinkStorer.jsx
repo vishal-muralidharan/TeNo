@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
@@ -169,8 +169,12 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       <h2 className="tab-title">{title}</h2>
 
       <div className="list-container">
-        {links.map((link, index) => (
-          <div key={link.id} className="list-item">
+        {links.map((link, index) => {
+          const isTransition = index > 0 && links[index - 1].isFavorite && !link.isFavorite;
+          return (
+          <React.Fragment key={link.id}>
+            {isTransition && <div style={{ borderBottom: '2px solid #fff', margin: '8px 0' }} />}
+            <div className="list-item">
             <div className="item-content" onClick={() => handleOpen(link.url)}>
               <img
                 src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.domain}&sz=32`}
@@ -239,7 +243,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
               </div>
             </div>
           </div>
-        ))}
+          </React.Fragment>
+        )})}
       </div>
 
       {pendingDelete && (
