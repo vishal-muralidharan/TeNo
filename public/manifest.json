@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "TeNo",
+  "version": "1.0",
+  "description": "Minimalist Side Panel Productivity Tool",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "alarms",
+    "notifications",
+    "sidePanel"
+  ],
+  "action": {
+    "default_title": "Open teno Side Panel",
+    "default_icon": "logo-white.svg"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "16": "logo-white.svg",
+    "48": "logo-white.svg",
+    "128": "logo-white.svg"
+  }
+}
