@@ -10,6 +10,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [links, setLinks] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -143,7 +144,18 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   return (
     <div className="tab-pane">
-      <form className="input-group" onSubmit={handleSubmit}>
+      <h2 className="tab-title">{title}</h2>
+
+      <button 
+        type="button"
+        className="toggle-form-btn" 
+        onClick={() => setIsFormOpen(!isFormOpen)}
+      >
+        &gt; [ {isFormOpen ? '- close' : '+ add_new'} ]
+      </button>
+
+      <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`}>
+        <form className="input-group" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Add Nickname"
@@ -164,16 +176,15 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           className="meta-input"
         />
         <button type="submit" disabled={isSubmitting || !url || !nickname}>Save</button>
-      </form>
-
-      <h2 className="tab-title">{title}</h2>
+        </form>
+      </div>
 
       <div className="list-container">
         {links.map((link, index) => {
           const isTransition = index > 0 && links[index - 1].isFavorite && !link.isFavorite;
           return (
           <React.Fragment key={link.id}>
-            {isTransition && <div style={{ borderBottom: '2px solid #fff', margin: '8px 0' }} />}
+            {isTransition && <div style={{ borderBottom: '1px dashed var(--color-border)', margin: '4px 0' }} />}
             <div className="list-item">
             <div className="item-content" onClick={() => handleOpen(link.url)}>
               <img
@@ -181,8 +192,9 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                 onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
                 alt="favicon"
                 className="favicon"
+                style={{ width: '16px', height: '16px' }}
               />
-              <Globe className="fallback-icon" size={16} style={{ display: 'none' }} />
+              <Globe className="fallback-icon" size={14} style={{ display: 'none' }} />
 
               <div className="item-text-stack">
                 <span className="item-text">{link.nickname}</span>
@@ -191,22 +203,22 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             </div>
 
             <div className="item-actions">
-              <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 4px', gap: '2px' }}>
+              <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 2px', gap: '0px' }}>
                 <button
                   className="icon-btn"
                   onClick={(e) => handleMoveUp(e, index)}
                   disabled={index === 0 || link.isFavorite !== links[index - 1]?.isFavorite}
-                  style={{ padding: '0px', border: 'none', height: '14px', lineHeight: 1 }}
+                  style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
                 >
-                  <ChevronUp size={14} opacity={(index === 0 || link.isFavorite !== links[index - 1]?.isFavorite) ? 0.3 : 0.8} />
+                  <ChevronUp size={12} opacity={(index === 0 || link.isFavorite !== links[index - 1]?.isFavorite) ? 0.3 : 0.8} />
                 </button>
                 <button
                   className="icon-btn"
                   onClick={(e) => handleMoveDown(e, index)}
                   disabled={index === links.length - 1 || link.isFavorite !== links[index + 1]?.isFavorite}
-                  style={{ padding: '0px', border: 'none', height: '14px', lineHeight: 1 }}
+                  style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
                 >
-                  <ChevronDown size={14} opacity={(index === links.length - 1 || link.isFavorite !== links[index + 1]?.isFavorite) ? 0.3 : 0.8} />
+                  <ChevronDown size={12} opacity={(index === links.length - 1 || link.isFavorite !== links[index + 1]?.isFavorite) ? 0.3 : 0.8} />
                 </button>
               </div>
 
@@ -214,7 +226,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                 className={`icon-btn ${link.isFavorite ? 'favorited' : ''}`}
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(link.id, link.isFavorite); }}
               >
-                <Star size={16} fill={link.isFavorite ? 'var(--color-accent)' : 'none'} />
+                <Star size={14} fill={link.isFavorite ? 'var(--color-accent)' : 'none'} />
               </button>
 
               <div className="menu-wrapper">
@@ -225,7 +237,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     setActiveMenu(activeMenu === link.id ? null : link.id);
                   }}
                 >
-                  <MoreVertical size={16} />
+                  <MoreVertical size={14} />
                 </button>
                 {activeMenu === link.id && (
                   <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
