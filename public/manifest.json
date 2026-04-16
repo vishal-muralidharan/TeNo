@@ -25,6 +25,15 @@
   "host_permissions": [
     "<all_urls>"
   ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+T",
+        "mac": "MacCtrl+T"
+      },
+      "description": "Toggle TeNo Side Panel"
+    }
+  },
   "icons": {
     "16": "dollar-white.svg",
     "48": "dollar-white.svg",
