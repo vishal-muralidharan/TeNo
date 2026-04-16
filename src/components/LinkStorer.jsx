@@ -144,8 +144,6 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   return (
     <div className="tab-pane">
-      <h2 className="tab-title">{title}</h2>
-
       <button 
         type="button"
         className="toggle-form-btn" 
@@ -178,6 +176,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         <button type="submit" disabled={isSubmitting || !url || !nickname}>Save</button>
         </form>
       </div>
+
+      <h2 className="tab-title">{title}</h2>
 
       <div className="list-container">
         {links.map((link, index) => {
