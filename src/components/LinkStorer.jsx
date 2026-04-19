@@ -37,6 +37,23 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Don't trigger if user is typing in an input or textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      const keyIndex = parseInt(e.key) - 1;
+      if (!isNaN(keyIndex) && keyIndex >= 0 && keyIndex < 9) {
+        if (links[keyIndex]) {
+          handleOpen(links[keyIndex].url);
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [links]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!url.trim() || !nickname.trim()) return;
@@ -197,7 +214,10 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
               <Globe className="fallback-icon" size={14} style={{ display: 'none' }} />
 
               <div className="item-text-stack">
-                <span className="item-text">{link.nickname}</span>
+                <span className="item-text">
+                  {index < 9 && <span style={{ opacity: 0.5, marginRight: '6px', fontSize: '0.9em' }}>[{index + 1}]</span>}
+                  {link.nickname}
+                </span>
                 {link.description && <span className="item-desc">{link.description}</span>}
               </div>
             </div>
