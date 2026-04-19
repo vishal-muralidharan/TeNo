@@ -43,6 +43,21 @@ function App() {
     return () => document.removeEventListener("visibilitychange", visibilityListener);
   }, []);
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key.toLowerCase() === 's') {
+        const nextIndex = (activeTab + 1) % tabs.length;
+        setPrevTab(activeTab);
+        setActiveTab(nextIndex);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [activeTab, tabs.length]);
+
   return (
     <div className="app-layout" ref={appContainerRef} tabIndex={-1} style={{ outline: 'none' }}>
       <header className="app-header">
