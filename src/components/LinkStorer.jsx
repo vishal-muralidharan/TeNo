@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 
-export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links' }) {
+export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true }) {
   const [url, setUrl] = useState('');
   const [nickname, setNickname] = useState('');
   const [description, setDescription] = useState('');
@@ -39,6 +39,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
+      if (!isActive) return;
       // Don't trigger if user is typing in an input or textarea
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       
@@ -52,7 +53,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [links]);
+  }, [links, isActive]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
