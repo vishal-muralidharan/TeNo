@@ -17,7 +17,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
-    const q = query(collection(db, collectionName), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, collectionName), orderBy('createdAt', 'asc'));
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       // Sort favorites to the top locally
