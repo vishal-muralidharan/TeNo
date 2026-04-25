@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where } from 'firebase/firestore';
 import { Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 
-export default function Reminders() {
+export default function Reminders({ user }) {
   const [text, setText] = useState('');
   const [reminders, setReminders] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,19 +13,34 @@ export default function Reminders() {
   const [editingReminder, setEditingReminder] = useState(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'reminders'), orderBy('createdAt', 'desc'));
+    if (!user) return;
+    const q = query(
+      collection(db, 'users', user.uid, 'reminders')
+    );
     const unsub = onSnapshot(q, (snapshot) => {
-      setReminders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      data.sort((a, b) => {
+        const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+        return timeA - timeB; // Ascending logic as requested for LinkStorer apply here? Or descending? Original was desc. Let's do descending: timeA - timeB -> ascending, wait. Original was desc, let's keep desc: timeB - timeA.
+      });
+      data.sort((a,b) => {
+        const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+         return timeB - timeA;
+      });
+      setReminders(data);
     });
     return unsub;
-  }, []);
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || !user) return;
 
     setIsSubmitting(true);
-    await addDoc(collection(db, 'reminders'), {
+    await addDoc(collection(db, 'users', user.uid, 'reminders'), {
       text: text.trim(),
       createdAt: serverTimestamp()
     });
@@ -39,7 +54,7 @@ export default function Reminders() {
 
   const confirmComplete = async () => {
     if (pendingDelete) {
-      await deleteDoc(doc(db, 'reminders', pendingDelete));
+      await deleteDoc(doc(db, 'users', user.uid, 'reminders', pendingDelete));
       setPendingDelete(null);
     }
   };
@@ -51,7 +66,7 @@ export default function Reminders() {
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (!editingReminder.text.trim()) return;
-    await updateDoc(doc(db, 'reminders', editingReminder.id), { text: editingReminder.text.trim() });
+    await updateDoc(doc(db, 'users', user.uid, 'reminders', editingReminder.id), { text: editingReminder.text.trim() });
     setEditingReminder(null);
   };
 
@@ -62,8 +77,8 @@ export default function Reminders() {
     const prev = reminders[index - 1];
     
     if (current.createdAt && prev.createdAt) {
-      await updateDoc(doc(db, 'reminders', current.id), { createdAt: prev.createdAt });
-      await updateDoc(doc(db, 'reminders', prev.id), { createdAt: current.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, 'reminders', current.id), { createdAt: prev.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, 'reminders', prev.id), { createdAt: current.createdAt });
     }
   };
 
@@ -74,8 +89,8 @@ export default function Reminders() {
     const next = reminders[index + 1];
     
     if (current.createdAt && next.createdAt) {
-      await updateDoc(doc(db, 'reminders', current.id), { createdAt: next.createdAt });
-      await updateDoc(doc(db, 'reminders', next.id), { createdAt: current.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, 'reminders', current.id), { createdAt: next.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, 'reminders', next.id), { createdAt: current.createdAt });
     }
   };
 

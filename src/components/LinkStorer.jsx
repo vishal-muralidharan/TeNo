@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 
-export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true }) {
+export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user }) {
   const [url, setUrl] = useState('');
   const [nickname, setNickname] = useState('');
   const [description, setDescription] = useState('');
@@ -17,15 +17,22 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
-    const q = query(collection(db, collectionName), orderBy('createdAt', 'asc'));
+    if (!user) return;
+    const q = query(
+      collection(db, 'users', user.uid, collectionName)
+    );
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Sort favorites to the top locally
+      
+      // Sort logic combining both createdAt asc + favorites
       data.sort((a, b) => {
         if (a.isFavorite && !b.isFavorite) return -1;
         if (!a.isFavorite && b.isFavorite) return 1;
-        return 0;
+        const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+        return timeA - timeB;
       });
+      
       setLinks(data);
     });
     
@@ -63,7 +70,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         chrome.storage.onChanged.removeListener(storageListener);
       }
     };
-  }, [collectionName]);
+  }, [collectionName, user]);
 
   useEffect(() => {
     const handleClickOutside = () => setActiveMenu(null);
@@ -91,7 +98,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!url.trim() || !nickname.trim()) return;
+    if (!url.trim() || !nickname.trim() || !user) return;
 
     let cleanUrl = url.trim();
     if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
@@ -107,7 +114,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
 
     setIsSubmitting(true);
-    await addDoc(collection(db, collectionName), {
+    await addDoc(collection(db, 'users', user.uid, collectionName), {
       url: cleanUrl,
       nickname: nickname.trim(),
       description: description.trim(),
@@ -135,7 +142,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   };
 
   const toggleFavorite = async (id, currentFav) => {
-    await updateDoc(doc(db, collectionName, id), {
+    await updateDoc(doc(db, 'users', user.uid, collectionName, id), {
       isFavorite: !currentFav
     });
   };
@@ -147,7 +154,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   const confirmDelete = async () => {
     if (pendingDelete) {
-      await deleteDoc(doc(db, collectionName, pendingDelete));
+      await deleteDoc(doc(db, 'users', user.uid, collectionName, pendingDelete));
       setPendingDelete(null);
     }
   };
@@ -161,7 +168,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     e.preventDefault();
     if (!editingItem.nickname.trim()) return;
     
-    await updateDoc(doc(db, collectionName, editingItem.id), {
+    await updateDoc(doc(db, 'users', user.uid, collectionName, editingItem.id), {
        nickname: editingItem.nickname.trim(),
        description: editingItem.description.trim()
     });
@@ -176,8 +183,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     if (current.isFavorite !== prev.isFavorite) return;
     
     if (current.createdAt && prev.createdAt) {
-      await updateDoc(doc(db, collectionName, current.id), { createdAt: prev.createdAt });
-      await updateDoc(doc(db, collectionName, prev.id), { createdAt: current.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, collectionName, current.id), { createdAt: prev.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, collectionName, prev.id), { createdAt: current.createdAt });
     }
   };
 
@@ -189,8 +196,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     if (current.isFavorite !== next.isFavorite) return;
     
     if (current.createdAt && next.createdAt) {
-      await updateDoc(doc(db, collectionName, current.id), { createdAt: next.createdAt });
-      await updateDoc(doc(db, collectionName, next.id), { createdAt: current.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, collectionName, current.id), { createdAt: next.createdAt });
+      await updateDoc(doc(db, 'users', user.uid, collectionName, next.id), { createdAt: current.createdAt });
     }
   };
 
