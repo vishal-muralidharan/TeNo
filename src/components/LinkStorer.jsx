@@ -28,7 +28,41 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       });
       setLinks(data);
     });
-    return unsub;
+    
+    let storageListener = null;
+
+    // Check initial pending website from background script
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['pendingWebsiteAdd'], (result) => {
+        if (result.pendingWebsiteAdd) {
+          const { url, title } = result.pendingWebsiteAdd;
+          setUrl(url || '');
+          setNickname(title || '');
+          setIsFormOpen(true);
+          chrome.storage.local.remove('pendingWebsiteAdd');
+        }
+      });
+
+      // Listen for commands triggering when panel is already open
+      storageListener = (changes, areaName) => {
+        if (areaName === 'local' && changes.pendingWebsiteAdd && changes.pendingWebsiteAdd.newValue) {
+          const { url, title } = changes.pendingWebsiteAdd.newValue;
+          setUrl(url || '');
+          setNickname(title || '');
+          setIsFormOpen(true);
+          chrome.storage.local.remove('pendingWebsiteAdd');
+        }
+      };
+      
+      chrome.storage.onChanged.addListener(storageListener);
+    }
+
+    return () => {
+      unsub();
+      if (storageListener && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+        chrome.storage.onChanged.removeListener(storageListener);
+      }
+    };
   }, [collectionName]);
 
   useEffect(() => {
