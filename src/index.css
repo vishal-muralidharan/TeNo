@@ -313,6 +313,20 @@ button.danger:hover {
   padding-bottom: 24px;
 }
 
+.section-block {
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 8px 0 4px;
+  border-top: 1px dashed var(--color-border);
+  padding-top: 8px;
+}
+
 .list-item {
   display: flex;
   align-items: center;
