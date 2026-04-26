@@ -3,14 +3,29 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAH5kicbZ_9Shhba4jYIoawTj8k9mz6Dfk",
-  authDomain: "teno-21f35.firebaseapp.com",
-  projectId: "teno-21f35",
-  storageBucket: "teno-21f35.firebasestorage.app",
-  messagingSenderId: "541939352779",
-  appId: "1:541939352779:web:32c43c99dd8c187c3d074e",
-  measurementId: "G-2JNSVHPNNG"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
+
+const requiredEnvKeys = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_MESSAGING_SENDER_ID',
+  'VITE_FIREBASE_APP_ID'
+];
+
+const missingEnvKeys = requiredEnvKeys.filter((key) => !import.meta.env[key]);
+
+if (missingEnvKeys.length > 0) {
+  throw new Error(`Missing Firebase environment variables: ${missingEnvKeys.join(', ')}`);
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

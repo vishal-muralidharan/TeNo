@@ -32,12 +32,17 @@ The panel features a snappy, swipe-animated interface with 4 dedicated productiv
 
 1. Clone or download the source code.
 2. Open your terminal inside the project directory.
-3. Install dependencies:
+3. Create your local env file from the template:
+   ```bash
+   cp .env.example .env.local
+   ```
+4. Add your Firebase project values to `.env.local`.
+5. Install dependencies:
    ```bash
    npm install
    ```
-4. Build the final application for extensions:
+6. Build the final application for extensions:
    ```bash
    npm run build
    ```
-5. Open your browser's Extensions Dashboard (e.g. `chrome://extensions/`), enable **Developer Mode**, click **Load Unpacked**, and select the generated \`/dist\` folder.
+7. Open your browser's Extensions Dashboard (e.g. `chrome://extensions/`), enable **Developer Mode**, click **Load Unpacked**, and select the generated \`/dist\` folder.
