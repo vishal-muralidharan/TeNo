@@ -35,8 +35,8 @@
     },
     "add_current_website": {
       "suggested_key": {
-        "default": "Ctrl+Alt+T",
-        "mac": "MacCtrl+Alt+T"
+        "default": "Ctrl+Shift+U",
+        "mac": "MacCtrl+Shift+U"
       },
       "description": "Add current website to TeNo"
     }
