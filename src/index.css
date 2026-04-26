@@ -226,7 +226,7 @@ input:focus, textarea:focus {
 
 textarea.meta-input {
   resize: vertical;
-  min-height: 40px;
+  min-height: 24px;
 }
 
 .toggle-form-btn {

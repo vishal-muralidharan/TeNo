@@ -345,7 +345,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={2}
+          rows={1}
           className="meta-input"
         />
         <input
