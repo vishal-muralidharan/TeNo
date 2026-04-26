@@ -180,6 +180,14 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
   };
 
+  const handleOpenInNewWindow = (linkUrl) => {
+    if (typeof chrome !== 'undefined' && chrome.windows) {
+      chrome.windows.create({ url: linkUrl });
+    } else {
+      window.open(linkUrl, '_blank');
+    }
+  };
+
   const toggleFavorite = async (id, currentFav) => {
     await updateDoc(doc(db, 'users', user.uid, collectionName, id), {
       isFavorite: !currentFav
@@ -275,6 +283,18 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     onClick={(e) => { e.stopPropagation(); toggleFavorite(link.id, link.isFavorite); }}
                   >
                     <Star size={14} fill={link.isFavorite ? 'var(--color-accent)' : 'none'} />
+                  </button>
+
+                  <button
+                    className="icon-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenInNewWindow(link.url);
+                    }}
+                    title="Open in new window"
+                    aria-label="Open in new window"
+                  >
+                    New Window
                   </button>
 
                   <button
