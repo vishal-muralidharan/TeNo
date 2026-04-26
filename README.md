@@ -28,21 +28,11 @@ The panel features a snappy, swipe-animated interface with 4 dedicated productiv
    * Provides a hybrid mechanism: Enter a target minute value to spin up a **Countdown**, or fire it blank to start a standard **Stopwatch**.
    * Employs Chromium's background `chrome.alarms` and `chrome.storage.local` memory mapping so you can close the extension safely, and the countdown reliably fires a desktop notification regardless of JavaScript background sleep-states!
 
-## 🚀 How to Run Locally
+## 🚀 How to Use
 
-1. Clone or download the source code.
-2. Open your terminal inside the project directory.
-3. Create your local env file from the template:
-   ```bash
-   cp .env.example .env.local
-   ```
-4. Add your Firebase project values to `.env.local`.
-5. Install dependencies:
-   ```bash
-   npm install
-   ```
-6. Build the final application for extensions:
-   ```bash
-   npm run build
-   ```
-7. Open your browser's Extensions Dashboard (e.g. `chrome://extensions/`), enable **Developer Mode**, click **Load Unpacked**, and select the generated \`/dist\` folder.
+1. Go to the Releases page: https://github.com/vishal-muralidharan/TeNo/releases
+2. Download the latest extension package from the newest release.
+3. Extract the downloaded file.
+4. Open your browser Extensions Dashboard (e.g. `chrome://extensions/`).
+5. Enable **Developer Mode**.
+6. Click **Load Unpacked** and select the extracted folder.
