@@ -17,6 +17,7 @@ function App() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isRegistering, setIsRegistering] = useState(false)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [authError, setAuthError] = useState('')
   const [authStatus, setAuthStatus] = useState('')
   const appContainerRef = useRef(null)
@@ -208,9 +209,20 @@ function App() {
         <div className="brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', paddingRight: '1rem', alignItems: 'center' }}>
           <h1>teno</h1>
           {user && (
-            <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #666', color: '#ccc', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>
-              Logout
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
+              {showLogoutConfirm ? (
+                <>
+                  <span style={{ color: '#888' }}>logout?</span>
+                  <button onClick={() => { handleLogout(); setShowLogoutConfirm(false); }} style={{ background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontFamily: 'inherit', padding: '0 0.2rem', fontSize: 'inherit' }}>[y]</button>
+                  <span style={{ color: '#444' }}>/</span>
+                  <button onClick={() => setShowLogoutConfirm(false)} style={{ background: 'transparent', border: 'none', color: '#ccc', cursor: 'pointer', fontFamily: 'inherit', padding: '0 0.2rem', fontSize: 'inherit' }}>[n]</button>
+                </>
+              ) : (
+                <button onClick={() => setShowLogoutConfirm(true)} style={{ background: 'transparent', border: '1px solid #444', color: '#888', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: 'inherit' }}>
+                  logout
+                </button>
+              )}
+            </div>
           )}
         </div>
       </header>
@@ -239,14 +251,14 @@ function App() {
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
                 required 
-                style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white' }}
+                style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
               />
-              <button type="submit" style={{ padding: '0.5rem', background: '#4285F4', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '0.5rem' }}>
+              <button type="submit" style={{ padding: '0.5rem', background: '#4285F4', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '0.5rem', fontSize: '1rem', fontFamily: 'inherit' }}>
                 Send Reset Email
               </button>
               <p 
                 onClick={() => { setIsResettingPassword(false); setAuthError(''); setAuthStatus(''); }} 
-                style={{ textAlign: 'center', fontSize: '0.8rem', color: '#aaa', cursor: 'pointer', marginTop: '0.5rem', textDecoration: 'underline' }}
+                style={{ textAlign: 'center', fontSize: '0.95rem', color: '#aaa', cursor: 'pointer', marginTop: '0.5rem', textDecoration: 'underline' }}
               >
                 Back to log in
               </p>
@@ -260,7 +272,7 @@ function App() {
                   value={name} 
                   onChange={e => setName(e.target.value)} 
                   required={isRegistering} 
-                  style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white' }}
+                  style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
                 />
               )}
               <input 
@@ -269,7 +281,7 @@ function App() {
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
                 required 
-                style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white' }}
+                style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
               />
               <input 
                 type="password" 
@@ -277,7 +289,7 @@ function App() {
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 required 
-                style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white' }}
+                style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
               />
               {isRegistering && (
                 <input 
@@ -286,20 +298,20 @@ function App() {
                   value={confirmPassword} 
                   onChange={e => setConfirmPassword(e.target.value)} 
                   required={isRegistering} 
-                  style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white' }}
+                  style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
                 />
               )}
               
               {!isRegistering && (
                 <p 
                   onClick={() => { setIsResettingPassword(true); setAuthError(''); setAuthStatus(''); }} 
-                  style={{ textAlign: 'right', fontSize: '0.75rem', color: '#aaa', cursor: 'pointer', marginTop: '-0.2rem', marginBottom: '0.2rem', textDecoration: 'underline' }}
+                  style={{ textAlign: 'right', fontSize: '0.85rem', color: '#aaa', cursor: 'pointer', marginTop: '-0.2rem', marginBottom: '0.2rem', textDecoration: 'underline' }}
                 >
                   Forgot password?
                 </p>
               )}
 
-              <button type="submit" style={{ padding: '0.5rem', background: '#2ba84a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '0.5rem' }}>
+              <button type="submit" style={{ padding: '0.6rem', background: '#2ba84a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '0.5rem', fontSize: '1rem', fontFamily: 'inherit', fontWeight: '500' }}>
                 {isRegistering ? 'Create Account' : 'Log in'}
               </button>
               
@@ -311,7 +323,7 @@ function App() {
                   setPassword('');
                   setConfirmPassword('');
                 }} 
-                style={{ textAlign: 'center', fontSize: '0.8rem', color: '#aaa', cursor: 'pointer', marginTop: '0.5rem', textDecoration: 'underline' }}
+                style={{ textAlign: 'center', fontSize: '0.95rem', color: '#aaa', cursor: 'pointer', marginTop: '0.5rem', textDecoration: 'underline' }}
               >
                 {isRegistering ? 'Already have an account? Log in' : 'Need an account? Register'}
               </p>
