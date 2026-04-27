@@ -219,7 +219,7 @@ function App() {
         <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>Loading...</div>
       ) : !user ? (
         <div className="auth-container" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Log in to TeNo</h2>
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Welcome to TeNo</h2>
           {authError && (
             <div style={{ background: '#3b1d1d', border: '1px solid #8b3a3a', color: '#ffd7d7', padding: '0.6rem', borderRadius: '6px', fontSize: '0.85rem' }}>
               {authError}

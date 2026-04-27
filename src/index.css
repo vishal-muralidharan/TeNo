@@ -25,6 +25,10 @@
   text-transform: lowercase; /* Hacker strictly lowercase visual */
 }
 
+input, button, textarea, select {
+  font-family: inherit;
+}
+
 body {
   font-family: 'Fira Code', 'JetBrains Mono', Consolas, monospace;
   background-color: var(--color-bg-main);
