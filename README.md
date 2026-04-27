@@ -36,3 +36,18 @@ The panel features a snappy, swipe-animated interface with 4 dedicated productiv
 4. Open your browser Extensions Dashboard (e.g. `chrome://extensions/`).
 5. Enable **Developer Mode**.
 6. Click **Load Unpacked** and select the extracted folder.
+
+## Firebase Auth Setup (Required)
+
+If sign-in fails in the side panel, verify all of the following:
+
+1. Create a `.env` (or `.env.local`) with:
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+2. In Firebase Console -> Authentication -> Sign-in method:
+   - Enable **Email/Password**
+3. Rebuild and reload the unpacked extension after any auth or manifest changes.
