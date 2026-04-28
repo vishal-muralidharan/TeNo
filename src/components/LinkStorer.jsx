@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, deleteDoc, doc, updateDoc , setDoc } from 'firebase/firestore';
 import { Trash2, Globe, Star, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
 
 export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user }) {
@@ -14,9 +14,56 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [labelOrder, setLabelOrder] = useState([]);
+  const [labelNumbers, setLabelNumbers] = useState({});
+
+  const handleMoveSection = async (sectionLabel, direction) => {
+    const currentLabels = displaySections
+      .filter(s => s.key !== 'favorites' && s.key !== 'ungrouped')
+      .map(s => s.label);
+
+    const oldIndex = currentLabels.indexOf(sectionLabel);
+    if (oldIndex === -1) return;
+
+    const newIndex = oldIndex + direction;
+    if (newIndex < 0 || newIndex >= currentLabels.length) return;
+
+    const newLabels = [...currentLabels];
+    const temp = newLabels[newIndex];
+    newLabels[newIndex] = newLabels[oldIndex];
+    newLabels[oldIndex] = temp;
+
+    const settingsDocRef = doc(db, 'users', user.uid, 'settings', `labels_${collectionName}`);
+    await setDoc(settingsDocRef, { order: newLabels }, { merge: true });
+  };
 
   useEffect(() => {
     if (!user) return;
+
+    const settingsDocRef = doc(db, 'users', user.uid, 'settings', `labels_${collectionName}`);
+    const unsubSettings = onSnapshot(settingsDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setLabelOrder(docSnap.data().order || []);
+      } else {
+        setLabelOrder([]);
+      }
+    });
+
+    // Listen for explicit label number ordering stored in users/{uid}/labels
+    const labelsColRef = collection(db, 'users', user.uid, 'labels');
+    const unsubLabelNums = onSnapshot(labelsColRef, (snap) => {
+      const map = {};
+      snap.docs.forEach(d => {
+        const data = d.data();
+        // expecting documents with fields: label (string) and number (numeric order)
+        if (data && data.label) {
+          const key = String(data.label).trim().toLowerCase();
+          if (typeof data.number === 'number') map[key] = data.number;
+        }
+      });
+      setLabelNumbers(map);
+    });
+
     const unsub = onSnapshot(collection(db, 'users', user.uid, collectionName), (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
@@ -62,6 +109,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
     return () => {
       unsub();
+      unsubSettings();
+      unsubLabelNums();
       if (storageListener && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
         chrome.storage.onChanged.removeListener(storageListener);
       }
@@ -106,6 +155,22 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       if (b.key === 'favorites') return 1;
       if (a.key === 'ungrouped') return 1;
       if (b.key === 'ungrouped') return -1;
+
+      // Prefer explicit numeric ordering from DB (users/{uid}/labels documents)
+      const numA = typeof a.label === 'string' ? labelNumbers[a.label.trim().toLowerCase()] : undefined;
+      const numB = typeof b.label === 'string' ? labelNumbers[b.label.trim().toLowerCase()] : undefined;
+
+      if (typeof numA === 'number' && typeof numB === 'number') return numA - numB;
+      if (typeof numA === 'number') return -1;
+      if (typeof numB === 'number') return 1;
+
+      // Fallback to user's saved label order (settings) if present
+      const indexA = labelOrder.indexOf(a.label);
+      const indexB = labelOrder.indexOf(b.label);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+
       return a.label.localeCompare(b.label);
     });
 
@@ -362,7 +427,29 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
       {displaySections.map((section) => (
         <section key={section.key} className="section-block">
-          <h3 className="section-title">{section.title}</h3>
+          <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>{section.title}</span>
+            {section.key !== 'favorites' && section.key !== 'ungrouped' && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  className="icon-btn" 
+                  onClick={() => handleMoveSection(section.label, -1)}
+                  style={{ padding: '0px', height: '16px', border: 'none', background: 'transparent' }}
+                  title="Move up"
+                >
+                  <ChevronUp size={16} />
+                </button>
+                <button 
+                  className="icon-btn" 
+                  onClick={() => handleMoveSection(section.label, 1)}
+                  style={{ padding: '0px', height: '16px', border: 'none', background: 'transparent' }}
+                  title="Move down"
+                >
+                  <ChevronDown size={16} />
+                </button>
+              </div>
+            )}
+          </h3>
           {renderLinkCells(section.items, section.key)}
         </section>
       ))}

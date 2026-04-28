@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "update-labels": "node scripts/update_labels.cjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

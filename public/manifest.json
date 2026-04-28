@@ -30,20 +30,13 @@
   ],
   "commands": {
     "_execute_action": {
-      "description": "Click Extension Icon"
-    },
-    "_execute_side_panel": {
       "suggested_key": {
         "default": "Alt+T",
         "mac": "Alt+T"
       },
-      "description": "Open TeNo Side Panel"
+      "description": "Toggle TeNo Side Panel"
     },
     "add_current_website": {
-      "suggested_key": {
-        "default": "Ctrl+Alt+U",
-        "mac": "MacCtrl+Alt+U"
-      },
       "description": "Add current website to TeNo"
     }
   },

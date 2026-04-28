@@ -7,6 +7,14 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.commands.onCommand.addListener(async (command) => {
+  if (command === "_execute_action") {
+     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+       const activeTab = tabs[0];
+       if (activeTab && chrome.sidePanel && chrome.sidePanel.open) {
+          chrome.sidePanel.open({ windowId: activeTab.windowId }).catch(console.error);
+       }
+     });
+  }
   if (command === 'add_current_website') {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const activeTab = tabs[0];
