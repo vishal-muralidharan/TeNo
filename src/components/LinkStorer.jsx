@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { Trash2, Globe, Star, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, Globe, Star, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
 
 export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user }) {
   const [url, setUrl] = useState('');
@@ -294,7 +294,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     title="Open in new window"
                     aria-label="Open in new window"
                   >
-                    New Window
+                    <ExternalLink size={14} />
                   </button>
 
                   <button
