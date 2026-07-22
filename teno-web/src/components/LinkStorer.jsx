@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
-import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
 
 export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user, openFormSignal, terminalVisible = false, terminalHeight = 0, favoritesRowCount = 2, onLinkOpen }) {
   const [url, setUrl] = useState('');
@@ -456,6 +456,14 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     onClick={(e) => { e.stopPropagation(); toggleFavorite(link.id, link.isFavorite); }}
                   >
                     <Star size={20} fill={link.isFavorite ? 'var(--color-accent)' : 'none'} />
+                  </button>
+
+                  <button
+                    className="icon-btn"
+                    onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(link.url); }}
+                    title="Copy URL"
+                  >
+                    <Copy size={14} />
                   </button>
 
                   <div className="menu-wrapper">

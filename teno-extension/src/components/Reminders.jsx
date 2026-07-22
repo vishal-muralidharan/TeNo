@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where } from 'firebase/firestore';
-import { Edit2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
 
 export default function Reminders({ user }) {
   const [text, setText] = useState('');
@@ -227,6 +227,9 @@ export default function Reminders({ user }) {
                         <ChevronDown size={14} opacity={canMoveDown ? 0.8 : 0.3} />
                       </button>
                     </div>
+                    <button className="icon-btn" onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(r.text); }} title="Copy">
+                      <Copy size={14} />
+                    </button>
                     <button className="icon-btn" onClick={() => requestEdit(r)}>
                       <Edit2 size={14} />
                     </button>

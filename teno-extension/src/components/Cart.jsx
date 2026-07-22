@@ -178,11 +178,16 @@ function Cart({ user, openFormSignal }) {
                         </button>
                       </div>
                       {item.url && (
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="action-icon" title="open link">
-                          [ view ]
-                        </a>
+                        <>
+                          <a href={item.url} target="_blank" rel="noopener noreferrer" className="action-icon" title="open link" onClick={(e) => e.stopPropagation()}>
+                            [ view ]
+                          </a>
+                          <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.url); }} className="action-icon" title="copy url" style={{ color: 'var(--text-secondary)' }}>
+                            [ copy ]
+                          </button>
+                        </>
                       )}
-                      <button onClick={() => removeItem(item.id)} className="action-icon" title="remove" style={{ color: 'var(--accent)' }}>
+                      <button onClick={(e) => { e.stopPropagation(); removeItem(item.id); }} className="action-icon" title="remove" style={{ color: 'var(--accent)' }}>
                         [ drop ]
                       </button>
                     </div>
