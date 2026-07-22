@@ -152,7 +152,7 @@ function Cart({ user, openFormSignal }) {
               <h3 className="section-title">{section.label || 'ungrouped'}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {section.items.map((item) => (
-                  <div key={item.id} className="item-row">
+                  <div key={item.id} className="item-row" onClick={(e) => { if (item.url) { e.preventDefault(); window.open(item.url, '_blank'); } }} style={{ cursor: item.url ? 'pointer' : 'default' }}>
                     <div className="info-col">
                       <span style={{ fontWeight: 'bold' }}>{item.title}</span>
                       {item.label && <span className="label-chip">{item.label}</span>}
@@ -178,11 +178,11 @@ function Cart({ user, openFormSignal }) {
                         </button>
                       </div>
                       {item.url && (
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="action-icon" title="open link">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="action-icon" title="open link" onClick={(e) => e.stopPropagation()}>
                           [ view ]
                         </a>
                       )}
-                      <button onClick={() => removeItem(item.id)} className="action-icon" title="remove" style={{ color: 'var(--accent)' }}>
+                      <button onClick={(e) => { e.stopPropagation(); removeItem(item.id); }} className="action-icon" title="remove" style={{ color: 'var(--accent)' }}>
                         [ drop ]
                       </button>
                     </div>

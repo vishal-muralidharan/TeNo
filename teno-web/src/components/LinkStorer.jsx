@@ -409,8 +409,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           const canMoveDown = globalIndex < flattenedDisplay.length - 1 && nextEntry && nextEntry.sectionKey === sectionKey;
           return (
             <React.Fragment key={link.id}>
-              <div className="list-item">
-                <div className="item-content" onClick={(e) => handleOpen(e, link)}>
+              <div className="list-item" onClick={(e) => handleOpen(e, link)} style={{ cursor: 'pointer' }}>
+                <div className="item-content">
                   <img
                     src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.domain}&sz=64`}
                     onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
