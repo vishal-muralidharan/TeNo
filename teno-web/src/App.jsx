@@ -423,8 +423,6 @@ function App() {
                 savedLinks={savedLinks}
                 cartItems={cartItems}
                 reminders={reminders}
-                favoritesRowCount={favoritesRowCount}
-                onFavoritesRowCountChange={updateFavoritesRowCount}
                 onLogout={handleLogout}
               />
             ) : (

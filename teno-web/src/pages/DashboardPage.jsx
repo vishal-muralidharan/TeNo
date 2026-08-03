@@ -34,7 +34,7 @@ export default function DashboardPage({
   const navigate = useNavigate()
 
   const tabs = [
-    { id: 'links', label: 'Links', component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} openFormSignal={linksFormToken} favoritesRowCount={favoritesRowCount} onLinkOpen={recordLinkOpen} /> },
+    { id: 'links', label: 'Links', component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} openFormSignal={linksFormToken} onLinkOpen={recordLinkOpen} /> },
     { id: 'cart', label: 'Cart', component: <LinkStorer collectionName="cart_items" title="Cart" user={user} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
     { id: 'reminders', label: 'Reminders', component: <Reminders user={user} /> },
     { id: 'timer', label: 'Timer', component: <Timer {...timerApi} /> },

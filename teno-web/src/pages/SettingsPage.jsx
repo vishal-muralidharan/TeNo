@@ -21,8 +21,6 @@ export default function SettingsPage({
   savedLinks = [],
   cartItems = [],
   reminders = [],
-  favoritesRowCount = 2,
-  onFavoritesRowCountChange,
   onLogout,
 }) {
   const navigate = useNavigate()
@@ -157,22 +155,7 @@ export default function SettingsPage({
             <button type="button" className="settings-password-trigger" onClick={openPasswordModal}>change password</button>
           </article>
 
-          <article className="settings-card">
-            <h3>layout</h3>
-            <div className="settings-kv settings-kv-stack">
-              <span>sections per row below favourites</span>
-              <div className="settings-inline-row">
-                <input
-                  type="number"
-                  min="1"
-                  max="3"
-                  value={favoritesRowCount}
-                  onChange={(event) => onFavoritesRowCountChange?.(event.target.value)}
-                />
-                <small>allowed values: 1, 2, or 3.</small>
-              </div>
-            </div>
-          </article>
+
 
           <article className="settings-card">
             <h3>summary</h3>

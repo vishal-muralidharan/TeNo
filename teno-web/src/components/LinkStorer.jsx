@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
 
-export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user, openFormSignal, terminalVisible = false, terminalHeight = 0, favoritesRowCount = 2, onLinkOpen }) {
+export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user, openFormSignal, terminalVisible = false, terminalHeight = 0, onLinkOpen }) {
   const [url, setUrl] = useState('');
   const [nickname, setNickname] = useState('');
   const [description, setDescription] = useState('');
@@ -354,7 +354,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }))
   );
 
-  const labelLinksPerRow = Math.max(1, Math.floor(6 / favoritesRowCount));
+
 
   const findItemPosition = (itemId) => flattenedDisplay.findIndex((entry) => entry.link.id === itemId);
 
@@ -571,7 +571,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </section>
       ))}
 
-      <div className="label-sections-grid" style={{ '--label-section-columns': favoritesRowCount, '--label-links-columns': labelLinksPerRow }}>
+      <div className="label-sections-grid">
         {displaySections.filter((section) => section.key !== 'favorites' && section.key !== 'ungrouped').map((section) => {
           const customSections = displaySections.filter(s => s.key !== 'favorites' && s.key !== 'ungrouped');
           const sIndex = customSections.findIndex(s => s.key === section.key);
