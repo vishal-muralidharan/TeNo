@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where } from 'firebase/firestore';
 import { Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
@@ -241,7 +242,7 @@ export default function Reminders({ user }) {
         </section>
       ))}
 
-      {pendingDelete && (
+      {pendingDelete && createPortal(
         <div className="custom-modal-overlay">
           <div className="custom-modal">
             <p>Mark Reminder as Complete?</p>
@@ -250,10 +251,11 @@ export default function Reminders({ user }) {
               <button className="btn-primary" onClick={confirmComplete}>Complete</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {editingReminder && (
+      {editingReminder && createPortal(
         <div className="custom-modal-overlay">
           <div className="custom-modal">
             <p style={{marginBottom: "16px"}}>Edit Reminder</p>
@@ -279,7 +281,8 @@ export default function Reminders({ user }) {
                </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

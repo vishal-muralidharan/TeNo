@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
@@ -621,7 +622,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </section>
       ))}
 
-      {pendingDelete && (
+      {pendingDelete && createPortal(
         <div className="custom-modal-overlay">
           <div className="custom-modal">
             <p>Delete completely?</p>
@@ -630,10 +631,11 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
               <button className="danger" onClick={confirmDelete}>Delete</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {editingItem && (
+      {editingItem && createPortal(
         <div className="custom-modal-overlay">
           <div className="custom-modal">
             <p style={{marginBottom: "16px"}}>Edit Item</p>
@@ -677,7 +679,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
