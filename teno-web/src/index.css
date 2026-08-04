@@ -970,7 +970,6 @@ button.danger:hover {
   align-items: center;
   justify-content: center;
   z-index: 100;
-  pointer-events: none;
 }
 
 .terminal-open .custom-modal {
@@ -983,7 +982,6 @@ button.danger:hover {
   text-align: center;
   width: 280px;
   max-width: 90%;
-  pointer-events: auto;
 }
 .custom-modal p {
   margin-bottom: 24px;

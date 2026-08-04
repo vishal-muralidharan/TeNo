@@ -243,7 +243,7 @@ export default function Reminders({ user }) {
       ))}
 
       {pendingDelete && createPortal(
-        <div className="custom-modal-overlay">
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPendingDelete(null); }}>
           <div className="custom-modal">
             <p>Mark Reminder as Complete?</p>
             <div className="modal-actions">
@@ -256,7 +256,7 @@ export default function Reminders({ user }) {
       )}
 
       {editingReminder && createPortal(
-        <div className="custom-modal-overlay">
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setEditingReminder(null); }}>
           <div className="custom-modal">
             <p style={{marginBottom: "16px"}}>Edit Reminder</p>
             <form onSubmit={handleEditSave} className="input-group">

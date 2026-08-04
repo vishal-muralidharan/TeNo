@@ -623,7 +623,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       ))}
 
       {pendingDelete && createPortal(
-        <div className="custom-modal-overlay">
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPendingDelete(null); }}>
           <div className="custom-modal">
             <p>Delete completely?</p>
             <div className="modal-actions">
@@ -636,7 +636,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       )}
 
       {editingItem && createPortal(
-        <div className="custom-modal-overlay">
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setEditingItem(null); }}>
           <div className="custom-modal">
             <p style={{marginBottom: "16px"}}>Edit Item</p>
             <form onSubmit={handleEditSave} className="input-group">

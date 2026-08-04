@@ -185,7 +185,7 @@ export default function DashboardPage({
       )}
 
       {showLogoutConfirm && (
-        <div className="custom-modal-overlay">
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLogoutConfirm(false); }}>
           <div className="custom-modal">
             <p style={{ marginBottom: '16px' }}>confirm log out?</p>
             <div className="modal-actions">
