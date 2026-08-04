@@ -18,6 +18,10 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+  const [copiedFading, setCopiedFading] = useState(false);
+  const copiedTimerRef = useRef(null);
+  const copiedFadeRef = useRef(null);
   
   const [labelOrder, setLabelOrder] = useState([]);
   const lastOpenSignal = useRef(openFormSignal);
@@ -461,7 +465,21 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
                   <button
                     className="icon-btn"
-                    onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(link.url); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(link.url);
+                      setCopiedId(link.id);
+                      setCopiedFading(false);
+                      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+                      if (copiedFadeRef.current) clearTimeout(copiedFadeRef.current);
+                      copiedTimerRef.current = setTimeout(() => {
+                        setCopiedFading(true);
+                        copiedFadeRef.current = setTimeout(() => {
+                          setCopiedId(null);
+                          setCopiedFading(false);
+                        }, 300);
+                      }, 1200);
+                    }}
                     title="Copy URL"
                   >
                     <Copy size={14} />
@@ -679,6 +697,17 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
             </form>
           </div>
+        </div>,
+        document.body
+      )}
+      {copiedId && createPortal(
+        <div className={`copied-overlay${copiedFading ? ' copied-overlay-out' : ''}`} onClick={() => {
+          if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+          if (copiedFadeRef.current) clearTimeout(copiedFadeRef.current);
+          setCopiedFading(true);
+          copiedFadeRef.current = setTimeout(() => { setCopiedId(null); setCopiedFading(false); }, 300);
+        }}>
+          <span className="copied-overlay-text">link copied!</span>
         </div>,
         document.body
       )}
