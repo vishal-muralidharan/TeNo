@@ -1,4 +1,4 @@
-import { Plus, Settings, LogOut, ArrowLeft, Terminal as TerminalIcon } from 'lucide-react'
+import { Plus, Settings, LogOut, ArrowLeft } from 'lucide-react'
 
 /**
  * UI Dictionary — maps styleMode to UI text labels and icon components.
@@ -38,11 +38,31 @@ export const getUiConfig = (styleMode) => {
     },
 
     terminal: {
+      // Minimalist keeps the $_ prompt; Modern uses clean prose
       reopenBar: isModern ? 'Terminal hidden — click to reopen' : '$_ terminal hidden. type to reopen.',
+    },
+
+    // Section heading prefixes: Minimalist shows "> ./" prefix; Modern shows nothing
+    prefix: {
+      section: isModern ? '' : '> ./',
     },
 
     placeholders: {
       search: isModern ? 'Search...' : 'search...',
+    },
+
+    // Confirm modal copy
+    confirm: {
+      logout: {
+        message: isModern ? 'Are you sure you want to log out?' : 'confirm log out?',
+        confirm: isModern ? 'Log out' : '[ yes ]',
+        cancel:  isModern ? 'Cancel'  : '[ no ]',
+      },
+      deleteItem: {
+        message: isModern ? 'Delete this item permanently?' : 'confirm delete?',
+        confirm: isModern ? 'Delete'  : '[ yes ]',
+        cancel:  isModern ? 'Cancel'  : '[ no ]',
+      },
     },
   }
 }

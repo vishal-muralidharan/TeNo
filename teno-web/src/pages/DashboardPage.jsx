@@ -6,6 +6,7 @@ import Timer from '../components/Timer'
 import Terminal from '../components/Terminal'
 import { useTheme } from '../ThemeContext'
 import { getUiConfig } from '../utils/uiConfig'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function DashboardPage({
   user,
@@ -191,15 +192,13 @@ export default function DashboardPage({
       )}
 
       {showLogoutConfirm && (
-        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLogoutConfirm(false); }}>
-          <div className="custom-modal">
-            <p style={{ marginBottom: '16px' }}>confirm log out?</p>
-            <div className="modal-actions">
-              <button type="button" onClick={() => setShowLogoutConfirm(false)}>Cancel</button>
-              <button type="button" className="btn-primary" onClick={() => { onLogout(); setShowLogoutConfirm(false) }}>Log out</button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          message={ui.confirm.logout.message}
+          confirmLabel={ui.confirm.logout.confirm}
+          cancelLabel={ui.confirm.logout.cancel}
+          onConfirm={() => { onLogout(); setShowLogoutConfirm(false) }}
+          onCancel={() => setShowLogoutConfirm(false)}
+        />
       )}
     </div>
   )

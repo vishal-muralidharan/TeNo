@@ -67,6 +67,8 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser)
       setLoadingAuth(false)
+      // Always land on Saved Links tab after login
+      setActiveTab(TAB_INDEX.links)
 
       if (currentUser) {
         migrateExistingData(currentUser.uid)
