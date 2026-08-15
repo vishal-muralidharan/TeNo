@@ -528,6 +528,7 @@ textarea.meta-input {
   padding: 4px 0;
   margin-bottom: 8px;
   transition: 0s;
+  justify-content: flex-start;
 }
 
 .toggle-form-btn:hover {
@@ -688,6 +689,11 @@ button.danger:hover {
 .list-item:hover {
   border-color: var(--text-primary);
   background-color: var(--bg-surface-hover);
+}
+
+[data-style="minimal"] .list-item:hover {
+  border-color: var(--border-color);
+  background-color: var(--bg-surface);
 }
 
 .item-content {
