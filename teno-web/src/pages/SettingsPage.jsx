@@ -169,9 +169,13 @@ export default function SettingsPage({
         <div className="brand">
           <h1 className="brand-logo-text">{ui.logo}</h1>
           <div className="topbar-actions">
-            <button type="button" className="topbar-action-btn" onClick={() => navigate('/app')}>back</button>
-            <button type="button" className="topbar-action-btn" onClick={onLogout}>logout</button>
-          </div>
+              <button type="button" className="topbar-action-btn" onClick={() => navigate('/app')}>
+                {ui.icons.back} {ui.nav.back}
+              </button>
+              <button type="button" className="topbar-action-btn" onClick={onLogout}>
+                {ui.icons.logout} {ui.nav.logout}
+              </button>
+            </div>
         </div>
       </header>
 

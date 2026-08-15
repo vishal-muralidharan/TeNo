@@ -1498,6 +1498,28 @@ button.danger:hover {
   font-weight: 600;
 }
 
+/* All buttons get border-radius in Modern mode — covers timer, change password, etc. */
+[data-style="modern"] button {
+  border-radius: var(--border-radius);
+}
+
+/* settings-wide-card (click stats section) also gets rounded in Modern */
+[data-style="modern"] .settings-wide-card {
+  border-radius: var(--border-radius);
+}
+
+/*
+ * Fix ::first-letter on inline <span> elements.
+ * CSS ::first-letter only works on block/inline-block — so spans that need
+ * sentence-case must be promoted to inline-block.
+ */
+[data-style="modern"] .settings-stat-box span,
+[data-style="modern"] .settings-kv span,
+[data-style="modern"] .settings-kv strong,
+[data-style="modern"] .settings-list-row span {
+  display: inline-block;
+}
+
 /*
  * SENTENCE CASE — ALL PAGES IN MODERN MODE
  * Strategy: force everything to lowercase, then lift the ::first-letter to uppercase.
