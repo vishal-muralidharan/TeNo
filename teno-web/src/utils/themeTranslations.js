@@ -16,132 +16,156 @@ export const themeTranslations = {
   // ── Logo ─────────────────────────────────────────────────────────────────
   logo_text: {
     minimal: 'teno',
-    modern:  'TeNo',
+    modern: 'TeNo',
   },
 
   // ── Navigation / Header actions ───────────────────────────────────────────
   nav_settings: {
-    minimal: '[ settings ]',
-    modern:  'Settings',
+    minimal: 'settings',
+    modern: 'Settings',
   },
   nav_logout: {
-    minimal: '[ logout ]',
-    modern:  'Log out',
+    minimal: 'logout',
+    modern: 'Log out',
   },
   nav_back: {
-    minimal: '[ back ]',
-    modern:  'Back',
+    minimal: 'back',
+    modern: 'Back',
   },
 
   // ── Tab labels ────────────────────────────────────────────────────────────
   tab_links: {
     minimal: 'links',
-    modern:  'Links',
+    modern: 'Links',
   },
   tab_cart: {
     minimal: 'cart',
-    modern:  'Cart',
+    modern: 'Cart',
   },
   tab_reminders: {
     minimal: 'reminders',
-    modern:  'Reminders',
+    modern: 'Reminders',
   },
   tab_timer: {
     minimal: 'timer',
-    modern:  'Timer',
+    modern: 'Timer',
   },
 
   // ── Add / action buttons ──────────────────────────────────────────────────
   add_link: {
     minimal: '[+ add_new]',
-    modern:  'Add link',
+    modern: 'Add New Link',
   },
   add_item: {
     minimal: '[+ add_new]',
-    modern:  'Add item',
+    modern: 'Add New Item',
   },
   add_reminder: {
     minimal: '[+ add_new]',
-    modern:  'Add reminder',
+    modern: 'Add New Reminder',
   },
   toggle_form_open: {
     minimal: '> [ + add_new ]',
-    modern:  'Add new',
+    modern: 'Add New',
   },
   toggle_form_close: {
     minimal: '> [ - close ]',
-    modern:  'Close',
+    modern: 'Close',
   },
 
   // ── Section heading prefixes ──────────────────────────────────────────────
   // Minimalist uses terminal-style "> ./" prefix; Modern removes it entirely.
   prefix_section: {
     minimal: '> ./',
-    modern:  '',
+    modern: '',
   },
   prefix_command: {
     minimal: '> ',
-    modern:  '',
+    modern: '',
   },
 
   // ── Terminal bar ──────────────────────────────────────────────────────────
   terminal_reopen: {
     minimal: '$_ terminal hidden. type to reopen.',
-    modern:  'Terminal hidden — click to reopen',
+    modern: 'Terminal hidden — click to reopen',
   },
 
   // ── Confirm modals ────────────────────────────────────────────────────────
   confirm_logout_message: {
     minimal: 'confirm log out?',
-    modern:  'Are you sure you want to log out?',
+    modern: 'Are you sure you want to log out?',
   },
   confirm_logout_yes: {
     minimal: '[ yes ]',
-    modern:  'Log out',
+    modern: 'Log out',
   },
   confirm_logout_no: {
     minimal: '[ no ]',
-    modern:  'Cancel',
+    modern: 'Cancel',
   },
   confirm_delete_message: {
     minimal: 'confirm delete?',
-    modern:  'Delete this item permanently?',
+    modern: 'Delete this item permanently?',
   },
   confirm_delete_yes: {
     minimal: '[ yes ]',
-    modern:  'Delete',
+    modern: 'Delete',
   },
   confirm_delete_no: {
     minimal: '[ no ]',
-    modern:  'Cancel',
+    modern: 'Cancel',
   },
 
   // ── Settings page labels ──────────────────────────────────────────────────
   settings_heading_appearance: {
     minimal: 'appearance',
-    modern:  'Appearance',
+    modern: 'Appearance',
   },
   settings_heading_account: {
     minimal: 'account',
-    modern:  'Account',
+    modern: 'Account',
   },
   settings_heading_summary: {
     minimal: 'summary',
-    modern:  'Summary',
+    modern: 'Summary',
   },
   settings_heading_click_stats: {
     minimal: 'click stats',
-    modern:  'Click stats',
+    modern: 'Click stats',
   },
   settings_change_password: {
     minimal: 'change password',
-    modern:  'Change password',
+    modern: 'Change password',
+  },
+  settings_theme_label: {
+    minimal: 'theme',
+    modern: 'Theme',
+  },
+  settings_theme_dark: {
+    minimal: 'dark',
+    modern: 'Dark',
+  },
+  settings_theme_light: {
+    minimal: 'light',
+    modern: 'Light',
+  },
+  settings_style_mode_label: {
+    minimal: 'style mode',
+    modern: 'Style mode',
+  },
+  settings_style_minimal: {
+    minimal: 'minimalist',
+    modern: 'Minimalist',
+  },
+  settings_style_modern: {
+    minimal: 'modern',
+    modern: 'Modern',
   },
 
   // ── Form placeholders ─────────────────────────────────────────────────────
   placeholder_search: {
     minimal: 'search...',
-    modern:  'Search...',
+    modern: 'Search...',
   },
 }
 

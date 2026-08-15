@@ -186,40 +186,40 @@ export default function SettingsPage({
             <h3>{ui.settings.appearance}</h3>
             <div className="settings-kv" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px', borderBottom: 'none' }}>
               <div style={{ width: '100%' }}>
-                <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>theme</span>
+                <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>{ui.settings.themeLabel}</span>
                 <div style={getToggleContainerStyle()}>
                   <button
                     type="button"
                     style={getToggleBtnStyle(theme === 'dark')}
                     onClick={() => setTheme('dark')}
                   >
-                    dark
+                    {ui.settings.themeDark}
                   </button>
                   <button
                     type="button"
                     style={getToggleBtnStyle(theme === 'light', true)}
                     onClick={() => setTheme('light')}
                   >
-                    light
+                    {ui.settings.themeLight}
                   </button>
                 </div>
               </div>
               <div style={{ width: '100%' }}>
-                <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>style mode</span>
+                <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>{ui.settings.styleModeLabel}</span>
                 <div style={getToggleContainerStyle()}>
                   <button
                     type="button"
                     style={getToggleBtnStyle(styleMode === 'minimal')}
                     onClick={() => setStyleMode('minimal')}
                   >
-                    minimalist (terminal)
+                    {ui.settings.styleMinimal}
                   </button>
                   <button
                     type="button"
                     style={getToggleBtnStyle(styleMode === 'modern', true)}
                     onClick={() => setStyleMode('modern')}
                   >
-                    modern (sleek)
+                    {ui.settings.styleModern}
                   </button>
                 </div>
               </div>

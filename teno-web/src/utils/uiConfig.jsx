@@ -89,6 +89,12 @@ export const getUiConfig = (styleMode) => {
       summary:      t('settings_heading_summary',      styleMode),
       clickStats:   t('settings_heading_click_stats',  styleMode),
       changePassword: t('settings_change_password',    styleMode),
+      themeLabel:   t('settings_theme_label',          styleMode),
+      themeDark:    t('settings_theme_dark',           styleMode),
+      themeLight:   t('settings_theme_light',          styleMode),
+      styleModeLabel: t('settings_style_mode_label',   styleMode),
+      styleMinimal: t('settings_style_minimal',        styleMode),
+      styleModern:  t('settings_style_modern',         styleMode),
     },
 
     // ── Placeholders ──────────────────────────────────────────────────────────

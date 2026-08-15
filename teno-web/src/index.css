@@ -6,8 +6,8 @@
 :root {
   --link-card-width: 240px;
   --terminal-height: clamp(190px, 30vh, 50vh);
-  
-  --color-accent: #ffffff; 
+
+  --color-accent: #ffffff;
   --color-danger: #ef4444;
   --color-success: #22c55e;
 
@@ -125,7 +125,7 @@ body {
   height: 100vh;
   overflow: hidden;
   margin: 0;
-  border: none; 
+  border: none;
 }
 
 /* App Layout */
@@ -225,7 +225,7 @@ body {
   display: flex;
   justify-content: space-around;
   background-color: var(--bg-app);
-  border-bottom: 1px var(--border-style) var(--border-color); 
+  border-bottom: 1px var(--border-style) var(--border-color);
   padding: 4px 6px;
   gap: 2px;
 }
@@ -264,7 +264,7 @@ body {
   overflow: hidden;
   display: flex;
   flex: 1;
-  padding: 0; 
+  padding: 0;
 }
 
 .terminal-open .slider-container {
@@ -280,7 +280,8 @@ body {
   padding: 12px 12px 14px;
   overflow-y: auto;
   overflow-x: hidden;
-  transition: transform 0.2s linear, opacity 0.2s linear; /* Hacker snappy transition */
+  transition: transform 0.2s linear, opacity 0.2s linear;
+  /* Hacker snappy transition */
   will-change: transform, opacity;
   scrollbar-width: auto;
   scrollbar-color: #d9d9d9 #000;
@@ -320,15 +321,18 @@ body {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
-@media (max-width: 1199px) { /* empty up here to move below */ }
+@media (max-width: 1199px) {
+  /* empty up here to move below */
+}
 
-.list-container.favorites-grid > .list-item,
-.list-container.label-links-grid > .list-item {
+.list-container.favorites-grid>.list-item,
+.list-container.label-links-grid>.list-item {
   width: 100%;
   min-width: 0;
 }
 
 @media (max-width: 1199px) {
+
   .list-container.favorites-grid,
   .list-container.label-links-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -336,20 +340,24 @@ body {
 }
 
 @media (max-width: 899px) {
+
   .list-container.favorites-grid,
   .list-container.label-links-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
   .label-group-card {
     min-width: 140px;
   }
 }
 
 @media (max-width: 599px) {
+
   .list-container.favorites-grid,
   .list-container.label-links-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .label-group-card {
     min-width: 100%;
   }
@@ -403,6 +411,7 @@ body {
   content: "> ./";
   color: var(--text-muted);
 }
+
 /* Modern: no prefix */
 [data-style="modern"] .tab-title::before {
   content: none;
@@ -419,7 +428,16 @@ body {
   border: none;
 }
 
-input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="search"], input[type="tel"], input[type="number"], input.mono-input, textarea.meta-input, textarea {
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="number"],
+input.mono-input,
+textarea.meta-input,
+textarea {
   width: 100%;
   background-color: transparent;
   border: none;
@@ -433,7 +451,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="url
   caret-width: 2px;
 }
 
-input, textarea {
+input,
+textarea {
   caret-color: var(--color-text-main);
 }
 
@@ -467,6 +486,7 @@ input, textarea {
 }
 
 @keyframes underscore-blink {
+
   0%,
   49% {
     opacity: 1;
@@ -478,12 +498,14 @@ input, textarea {
   }
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--color-text-muted);
   opacity: 1;
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   outline: none;
   border-bottom-color: var(--color-text-main);
 }
@@ -521,7 +543,8 @@ textarea.meta-input {
 }
 
 .collapsible-form.open {
-  max-height: 400px; /* enough to expand form */
+  max-height: 400px;
+  /* enough to expand form */
 }
 
 button {
@@ -532,24 +555,32 @@ button {
   cursor: pointer;
   font-weight: 700;
   transition: 0s;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
-button[type="submit"], .btn-primary {
-  border: 1px solid #fff;
-  color: #000;
-  background-color: #fff;
+
+button[type="submit"],
+.btn-primary {
+  border: 1px solid var(--text-primary);
+  color: var(--bg-app);
+  background-color: var(--text-primary);
 }
 
-button[type="submit"]:hover:not(:disabled), .btn-primary:hover:not(:disabled) {
-  background-color: #000;
-  color: #fff;
-  border-color: #fff;
+button[type="submit"]:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
 }
 
 button:hover:not(:disabled) {
-  background-color: #fff;
-  color: #000;
-  border-color: #fff;
+  background-color: var(--text-primary);
+  color: var(--bg-app);
+  border-color: var(--text-primary);
 }
 
 button:disabled {
@@ -563,6 +594,7 @@ button.danger {
   border-color: var(--color-text-muted);
   color: var(--color-text-muted);
 }
+
 button.danger:hover {
   background-color: #fff;
   color: #000;
@@ -722,6 +754,7 @@ button.danger:hover {
   overflow: hidden;
   overflow-wrap: anywhere;
 }
+
 .item-desc::before {
   content: "» ";
 }
@@ -809,6 +842,7 @@ button.danger:hover {
 .dropdown-menu button.danger {
   color: var(--color-text-muted);
 }
+
 .dropdown-menu button.danger:hover {
   background-color: #fff;
   color: #000;
@@ -890,7 +924,8 @@ button.danger:hover {
 }
 
 /* Vintage monochrome scrollbar theme */
-.terminal-output, .slide-pane {
+.terminal-output,
+.slide-pane {
   scrollbar-color: #d9d9d9 #000;
 }
 
@@ -1018,6 +1053,7 @@ button.danger:hover {
   user-select: none;
   color: #fff;
 }
+
 .checkbox-container:hover {
   color: var(--color-text-muted);
 }
@@ -1041,11 +1077,11 @@ button.danger:hover {
   border: 1px solid var(--color-text-muted);
 }
 
-.checkbox-container:hover input ~ .checkmark {
+.checkbox-container:hover input~.checkmark {
   border-color: #fff;
 }
 
-.checkbox-container input:checked ~ .checkmark {
+.checkbox-container input:checked~.checkmark {
   background-color: #fff;
   border-color: #fff;
 }
@@ -1063,7 +1099,7 @@ button.danger:hover {
   transform: rotate(45deg);
 }
 
-.checkbox-container input:checked ~ .checkmark:after {
+.checkbox-container input:checked~.checkmark:after {
   display: block;
 }
 
@@ -1096,13 +1132,23 @@ button.danger:hover {
 }
 
 @keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes overlayFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 /* Modals */
@@ -1122,6 +1168,7 @@ button.danger:hover {
 .terminal-open .custom-modal {
   transform: translateY(calc(var(--terminal-active-height, var(--terminal-height)) * -0.5));
 }
+
 .custom-modal {
   background: #000;
   padding: 24px 20px;
@@ -1130,21 +1177,25 @@ button.danger:hover {
   width: 280px;
   max-width: 90%;
 }
+
 .custom-modal p {
   margin-bottom: 24px;
   color: #fff;
   font-weight: 700;
   font-size: 0.95rem;
 }
+
 .custom-modal p::before {
   content: "sys.warn> ";
   color: #888;
 }
+
 .modal-actions {
   display: flex;
   gap: 16px;
   justify-content: center;
 }
+
 .modal-actions button {
   flex: 1;
 }
@@ -1154,10 +1205,14 @@ button.danger:hover {
   gap: 12px;
   text-align: left;
 }
-.custom-modal input, .custom-modal textarea {
+
+.custom-modal input,
+.custom-modal textarea {
   border-bottom: 1px dashed var(--color-border);
 }
-.custom-modal input:focus, .custom-modal textarea:focus {
+
+.custom-modal input:focus,
+.custom-modal textarea:focus {
   border-bottom: 2px solid #fff;
 }
 
@@ -1345,6 +1400,7 @@ button.danger:hover {
 }
 
 @media (max-width: 900px) {
+
   .settings-grid,
   .settings-stats-grid {
     grid-template-columns: 1fr;
@@ -1375,11 +1431,13 @@ button.danger:hover {
   justify-content: center;
   gap: 4px;
 }
+
 .digital-clock::before {
   content: "[";
   color: var(--text-muted);
   margin-right: 8px;
 }
+
 .digital-clock::after {
   content: "]";
   color: var(--text-muted);
@@ -1450,6 +1508,7 @@ button.danger:hover {
   outline: none;
   border-bottom-color: #fff;
 }
+
 .custom-number-input input::-webkit-outer-spin-button,
 .custom-number-input input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -1465,6 +1524,7 @@ button.danger:hover {
   align-items: center;
   transition: 0s;
 }
+
 .arrow-btn:hover {
   background: var(--text-primary);
   color: var(--bg-app);
@@ -1481,6 +1541,7 @@ button.danger:hover {
   justify-content: center;
   gap: 16px;
 }
+
 .timer-controls button {
   flex: 1;
 }
@@ -1510,14 +1571,14 @@ button.danger:hover {
 
 /*
  * Fix ::first-letter on inline <span> elements.
- * CSS ::first-letter only works on block/inline-block — so spans that need
- * sentence-case must be promoted to inline-block.
+ * Using display:block (not inline-block) so these spans still fill
+ * the flex row properly and don't shift alignment.
  */
 [data-style="modern"] .settings-stat-box span,
 [data-style="modern"] .settings-kv span,
 [data-style="modern"] .settings-kv strong,
 [data-style="modern"] .settings-list-row span {
-  display: inline-block;
+  display: block;
 }
 
 /*
@@ -1533,7 +1594,6 @@ button.danger:hover {
 [data-style="modern"] h5,
 [data-style="modern"] h6,
 [data-style="modern"] p,
-[data-style="modern"] button,
 [data-style="modern"] label,
 [data-style="modern"] .tab-title,
 [data-style="modern"] .item-text,
@@ -1549,10 +1609,6 @@ button.danger:hover {
 [data-style="modern"] .settings-feedback,
 [data-style="modern"] .settings-empty,
 [data-style="modern"] .settings-list-row span,
-[data-style="modern"] .settings-password-trigger,
-[data-style="modern"] .topbar-action-btn,
-[data-style="modern"] .top-nav button,
-[data-style="modern"] .toggle-form-btn,
 [data-style="modern"] .terminal-reopen-bar,
 [data-style="modern"] .confirm-modal-message,
 [data-style="modern"] .section-empty,
@@ -1567,7 +1623,6 @@ button.danger:hover {
 [data-style="modern"] h5::first-letter,
 [data-style="modern"] h6::first-letter,
 [data-style="modern"] p::first-letter,
-[data-style="modern"] button::first-letter,
 [data-style="modern"] label::first-letter,
 [data-style="modern"] .tab-title::first-letter,
 [data-style="modern"] .item-text::first-letter,
@@ -1583,10 +1638,6 @@ button.danger:hover {
 [data-style="modern"] .settings-feedback::first-letter,
 [data-style="modern"] .settings-empty::first-letter,
 [data-style="modern"] .settings-list-row span::first-letter,
-[data-style="modern"] .settings-password-trigger::first-letter,
-[data-style="modern"] .topbar-action-btn::first-letter,
-[data-style="modern"] .top-nav button::first-letter,
-[data-style="modern"] .toggle-form-btn::first-letter,
 [data-style="modern"] .terminal-reopen-bar::first-letter,
 [data-style="modern"] .confirm-modal-message::first-letter,
 [data-style="modern"] .section-empty::first-letter,
@@ -1684,6 +1735,7 @@ button.danger:hover {
   gap: 12px;
   justify-content: center;
 }
+
 .confirm-modal-actions button {
   flex: 1;
 }
@@ -1702,6 +1754,7 @@ button.danger:hover {
 .confirm-modal-cancel--modern {
   border-radius: var(--border-radius);
 }
+
 .confirm-modal-cancel--modern:hover {
   background: var(--bg-surface-hover);
   color: var(--text-primary);
@@ -1728,10 +1781,12 @@ button.danger:hover {
   border-color: #ef4444;
   color: #fff;
 }
+
 .confirm-modal-confirm--danger:hover {
   background: #dc2626;
   border-color: #dc2626;
 }
+
 .confirm-modal-confirm:not(.confirm-modal-confirm--danger):hover {
   opacity: 0.85;
 }
