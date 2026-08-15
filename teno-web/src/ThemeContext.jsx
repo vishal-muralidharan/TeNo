@@ -12,6 +12,7 @@ export const ThemeProvider = ({ children }) => {
   const [styleMode, setStyleModeState] = useState('minimal');
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isThemeReady, setIsThemeReady] = useState(false);
 
   // Apply theme attributes to document
   const applyTheme = (newTheme, newStyleMode) => {
@@ -87,6 +88,11 @@ export const ThemeProvider = ({ children }) => {
       setStyleModeState(initialStyleMode);
       applyTheme(initialTheme, initialStyleMode);
       setLoading(false);
+      
+      // Ensure the DOM has time to paint the new attributes before fading out
+      requestAnimationFrame(() => {
+        setIsThemeReady(true);
+      });
     };
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -98,7 +104,7 @@ export const ThemeProvider = ({ children }) => {
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, styleMode, setTheme, setStyleMode, loading }}>
+    <ThemeContext.Provider value={{ theme, styleMode, setTheme, setStyleMode, loading, isThemeReady }}>
       {children}
     </ThemeContext.Provider>
   );

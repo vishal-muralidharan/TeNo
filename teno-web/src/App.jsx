@@ -7,6 +7,8 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
 import { setupTypingCaret } from '../sm/typingCaret'
+import { useTheme } from './ThemeContext'
+import LoadingScreen from './components/LoadingScreen'
 
 const TAB_INDEX = {
   links: 0,
@@ -44,8 +46,10 @@ const formatTimerMs = (ms) => {
 }
 
 function App() {
+  const { isThemeReady } = useTheme()
   const [user, setUser] = useState(null)
   const [loadingAuth, setLoadingAuth] = useState(true)
+  const [minLoadTimePending, setMinLoadTimePending] = useState(true)
   const [activeTab, setActiveTab] = useState(TAB_INDEX.links)
   const [terminalVisible, setTerminalVisible] = useState(false)
   const [linksFormToken, setLinksFormToken] = useState(0)
@@ -62,6 +66,14 @@ function App() {
   const [timerTargetDuration, setTimerTargetDuration] = useState(0)
   const [timerInputMinutes, setTimerInputMinutes] = useState(0)
   const [timerDisplayMs, setTimerDisplayMs] = useState(0)
+
+  useEffect(() => {
+    // Ensure loading screen stays for at least 2 seconds
+    const timer = setTimeout(() => {
+      setMinLoadTimePending(false)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -362,79 +374,84 @@ function App() {
     return `${timerMode} ${timerState}: ${formatTimerMs(timerDisplayMs)}`
   }
 
-  if (loadingAuth) {
-    return <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>Loading...</div>
-  }
+  // We no longer return a simple loading div, we rely on our global LoadingScreen
+  // which stays mounted until the theme is ready and the minimum load time passes.
+  const isReadyToRender = isThemeReady && !loadingAuth && !minLoadTimePending
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to={user ? '/app' : '/login'} replace />} />
-        <Route path="/login" element={<LoginPage user={user} loadingAuth={loadingAuth} />} />
-        <Route
-          path="/app"
-          element={
-            user ? (
-              <DashboardPage
-                user={user}
-                onLogout={handleLogout}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                terminalVisible={terminalVisible}
-                setTerminalVisible={setTerminalVisible}
-                savedLinks={savedLinks}
-                cartItems={cartItems}
-                reminders={reminders}
-                favoritesRowCount={favoritesRowCount}
-                linksFormToken={linksFormToken}
-                cartFormToken={cartFormToken}
-                requestOpenLinksForm={requestOpenLinksForm}
-                requestOpenCartForm={requestOpenCartForm}
-                deleteLinkByNickname={deleteLinkByNickname}
-                deleteCartItemByNickname={deleteCartItemByNickname}
-                addReminder={addReminder}
-                deleteReminderByIndex={deleteReminderByIndex}
-                deleteAllReminders={deleteAllReminders}
-                recordLinkOpen={recordLinkOpen}
-                timerApi={{
-                  timerState,
-                  timerMode,
-                  timerDisplayMs,
-                  timerInputMinutes,
-                  setTimerInputMinutes,
-                  handleTimerStart,
-                  handleTimerPause,
-                  handleTimerStop,
-                  startTimerCountdown,
-                  stopTimer,
-                  getTimerStatus,
-                  formatTimerMs,
-                }}
-              />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            user ? (
-              <SettingsPage
-                user={user}
-                savedLinks={savedLinks}
-                cartItems={cartItems}
-                reminders={reminders}
-                onLogout={handleLogout}
-              />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-        <Route path="*" element={<Navigate to={user ? '/app' : '/login'} replace />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      {!isReadyToRender && <LoadingScreen />}
+      <div className={`app-content ${isReadyToRender ? 'fade-in' : 'hidden'}`}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to={user ? '/app' : '/login'} replace />} />
+            <Route path="/login" element={<LoginPage user={user} loadingAuth={loadingAuth} />} />
+            <Route
+              path="/app"
+              element={
+                user ? (
+                  <DashboardPage
+                    user={user}
+                    onLogout={handleLogout}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    terminalVisible={terminalVisible}
+                    setTerminalVisible={setTerminalVisible}
+                    savedLinks={savedLinks}
+                    cartItems={cartItems}
+                    reminders={reminders}
+                    favoritesRowCount={favoritesRowCount}
+                    linksFormToken={linksFormToken}
+                    cartFormToken={cartFormToken}
+                    requestOpenLinksForm={requestOpenLinksForm}
+                    requestOpenCartForm={requestOpenCartForm}
+                    deleteLinkByNickname={deleteLinkByNickname}
+                    deleteCartItemByNickname={deleteCartItemByNickname}
+                    addReminder={addReminder}
+                    deleteReminderByIndex={deleteReminderByIndex}
+                    deleteAllReminders={deleteAllReminders}
+                    recordLinkOpen={recordLinkOpen}
+                    timerApi={{
+                      timerState,
+                      timerMode,
+                      timerDisplayMs,
+                      timerInputMinutes,
+                      setTimerInputMinutes,
+                      handleTimerStart,
+                      handleTimerPause,
+                      handleTimerStop,
+                      startTimerCountdown,
+                      stopTimer,
+                      getTimerStatus,
+                      formatTimerMs,
+                    }}
+                  />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                user ? (
+                  <SettingsPage
+                    user={user}
+                    savedLinks={savedLinks}
+                    cartItems={cartItems}
+                    reminders={reminders}
+                    onLogout={handleLogout}
+                  />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route path="*" element={<Navigate to={user ? '/app' : '/login'} replace />} />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </>
   )
 }
 

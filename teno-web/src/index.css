@@ -1796,3 +1796,55 @@ button.danger:hover {
 .confirm-modal-confirm:not(.confirm-modal-confirm--danger):hover {
   opacity: 0.85;
 }
+
+/* ============================================================
+   LOADING SCREEN & THEME TRANSITIONS
+   ============================================================ */
+
+/* Global theme transitions to prevent snapping */
+*, *::before, *::after {
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-radius 0.3s ease-in-out;
+}
+
+/* App wrapper visibility */
+.app-content {
+  opacity: 1;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.app-content.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-content.fade-in {
+  opacity: 1;
+}
+
+/* Fullscreen Loader */
+.fullscreen-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-pulse {
+  color: #fff;
+  font-family: monospace; /* fallback to mono if var not available */
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
