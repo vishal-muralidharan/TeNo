@@ -3,8 +3,12 @@ import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where } from 'firebase/firestore';
 import { Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
+import { useTheme } from '../ThemeContext';
+import { getUiConfig } from '../utils/uiConfig';
 
 export default function Reminders({ user }) {
+  const { styleMode } = useTheme();
+  const ui = getUiConfig(styleMode);
   const [text, setText] = useState('');
   const [label, setLabel] = useState('');
   const [reminders, setReminders] = useState([]);
@@ -179,7 +183,7 @@ export default function Reminders({ user }) {
         <button type="submit" disabled={isSubmitting || !text.trim()}>Add</button>
       </form>
 
-      <h2 className="tab-title">Reminders</h2>
+      <h2 className="tab-title">{ui.tabs.reminders}</h2>
 
       {reminderSections.map((section) => (
         <section key={section.key} className="section-block">

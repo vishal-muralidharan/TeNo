@@ -3,8 +3,12 @@ import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
+import { useTheme } from '../ThemeContext';
+import { getUiConfig } from '../utils/uiConfig';
 
 export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user, openFormSignal, terminalVisible = false, terminalHeight = 0, onLinkOpen }) {
+  const { styleMode } = useTheme();
+  const ui = getUiConfig(styleMode);
   const [url, setUrl] = useState('');
   const [nickname, setNickname] = useState('');
   const [description, setDescription] = useState('');
@@ -535,7 +539,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         className="toggle-form-btn" 
         onClick={() => setIsFormOpen(!isFormOpen)}
       >
-        &gt; [ {isFormOpen ? '- close' : '+ add_new'} ]
+        {isFormOpen ? ui.toggleForm.close : ui.toggleForm.open}
       </button>
 
       <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`}>

@@ -1,68 +1,99 @@
-import { Plus, Settings, LogOut, ArrowLeft } from 'lucide-react'
-
 /**
- * UI Dictionary — maps styleMode to UI text labels and icon components.
- * Consume via: const ui = getUiConfig(styleMode)
+ * uiConfig.jsx
+ *
+ * Builds the full UI config object for a given styleMode.
+ * Text strings are sourced from themeTranslations.js (the single source of truth).
+ * Icons (React elements) are defined here since they require JSX.
+ *
+ * Usage:
+ *   const ui = getUiConfig(styleMode)
+ *   ui.logo           // => "TeNo" or "teno"
+ *   ui.icons.settings // => <Settings /> or null
+ *   ui.tabs.links     // => "Links" or "links"
  */
+import { Plus, Settings, LogOut, ArrowLeft } from 'lucide-react'
+import { t } from './themeTranslations'
 
 export const getUiConfig = (styleMode) => {
   const isModern = styleMode === 'modern'
 
   return {
-    logo: isModern ? 'TeNo' : 'teno',
+    // ── Logo ────────────────────────────────────────────────────────────────
+    logo: t('logo_text', styleMode),
 
+    // ── Header navigation ────────────────────────────────────────────────────
     nav: {
-      settings: isModern ? 'Settings' : '[ settings ]',
-      logout:   isModern ? 'Log out'  : '[ logout ]',
-      back:     isModern ? 'Back'     : '[ back ]',
+      settings: t('nav_settings', styleMode),
+      logout:   t('nav_logout',   styleMode),
+      back:     t('nav_back',     styleMode),
     },
 
+    // ── Lucide icons (null in Minimal — no icons in terminal mode) ───────────
     icons: {
-      settings: isModern ? <Settings size={14} strokeWidth={2} /> : null,
-      logout:   isModern ? <LogOut   size={14} strokeWidth={2} /> : null,
-      back:     isModern ? <ArrowLeft size={14} strokeWidth={2} /> : null,
-      addNew:   isModern ? <Plus     size={14} strokeWidth={2.5} /> : null,
+      settings: isModern ? <Settings  size={14} strokeWidth={2}   /> : null,
+      logout:   isModern ? <LogOut    size={14} strokeWidth={2}   /> : null,
+      back:     isModern ? <ArrowLeft size={14} strokeWidth={2}   /> : null,
+      addNew:   isModern ? <Plus      size={14} strokeWidth={2.5} /> : null,
     },
 
+    // ── Add buttons ──────────────────────────────────────────────────────────
     addBtn: {
-      links:     isModern ? 'Add Link'     : '[+ add link]',
-      cart:      isModern ? 'Add Item'     : '[+ add item]',
-      reminder:  isModern ? 'Add Reminder' : '[+ add reminder]',
+      links:    t('add_link',     styleMode),
+      cart:     t('add_item',     styleMode),
+      reminder: t('add_reminder', styleMode),
     },
 
+    // ── Tab label strings ─────────────────────────────────────────────────────
     tabs: {
-      links:     isModern ? 'Links'     : 'links',
-      cart:      isModern ? 'Cart'      : 'cart',
-      reminders: isModern ? 'Reminders' : 'reminders',
-      timer:     isModern ? 'Timer'     : 'timer',
+      links:     t('tab_links',     styleMode),
+      cart:      t('tab_cart',      styleMode),
+      reminders: t('tab_reminders', styleMode),
+      timer:     t('tab_timer',     styleMode),
     },
 
-    terminal: {
-      // Minimalist keeps the $_ prompt; Modern uses clean prose
-      reopenBar: isModern ? 'Terminal hidden — click to reopen' : '$_ terminal hidden. type to reopen.',
+    // ── Toggle-form button labels ─────────────────────────────────────────────
+    toggleForm: {
+      open:  t('toggle_form_open',  styleMode),
+      close: t('toggle_form_close', styleMode),
     },
 
-    // Section heading prefixes: Minimalist shows "> ./" prefix; Modern shows nothing
+    // ── Section heading prefix ────────────────────────────────────────────────
     prefix: {
-      section: isModern ? '' : '> ./',
+      section: t('prefix_section', styleMode),
+      command: t('prefix_command', styleMode),
     },
 
-    placeholders: {
-      search: isModern ? 'Search...' : 'search...',
+    // ── Terminal bar ──────────────────────────────────────────────────────────
+    terminal: {
+      reopenBar: t('terminal_reopen', styleMode),
     },
 
-    // Confirm modal copy
+    // ── Confirm modal copy ────────────────────────────────────────────────────
     confirm: {
       logout: {
-        message: isModern ? 'Are you sure you want to log out?' : 'confirm log out?',
-        confirm: isModern ? 'Log out' : '[ yes ]',
-        cancel:  isModern ? 'Cancel'  : '[ no ]',
+        message: t('confirm_logout_message', styleMode),
+        confirm: t('confirm_logout_yes',     styleMode),
+        cancel:  t('confirm_logout_no',      styleMode),
       },
       deleteItem: {
-        message: isModern ? 'Delete this item permanently?' : 'confirm delete?',
-        confirm: isModern ? 'Delete'  : '[ yes ]',
-        cancel:  isModern ? 'Cancel'  : '[ no ]',
+        message: t('confirm_delete_message', styleMode),
+        confirm: t('confirm_delete_yes',     styleMode),
+        cancel:  t('confirm_delete_no',      styleMode),
       },
+    },
+
+    // ── Settings headings ─────────────────────────────────────────────────────
+    settings: {
+      appearance:   t('settings_heading_appearance',   styleMode),
+      account:      t('settings_heading_account',      styleMode),
+      summary:      t('settings_heading_summary',      styleMode),
+      clickStats:   t('settings_heading_click_stats',  styleMode),
+      changePassword: t('settings_change_password',    styleMode),
+    },
+
+    // ── Placeholders ──────────────────────────────────────────────────────────
+    placeholders: {
+      search: t('placeholder_search', styleMode),
     },
   }
 }

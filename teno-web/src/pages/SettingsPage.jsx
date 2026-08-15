@@ -183,7 +183,7 @@ export default function SettingsPage({
         <div className="settings-shell">
         <section className="settings-grid">
           <article className="settings-card">
-            <h3>appearance</h3>
+            <h3>{ui.settings.appearance}</h3>
             <div className="settings-kv" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px', borderBottom: 'none' }}>
               <div style={{ width: '100%' }}>
                 <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>theme</span>
@@ -227,7 +227,7 @@ export default function SettingsPage({
           </article>
 
           <article className="settings-card">
-            <h3>account</h3>
+            <h3>{ui.settings.account}</h3>
             <div className="settings-kv">
               <span>email</span>
               <strong>{user?.email || 'unknown'}</strong>
@@ -236,13 +236,13 @@ export default function SettingsPage({
               <span>full name</span>
               <strong>{user?.displayName || 'unknown'}</strong>
             </div>
-            <button type="button" className="settings-password-trigger" onClick={openPasswordModal}>change password</button>
+            <button type="button" className="settings-password-trigger" onClick={openPasswordModal}>{ui.settings.changePassword}</button>
           </article>
 
 
 
           <article className="settings-card">
-            <h3>summary</h3>
+            <h3>{ui.settings.summary}</h3>
             <div className="settings-kv"><span>saved links</span><strong>{savedLinks.length}</strong></div>
             <div className="settings-kv"><span>cart links</span><strong>{cartItems.length}</strong></div>
             <div className="settings-kv"><span>reminders</span><strong>{reminders.length}</strong></div>
@@ -252,7 +252,7 @@ export default function SettingsPage({
         </section>
 
         <section className="settings-card settings-wide-card">
-          <h3>click stats</h3>
+          <h3>{ui.settings.clickStats}</h3>
           <div className="settings-stats-grid">
             <div className="settings-stat-box">
               <span>max clicked link:</span>{' '}
