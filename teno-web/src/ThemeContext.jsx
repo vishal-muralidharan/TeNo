@@ -1,0 +1,105 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from './firebase';
+
+const ThemeContext = createContext();
+
+export const useTheme = () => useContext(ThemeContext);
+
+export const ThemeProvider = ({ children }) => {
+  const [theme, setThemeState] = useState('dark');
+  const [styleMode, setStyleModeState] = useState('minimal');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Apply theme attributes to document
+  const applyTheme = (newTheme, newStyleMode) => {
+    document.documentElement.setAttribute('data-theme', newTheme);
+    document.documentElement.setAttribute('data-style', newStyleMode);
+  };
+
+  // Sync state to local storage and document
+  const setTheme = async (newTheme) => {
+    setThemeState(newTheme);
+    localStorage.setItem('theme', newTheme);
+    applyTheme(newTheme, styleMode);
+
+    if (currentUser) {
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          preferences: { theme: newTheme, styleMode }
+        }, { merge: true });
+      } catch (error) {
+        console.error("Error saving theme to Firestore:", error);
+      }
+    }
+  };
+
+  const setStyleMode = async (newStyleMode) => {
+    setStyleModeState(newStyleMode);
+    localStorage.setItem('styleMode', newStyleMode);
+    applyTheme(theme, newStyleMode);
+
+    if (currentUser) {
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          preferences: { theme, styleMode: newStyleMode }
+        }, { merge: true });
+      } catch (error) {
+        console.error("Error saving styleMode to Firestore:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const initTheme = async (user) => {
+      let initialTheme = null;
+      let initialStyleMode = null;
+
+      // 1. Try Firestore if authenticated
+      if (user) {
+        try {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().preferences) {
+            initialTheme = docSnap.data().preferences.theme;
+            initialStyleMode = docSnap.data().preferences.styleMode;
+          }
+        } catch (error) {
+          console.error("Error fetching preferences from Firestore:", error);
+        }
+      }
+
+      // 2. Fallback to LocalStorage
+      if (!initialTheme) initialTheme = localStorage.getItem('theme');
+      if (!initialStyleMode) initialStyleMode = localStorage.getItem('styleMode');
+
+      // 3. Fallback to System Preferences or Defaults
+      if (!initialTheme) {
+        initialTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      if (!initialStyleMode) {
+        initialStyleMode = 'minimal';
+      }
+
+      setThemeState(initialTheme);
+      setStyleModeState(initialStyleMode);
+      applyTheme(initialTheme, initialStyleMode);
+      setLoading(false);
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      initTheme(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return (
+    <ThemeContext.Provider value={{ theme, styleMode, setTheme, setStyleMode, loading }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
