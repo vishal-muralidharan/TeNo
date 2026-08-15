@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth'
 import { auth } from '../firebase'
 import { useTheme } from '../ThemeContext'
+import { getUiConfig } from '../utils/uiConfig'
 
 const normalizeLabel = (value) => (value || '').trim().toLowerCase()
 const getDisplayName = (item) => item.nickname || item.title || item.url || 'untitled'
@@ -35,6 +36,7 @@ export default function SettingsPage({
   const allItems = [...savedLinks, ...cartItems]
   
   const { theme, styleMode, setTheme, setStyleMode } = useTheme()
+  const ui = getUiConfig(styleMode)
 
   const getToggleContainerStyle = () => ({
     display: 'flex',
@@ -165,7 +167,7 @@ export default function SettingsPage({
     <div className="app-layout settings-layout">
       <header className="app-header">
         <div className="brand">
-          <h1>teno</h1>
+          <h1 className="brand-logo-text">{ui.logo}</h1>
           <div className="topbar-actions">
             <button type="button" className="topbar-action-btn" onClick={() => navigate('/app')}>back</button>
             <button type="button" className="topbar-action-btn" onClick={onLogout}>logout</button>

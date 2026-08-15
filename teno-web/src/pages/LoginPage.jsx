@@ -7,6 +7,8 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth'
 import { auth } from '../firebase'
+import { useTheme } from '../ThemeContext'
+import { getUiConfig } from '../utils/uiConfig'
 
 function getAuthErrorMessage(error) {
   if (!error) return 'Authentication failed.'
@@ -35,6 +37,8 @@ function isStrongPassword(pass) {
 }
 
 export default function LoginPage({ user, loadingAuth }) {
+  const { styleMode } = useTheme()
+  const ui = getUiConfig(styleMode)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -112,7 +116,7 @@ export default function LoginPage({ user, loadingAuth }) {
     <div className="auth-page">
       <header className="app-header">
         <div className="brand">
-          <h1>teno</h1>
+          <h1 className="brand-logo-text">{ui.logo}</h1>
           <div className="topbar-actions">
             {showBackToLogin && (
               <button

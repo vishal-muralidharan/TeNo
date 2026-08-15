@@ -4,6 +4,8 @@ import LinkStorer from '../components/LinkStorer'
 import Reminders from '../components/Reminders'
 import Timer from '../components/Timer'
 import Terminal from '../components/Terminal'
+import { useTheme } from '../ThemeContext'
+import { getUiConfig } from '../utils/uiConfig'
 
 export default function DashboardPage({
   user,
@@ -32,12 +34,14 @@ export default function DashboardPage({
   const [terminalHeight, setTerminalHeight] = useState(280)
   const appContainerRef = useRef(null)
   const navigate = useNavigate()
+  const { styleMode } = useTheme()
+  const ui = getUiConfig(styleMode)
 
   const tabs = [
-    { id: 'links', label: 'Links', component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} openFormSignal={linksFormToken} onLinkOpen={recordLinkOpen} /> },
-    { id: 'cart', label: 'Cart', component: <LinkStorer collectionName="cart_items" title="Cart" user={user} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
-    { id: 'reminders', label: 'Reminders', component: <Reminders user={user} /> },
-    { id: 'timer', label: 'Timer', component: <Timer {...timerApi} /> },
+    { id: 'links',     label: ui.tabs.links,     component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} openFormSignal={linksFormToken} onLinkOpen={recordLinkOpen} /> },
+    { id: 'cart',      label: ui.tabs.cart,      component: <LinkStorer collectionName="cart_items" title="Cart" user={user} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
+    { id: 'reminders', label: ui.tabs.reminders, component: <Reminders user={user} /> },
+    { id: 'timer',     label: ui.tabs.timer,     component: <Timer {...timerApi} /> },
   ]
 
   const handleTabSwitch = (index) => {
@@ -102,13 +106,15 @@ export default function DashboardPage({
     >
       <header className="app-header">
         <div className="brand">
-          <h1>teno</h1>
+          <h1 className="brand-logo-text" onClick={() => navigate('/app')} style={{ cursor: 'pointer' }}>
+            {ui.logo}
+          </h1>
           <div className="topbar-actions">
             <button type="button" className="topbar-action-btn" onClick={() => navigate('/settings')}>
-              settings
+              {ui.icons.settings} {ui.nav.settings}
             </button>
             <button type="button" className="topbar-action-btn" onClick={() => setShowLogoutConfirm(true)}>
-              logout
+              {ui.icons.logout} {ui.nav.logout}
             </button>
           </div>
         </div>
@@ -180,7 +186,7 @@ export default function DashboardPage({
           className="terminal-reopen-bar"
           onClick={() => setTerminalVisible(true)}
         >
-          $_ terminal hidden. type to reopen.
+          {ui.terminal.reopenBar}
         </button>
       )}
 

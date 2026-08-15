@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* Base configuration and layout variables */
@@ -71,18 +72,21 @@
 
 /* 3. Dark Modern */
 [data-theme="dark"][data-style="modern"] {
-  --bg-app: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-surface-hover: #334155;
+  --bg-app: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-surface-hover: #1f1f1f;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border-color: #334155;
+  --text-muted: #6b7280;
+  --border-color: #262626;
   --border-radius: 12px;
   --border-style: solid;
-  --font-main: 'Inter', 'Roboto', sans-serif;
+  --font-main: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-weight-ui: 500;
   --text-transform: none;
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --active-tab-bg: #ffffff;
+  --active-tab-text: #000000;
 }
 
 /* 4. Light Modern */
@@ -96,9 +100,12 @@
   --border-color: #e2e8f0;
   --border-radius: 12px;
   --border-style: solid;
-  --font-main: 'Inter', 'Roboto', sans-serif;
+  --font-main: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-weight-ui: 500;
   --text-transform: none;
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --active-tab-bg: #0f172a;
+  --active-tab-text: #ffffff;
 }
 
 * {
@@ -146,11 +153,23 @@ body {
   gap: 12px;
 }
 
-.brand h1 {
+/* Logo text — stable size/weight; never overridden by text-transform */
+.brand-logo-text {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-text-main);
+  color: var(--text-primary);
   letter-spacing: 1px;
+  text-transform: none !important;
+  line-height: 1;
+  /* Fixed min-width prevents layout shift when switching 'teno' <-> 'TeNo' */
+  min-width: 4ch;
+  display: inline-block;
+}
+
+/* $_ prompt prefix — shown in both modes, styled per theme */
+.brand-logo-text::before {
+  content: "$_ ";
+  color: var(--text-muted);
 }
 
 .topbar-actions {
@@ -161,19 +180,23 @@ body {
 
 .topbar-action-btn {
   background: transparent;
-  border: 1px solid #444;
-  color: #888;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   font: inherit;
   font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none !important;
 }
 
 .topbar-action-btn:hover {
-  color: #000;
-  background: #fff;
-  border-color: #fff;
+  color: var(--bg-app);
+  background: var(--text-primary);
+  border-color: var(--text-primary);
 }
 
 .auth-page {
@@ -190,10 +213,7 @@ body {
   padding: 1rem;
 }
 
-.brand h1::before {
-  content: "$_ ";
-  color: #888;
-}
+
 
 .brand-logo {
   color: var(--color-text-main);
@@ -232,9 +252,10 @@ body {
 }
 
 .top-nav button.active {
-  color: var(--text-primary);
-  background-color: var(--bg-surface);
-  border: 1px var(--border-style) var(--border-color);
+  color: var(--active-tab-text, var(--text-primary));
+  background-color: var(--active-tab-bg, var(--bg-surface));
+  border: 1px var(--border-style) var(--active-tab-bg, var(--border-color));
+  font-weight: 700;
 }
 
 /* Swipe Sliders Wrapper Layouts */
@@ -1342,7 +1363,7 @@ button.danger:hover {
   font-size: 3rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -1350,18 +1371,24 @@ button.danger:hover {
 }
 .digital-clock::before {
   content: "[";
-  color: #555;
+  color: var(--text-muted);
   margin-right: 8px;
 }
 .digital-clock::after {
   content: "]";
-  color: #555;
+  color: var(--text-muted);
   margin-left: 8px;
+}
+
+/* Hide bracket decorations in Modern mode */
+[data-style="modern"] .digital-clock::before,
+[data-style="modern"] .digital-clock::after {
+  content: none;
 }
 
 .digital-clock sub {
   font-size: 1.2rem;
-  color: #888;
+  color: var(--text-muted);
 }
 
 .timer-action-area {
@@ -1384,7 +1411,8 @@ button.danger:hover {
   display: flex;
   align-items: center;
   background-color: transparent;
-  border: 1px solid #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
   overflow: hidden;
 }
 
@@ -1396,7 +1424,7 @@ button.danger:hover {
   text-align: center;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   border-bottom: none;
 }
 
@@ -1426,18 +1454,18 @@ button.danger:hover {
   background: transparent;
   border: none;
   padding: 12px 10px;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   transition: 0s;
 }
 .arrow-btn:hover {
-  background: #fff;
-  color: #000;
+  background: var(--text-primary);
+  color: var(--bg-app);
 }
 
 .min-label {
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -1449,4 +1477,74 @@ button.danger:hover {
 }
 .timer-controls button {
   flex: 1;
+}
+
+/* ============================================================
+   MODERN MODE — Typography & Capitalization Polish
+   ============================================================ */
+
+/* Upgrade font weight for buttons and headings in Modern mode */
+[data-style="modern"] button,
+[data-style="modern"] h1,
+[data-style="modern"] h2,
+[data-style="modern"] h3,
+[data-style="modern"] h4 {
+  font-weight: 600;
+}
+
+/* Settings page: force sentence-case on key labels and card headings */
+[data-style="modern"] .settings-card h3,
+[data-style="modern"] .settings-list-group h4,
+[data-style="modern"] .settings-kv span,
+[data-style="modern"] .settings-kv strong,
+[data-style="modern"] .settings-stat-box span,
+[data-style="modern"] .settings-feedback,
+[data-style="modern"] .settings-empty {
+  text-transform: none;
+}
+
+/* Sentence-case for nav tabs and topbar buttons in Modern mode */
+[data-style="modern"] .top-nav button,
+[data-style="modern"] .topbar-action-btn {
+  text-transform: none;
+}
+
+/* User-entered content: capitalize first letter in Modern mode.
+   Targets item titles, reminder text, description — keeps Minimal in lowercase. */
+[data-style="modern"] .item-text,
+[data-style="modern"] .item-desc {
+  text-transform: none;
+}
+
+[data-style="modern"] .item-text::first-letter,
+[data-style="modern"] .item-desc::first-letter {
+  text-transform: uppercase;
+}
+
+/* Label chips: sentence-case in Modern */
+[data-style="modern"] .label-chip {
+  text-transform: none;
+}
+[data-style="modern"] .label-chip::first-letter {
+  text-transform: uppercase;
+}
+
+/* Section titles */
+[data-style="modern"] .section-title,
+[data-style="modern"] .label-section-title,
+[data-style="modern"] .tab-title {
+  text-transform: none;
+}
+
+/* Ensure Settings card border-radius adapts to Modern */
+[data-style="modern"] .settings-card,
+[data-style="modern"] .settings-stat-box,
+[data-style="modern"] .settings-list-group {
+  border-radius: var(--border-radius);
+}
+
+/* Timer card: match border-radius in Modern */
+[data-style="modern"] .timer-card,
+[data-style="modern"] .timer-action-area {
+  border-radius: var(--border-radius);
 }
