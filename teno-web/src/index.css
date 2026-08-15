@@ -1,37 +1,118 @@
-/* Hacker / Console Aesthetic */
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Base configuration and layout variables */
 :root {
-  --color-bg-main: #000000; 
-  --color-bg-card: #000000; 
-  --color-bg-hover: #ffffff;
-  --color-border: #333333;
   --link-card-width: 240px;
   --terminal-height: clamp(190px, 30vh, 50vh);
   
-  --color-text-main: #ffffff;
-  --color-text-muted: #888888;
-  
   --color-accent: #ffffff; 
-  --color-danger: #ffffff;
-  --color-success: #ffffff;
-  
-  --radius: 0px;
-  --shadow: none;
+  --color-danger: #ef4444;
+  --color-success: #22c55e;
+
+  /* Aliasing old variables to new tokens for backwards compatibility until refactor */
+  --color-bg-main: var(--bg-app);
+  --color-bg-card: var(--bg-surface);
+  --color-bg-hover: var(--bg-surface-hover);
+  --color-text-main: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border-color);
+  --radius: var(--border-radius);
+  --shadow: var(--shadow-card);
+}
+
+/* Default Theme Fallback (if no data attributes are set) */
+:root {
+  --bg-app: #000000;
+  --bg-surface: #000000;
+  --bg-surface-hover: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --border-color: #333333;
+  --border-radius: 0px;
+  --border-style: solid;
+  --font-main: 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --text-transform: lowercase;
+  --shadow-card: none;
+}
+
+/* 1. Dark Minimal (Console/Hacker) */
+[data-theme="dark"][data-style="minimal"] {
+  --bg-app: #000000;
+  --bg-surface: #000000;
+  --bg-surface-hover: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --border-color: #333333;
+  --border-radius: 0px;
+  --border-style: solid;
+  --font-main: 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --text-transform: lowercase;
+  --shadow-card: none;
+}
+
+/* 2. Light Minimal */
+[data-theme="light"][data-style="minimal"] {
+  --bg-app: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #000000;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-muted: #666666;
+  --border-color: #cccccc;
+  --border-radius: 0px;
+  --border-style: solid;
+  --font-main: 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --text-transform: lowercase;
+  --shadow-card: none;
+}
+
+/* 3. Dark Modern */
+[data-theme="dark"][data-style="modern"] {
+  --bg-app: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-surface-hover: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --border-radius: 12px;
+  --border-style: solid;
+  --font-main: 'Inter', 'Roboto', sans-serif;
+  --text-transform: none;
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* 4. Light Modern */
+[data-theme="light"][data-style="modern"] {
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --border-radius: 12px;
+  --border-style: solid;
+  --font-main: 'Inter', 'Roboto', sans-serif;
+  --text-transform: none;
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  text-transform: lowercase; /* Hacker strictly lowercase visual */
+  text-transform: var(--text-transform);
 }
 
 body {
-  font-family: 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-family: var(--font-main);
   font-size: 16.5px;
-  background-color: var(--color-bg-main);
-  color: var(--color-text-main);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   width: 100%;
   height: 100vh;
   overflow: hidden;
