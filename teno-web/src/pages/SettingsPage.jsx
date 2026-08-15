@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth'
 import { auth } from '../firebase'
+import { useTheme } from '../ThemeContext'
 
 const normalizeLabel = (value) => (value || '').trim().toLowerCase()
 const getDisplayName = (item) => item.nickname || item.title || item.url || 'untitled'
@@ -32,6 +33,39 @@ export default function SettingsPage({
   const [passwordError, setPasswordError] = useState('')
   const [isSavingPassword, setIsSavingPassword] = useState(false)
   const allItems = [...savedLinks, ...cartItems]
+  
+  const { theme, styleMode, setTheme, setStyleMode } = useTheme()
+
+  const getToggleContainerStyle = () => ({
+    display: 'flex',
+    gap: styleMode === 'modern' ? '4px' : '0',
+    backgroundColor: styleMode === 'modern' ? 'var(--bg-surface-hover)' : 'transparent',
+    padding: styleMode === 'modern' ? '4px' : '0',
+    borderRadius: styleMode === 'modern' ? '24px' : '0',
+    border: styleMode === 'minimal' ? '1px solid var(--border-color)' : 'none',
+    width: '100%',
+    overflow: 'hidden'
+  });
+
+  const getToggleBtnStyle = (isActive, isLast = false) => ({
+    flex: 1,
+    padding: '8px 16px',
+    border: 'none',
+    borderRight: styleMode === 'minimal' && !isLast ? '1px solid var(--border-color)' : 'none',
+    backgroundColor: isActive 
+      ? (styleMode === 'modern' ? 'var(--bg-surface)' : 'var(--text-primary)') 
+      : 'transparent',
+    color: isActive 
+      ? (styleMode === 'modern' ? 'var(--text-primary)' : 'var(--bg-app)') 
+      : 'var(--text-muted)',
+    borderRadius: styleMode === 'modern' ? '20px' : '0',
+    cursor: 'pointer',
+    fontWeight: isActive ? '600' : '400',
+    transition: 'all 0.2s ease',
+    boxShadow: isActive && styleMode === 'modern' ? 'var(--shadow-card)' : 'none',
+    fontFamily: 'inherit',
+    fontSize: '0.9rem'
+  });
 
   const labelStats = allItems.reduce((accumulator, item) => {
     const label = normalizeLabel(item.label)
@@ -142,6 +176,50 @@ export default function SettingsPage({
       <main className="settings-page">
         <div className="settings-shell">
         <section className="settings-grid">
+          <article className="settings-card">
+            <h3>appearance</h3>
+            <div className="settings-kv" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px', borderBottom: 'none' }}>
+              <div style={{ width: '100%' }}>
+                <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>theme</span>
+                <div style={getToggleContainerStyle()}>
+                  <button
+                    type="button"
+                    style={getToggleBtnStyle(theme === 'dark')}
+                    onClick={() => setTheme('dark')}
+                  >
+                    dark
+                  </button>
+                  <button
+                    type="button"
+                    style={getToggleBtnStyle(theme === 'light', true)}
+                    onClick={() => setTheme('light')}
+                  >
+                    light
+                  </button>
+                </div>
+              </div>
+              <div style={{ width: '100%' }}>
+                <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>style mode</span>
+                <div style={getToggleContainerStyle()}>
+                  <button
+                    type="button"
+                    style={getToggleBtnStyle(styleMode === 'minimal')}
+                    onClick={() => setStyleMode('minimal')}
+                  >
+                    minimalist (terminal)
+                  </button>
+                  <button
+                    type="button"
+                    style={getToggleBtnStyle(styleMode === 'modern', true)}
+                    onClick={() => setStyleMode('modern')}
+                  >
+                    modern (sleek)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
           <article className="settings-card">
             <h3>account</h3>
             <div className="settings-kv">
