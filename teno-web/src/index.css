@@ -1498,47 +1498,88 @@ button.danger:hover {
   font-weight: 600;
 }
 
-/* Settings page: force sentence-case on key labels and card headings */
+/*
+ * SENTENCE CASE — ALL PAGES IN MODERN MODE
+ * Strategy: force everything to lowercase, then lift the ::first-letter to uppercase.
+ * ::first-letter only works on block/inline-block elements, so we target every
+ * text-bearing element type across the whole app.
+ */
+[data-style="modern"] h1,
+[data-style="modern"] h2,
+[data-style="modern"] h3,
+[data-style="modern"] h4,
+[data-style="modern"] h5,
+[data-style="modern"] h6,
+[data-style="modern"] p,
+[data-style="modern"] button,
+[data-style="modern"] label,
+[data-style="modern"] .tab-title,
+[data-style="modern"] .item-text,
+[data-style="modern"] .item-desc,
+[data-style="modern"] .label-chip,
+[data-style="modern"] .section-title,
+[data-style="modern"] .label-section-title,
 [data-style="modern"] .settings-card h3,
 [data-style="modern"] .settings-list-group h4,
 [data-style="modern"] .settings-kv span,
 [data-style="modern"] .settings-kv strong,
 [data-style="modern"] .settings-stat-box span,
 [data-style="modern"] .settings-feedback,
-[data-style="modern"] .settings-empty {
-  text-transform: none;
-}
-
-/* Sentence-case for nav tabs and topbar buttons in Modern mode */
+[data-style="modern"] .settings-empty,
+[data-style="modern"] .settings-list-row span,
+[data-style="modern"] .settings-password-trigger,
+[data-style="modern"] .topbar-action-btn,
 [data-style="modern"] .top-nav button,
-[data-style="modern"] .topbar-action-btn {
-  text-transform: none;
+[data-style="modern"] .toggle-form-btn,
+[data-style="modern"] .terminal-reopen-bar,
+[data-style="modern"] .confirm-modal-message,
+[data-style="modern"] .section-empty,
+[data-style="modern"] .min-label {
+  text-transform: lowercase;
 }
 
-/* User-entered content: capitalize first letter in Modern mode.
-   Targets item titles, reminder text, description — keeps Minimal in lowercase. */
-[data-style="modern"] .item-text,
-[data-style="modern"] .item-desc {
-  text-transform: none;
-}
-
+[data-style="modern"] h1::first-letter,
+[data-style="modern"] h2::first-letter,
+[data-style="modern"] h3::first-letter,
+[data-style="modern"] h4::first-letter,
+[data-style="modern"] h5::first-letter,
+[data-style="modern"] h6::first-letter,
+[data-style="modern"] p::first-letter,
+[data-style="modern"] button::first-letter,
+[data-style="modern"] label::first-letter,
+[data-style="modern"] .tab-title::first-letter,
 [data-style="modern"] .item-text::first-letter,
-[data-style="modern"] .item-desc::first-letter {
+[data-style="modern"] .item-desc::first-letter,
+[data-style="modern"] .label-chip::first-letter,
+[data-style="modern"] .section-title::first-letter,
+[data-style="modern"] .label-section-title::first-letter,
+[data-style="modern"] .settings-card h3::first-letter,
+[data-style="modern"] .settings-list-group h4::first-letter,
+[data-style="modern"] .settings-kv span::first-letter,
+[data-style="modern"] .settings-kv strong::first-letter,
+[data-style="modern"] .settings-stat-box span::first-letter,
+[data-style="modern"] .settings-feedback::first-letter,
+[data-style="modern"] .settings-empty::first-letter,
+[data-style="modern"] .settings-list-row span::first-letter,
+[data-style="modern"] .settings-password-trigger::first-letter,
+[data-style="modern"] .topbar-action-btn::first-letter,
+[data-style="modern"] .top-nav button::first-letter,
+[data-style="modern"] .toggle-form-btn::first-letter,
+[data-style="modern"] .terminal-reopen-bar::first-letter,
+[data-style="modern"] .confirm-modal-message::first-letter,
+[data-style="modern"] .section-empty::first-letter,
+[data-style="modern"] .min-label::first-letter {
   text-transform: uppercase;
 }
 
-/* Label chips: sentence-case in Modern */
-[data-style="modern"] .label-chip {
-  text-transform: none;
-}
-[data-style="modern"] .label-chip::first-letter {
-  text-transform: uppercase;
+/* Logo: never sentence-cased — always exact "TeNo" or "teno" */
+[data-style="modern"] .brand-logo-text {
+  text-transform: none !important;
 }
 
-/* Section titles */
-[data-style="modern"] .section-title,
-[data-style="modern"] .label-section-title,
-[data-style="modern"] .tab-title {
+/* Inputs and textareas: user types freely, no forced case */
+[data-style="modern"] input,
+[data-style="modern"] textarea {
   text-transform: none;
 }
 
@@ -1554,6 +1595,7 @@ button.danger:hover {
 [data-style="modern"] .timer-action-area {
   border-radius: var(--border-radius);
 }
+
 
 /* ============================================================
    CONFIRM MODAL — Brutalist (Minimal) + Glassmorphism (Modern)
