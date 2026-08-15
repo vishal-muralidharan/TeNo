@@ -106,6 +106,7 @@
   margin: 0;
   padding: 0;
   text-transform: var(--text-transform);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, border-radius 0.2s ease, box-shadow 0.2s ease;
 }
 
 body {
@@ -129,9 +130,9 @@ body {
 
 /* Header */
 .app-header {
-  background-color: var(--color-bg-main);
+  background-color: var(--bg-app);
   padding: 14px 16px 16px;
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px var(--border-style) var(--border-color);
   display: flex;
   align-items: center;
   min-height: 74px;
@@ -203,8 +204,8 @@ body {
 .top-nav {
   display: flex;
   justify-content: space-around;
-  background-color: var(--color-bg-main);
-  border-bottom: 1px solid var(--color-border); 
+  background-color: var(--bg-app);
+  border-bottom: 1px var(--border-style) var(--border-color); 
   padding: 4px 6px;
   gap: 2px;
 }
@@ -212,7 +213,7 @@ body {
 .top-nav button {
   background: none;
   border: 1px solid transparent;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -221,19 +222,19 @@ body {
   flex: 1;
   align-items: center;
   justify-content: center;
-  transition: none; /* remove smooth transition */
+  border-radius: var(--border-radius);
 }
 
 .top-nav button:hover {
-  background-color: var(--color-bg-hover);
-  color: #000;
-  border-color: #fff;
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
 .top-nav button.active {
-  color: #000;
-  background-color: #fff;
-  border: 1px solid #fff;
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  border: 1px var(--border-style) var(--border-color);
 }
 
 /* Swipe Sliders Wrapper Layouts */
@@ -614,20 +615,21 @@ button.danger:hover {
   align-items: flex-start;
   justify-content: space-between;
   flex-direction: column;
-  background-color: #080808;
+  background-color: var(--bg-surface);
   padding: 10px 10px;
   min-height: 110px;
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  border-radius: 0;
-  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  border: 1px var(--border-style) var(--border-color);
+  box-shadow: var(--shadow-card);
   gap: 8px;
 }
 
 .list-item:hover {
-  border-color: #fff;
-  background-color: #101010;
+  border-color: var(--text-primary);
+  background-color: var(--bg-surface-hover);
 }
 
 .item-content {
