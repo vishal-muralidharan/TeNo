@@ -167,7 +167,7 @@ export default function SettingsPage({
     <div className="app-layout settings-layout">
       <header className="app-header">
         <div className="brand">
-          <h1 className="brand-logo-text">{ui.logo}</h1>
+          <h1 className="brand-logo-text" onClick={() => navigate('/app')} style={{ cursor: 'pointer' }}>{ui.logo}</h1>
           <div className="topbar-actions">
               <button type="button" className="topbar-action-btn" onClick={() => navigate('/app')}>
                 {ui.icons.back} {ui.nav.back}

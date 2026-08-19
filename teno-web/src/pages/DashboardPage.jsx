@@ -107,7 +107,7 @@ export default function DashboardPage({
     >
       <header className="app-header">
         <div className="brand">
-          <h1 className="brand-logo-text" onClick={() => navigate('/app')} style={{ cursor: 'pointer' }}>
+          <h1 className="brand-logo-text" onClick={() => { navigate('/app'); setActiveTab(0); }} style={{ cursor: 'pointer' }}>
             {ui.logo}
           </h1>
           <div className="topbar-actions">

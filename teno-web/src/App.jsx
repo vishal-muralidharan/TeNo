@@ -46,7 +46,7 @@ const formatTimerMs = (ms) => {
 }
 
 function App() {
-  const { isThemeReady } = useTheme()
+  const { isThemeReady, styleModeChanging, styleMode } = useTheme()
   const [user, setUser] = useState(null)
   const [loadingAuth, setLoadingAuth] = useState(true)
   const [minLoadTimePending, setMinLoadTimePending] = useState(true)
@@ -376,7 +376,7 @@ function App() {
 
   // We no longer return a simple loading div, we rely on our global LoadingScreen
   // which stays mounted until the theme is ready and the minimum load time passes.
-  const isReadyToRender = isThemeReady && !loadingAuth && !minLoadTimePending
+  const isReadyToRender = isThemeReady && !loadingAuth && !minLoadTimePending && !styleModeChanging
 
   return (
     <>

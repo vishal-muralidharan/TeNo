@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -13,6 +13,8 @@ export const ThemeProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isThemeReady, setIsThemeReady] = useState(false);
+  const [styleModeChanging, setStyleModeChanging] = useState(false);
+  const styleModeChangeTimerRef = useRef(null);
 
   // Apply theme attributes to document
   const applyTheme = (newTheme, newStyleMode) => {
@@ -38,6 +40,10 @@ export const ThemeProvider = ({ children }) => {
   };
 
   const setStyleMode = async (newStyleMode) => {
+    // Show loading screen for style mode transitions
+    if (styleModeChangeTimerRef.current) clearTimeout(styleModeChangeTimerRef.current);
+    setStyleModeChanging(true);
+
     setStyleModeState(newStyleMode);
     localStorage.setItem('styleMode', newStyleMode);
     applyTheme(theme, newStyleMode);
@@ -51,6 +57,11 @@ export const ThemeProvider = ({ children }) => {
         console.error("Error saving styleMode to Firestore:", error);
       }
     }
+
+    // Keep loading screen up long enough for new styles to settle
+    styleModeChangeTimerRef.current = setTimeout(() => {
+      setStyleModeChanging(false);
+    }, 1800);
   };
 
   useEffect(() => {
@@ -104,7 +115,7 @@ export const ThemeProvider = ({ children }) => {
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, styleMode, setTheme, setStyleMode, loading, isThemeReady }}>
+    <ThemeContext.Provider value={{ theme, styleMode, setTheme, setStyleMode, loading, isThemeReady, styleModeChanging }}>
       {children}
     </ThemeContext.Provider>
   );

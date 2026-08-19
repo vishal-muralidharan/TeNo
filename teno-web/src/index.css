@@ -464,9 +464,15 @@ textarea {
 [data-style="modern"] textarea {
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  background-color: var(--bg-surface);
+  background-color: var(--bg-app);
   padding: 8px 12px;
   caret-color: var(--color-text-main);
+}
+
+/* Inside modals in modern, inputs sit on bg-surface — push them to bg-app for contrast */
+[data-style="modern"] .custom-modal input[type="text"],
+[data-style="modern"] .custom-modal textarea {
+  background-color: var(--bg-app);
 }
 
 [data-style="modern"] input:focus,
@@ -872,8 +878,9 @@ button.danger:hover {
   border-bottom: none;
 }
 
+/* Minimalist: no hover on dropdown buttons */
 .dropdown-menu button:hover {
-  background-color: var(--bg-surface-hover);
+  background-color: transparent;
   color: var(--text-primary);
 }
 
@@ -882,11 +889,11 @@ button.danger:hover {
 }
 
 .dropdown-menu button.danger:hover {
-  background-color: var(--bg-surface-hover);
-  color: var(--color-danger);
+  background-color: transparent;
+  color: var(--color-text-muted);
 }
 
-/* Modern mode: rounded dropdown */
+/* Modern mode: rounded dropdown + hover */
 [data-style="modern"] .dropdown-menu {
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-card);
@@ -896,6 +903,16 @@ button.danger:hover {
 
 [data-style="modern"] .dropdown-menu button {
   border-radius: 0;
+}
+
+[data-style="modern"] .dropdown-menu button:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+[data-style="modern"] .dropdown-menu button.danger:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--color-danger);
 }
 
 /* Global Terminal */
@@ -1623,9 +1640,15 @@ button.danger:hover {
   font-weight: 600;
 }
 
-/* All buttons get border-radius in Modern mode — covers timer, change password, etc. */
+/* All buttons get border-radius + sentence-case capitalization in Modern mode */
 [data-style="modern"] button {
   border-radius: var(--border-radius);
+  text-transform: capitalize;
+}
+
+/* Placeholder text: capitalize each word in Modern */
+[data-style="modern"] ::placeholder {
+  text-transform: capitalize;
 }
 
 /* settings-wide-card (click stats section) also gets rounded in Modern */
@@ -1706,9 +1729,18 @@ button.danger:hover {
 
 /* User-typed content: always display as-is in modern */
 [data-style="modern"] .item-text,
-[data-style="modern"] .item-desc,
-[data-style="modern"] .label-chip {
+[data-style="modern"] .item-desc {
   text-transform: none;
+}
+
+/* Label chips: sentence-case in modern to match section titles */
+[data-style="modern"] .label-chip {
+  display: inline-block;
+  text-transform: lowercase;
+}
+
+[data-style="modern"] .label-chip::first-letter {
+  text-transform: uppercase;
 }
 
 /* Logo: never sentence-cased — always exact "TeNo" or "teno" */
