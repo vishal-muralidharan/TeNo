@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
-import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
+import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy, GripVertical } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 
@@ -30,6 +30,11 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [labelOrder, setLabelOrder] = useState([]);
   const lastOpenSignal = useRef(openFormSignal);
   const nicknameInputRef = useRef(null);
+
+  // Drag & drop state (modern mode only)
+  const [dragOverId, setDragOverId] = useState(null);   // id of item being hovered
+  const [dragOverPos, setDragOverPos] = useState(null);  // 'before' | 'after'
+  const dragSourceRef = useRef(null);  // { id, sectionKey, globalIndex }
 
   const handleMoveSection = async (e, sectionLabel, direction) => {
     e.preventDefault();
@@ -402,6 +407,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
   };
 
+  const isModern = styleMode === 'modern';
+
   const renderLinkCells = (sectionLinks, startIndex = 0, showLabelChip = true, sectionKey = '', gridClassName = '', gridStyle = {}) => {
     if (sectionLinks.length === 0) {
       return <p className="section-empty">No items yet</p>;
@@ -416,9 +423,91 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           const nextEntry = globalIndex < flattenedDisplay.length - 1 ? flattenedDisplay[globalIndex + 1] : null;
           const canMoveUp = globalIndex > 0 && previousEntry && previousEntry.sectionKey === sectionKey;
           const canMoveDown = globalIndex < flattenedDisplay.length - 1 && nextEntry && nextEntry.sectionKey === sectionKey;
+
+          // Drag & drop handlers (modern only)
+          const dragHandlers = isModern ? {
+            draggable: true,
+            onDragStart: (e) => {
+              dragSourceRef.current = { id: link.id, sectionKey, globalIndex };
+              e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/plain', link.id);
+              // slight opacity after drag starts
+              setTimeout(() => e.target.classList.add('dragging'), 0);
+            },
+            onDragEnd: (e) => {
+              e.target.classList.remove('dragging');
+              setDragOverId(null);
+              setDragOverPos(null);
+              dragSourceRef.current = null;
+            },
+            onDragOver: (e) => {
+              e.preventDefault();
+              if (!dragSourceRef.current || dragSourceRef.current.id === link.id) return;
+              if (dragSourceRef.current.sectionKey !== sectionKey) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const midY = rect.top + rect.height / 2;
+              setDragOverId(link.id);
+              setDragOverPos(e.clientY < midY ? 'before' : 'after');
+            },
+            onDragLeave: (e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) {
+                setDragOverId(null);
+                setDragOverPos(null);
+              }
+            },
+            onDrop: async (e) => {
+              e.preventDefault();
+              const src = dragSourceRef.current;
+              if (!src || src.id === link.id || src.sectionKey !== sectionKey) return;
+
+              const targetGlobalIndex = globalIndex;
+              const srcGlobalIndex   = src.globalIndex;
+
+              // Determine effective target position
+              let insertBefore = dragOverPos === 'before';
+              // Walk from src toward target, swapping one step at a time
+              const direction = targetGlobalIndex > srcGlobalIndex ? 1 : -1;
+              let currentIdx = srcGlobalIndex;
+              while (currentIdx !== targetGlobalIndex) {
+                const nextIdx = currentIdx + direction;
+                const curEntry = flattenedDisplay[currentIdx];
+                const nxtEntry = flattenedDisplay[nextIdx];
+                if (!curEntry || !nxtEntry) break;
+                if (curEntry.sectionKey !== sectionKey || nxtEntry.sectionKey !== sectionKey) break;
+                const curLink = curEntry.link;
+                const nxtLink = nxtEntry.link;
+                if (curLink.createdAt && nxtLink.createdAt) {
+                  await updateDoc(doc(db, 'users', user.uid, collectionName, curLink.id), { createdAt: nxtLink.createdAt });
+                  await updateDoc(doc(db, 'users', user.uid, collectionName, nxtLink.id), { createdAt: curLink.createdAt });
+                }
+                currentIdx = nextIdx;
+              }
+
+              setDragOverId(null);
+              setDragOverPos(null);
+              dragSourceRef.current = null;
+            },
+          } : {};
+
+          const isDragTarget = dragOverId === link.id;
+
           return (
             <React.Fragment key={link.id}>
-              <div className="list-item" onClick={(e) => handleOpen(e, link)} style={{ cursor: 'pointer' }}>
+              <div
+                className={`list-item${isDragTarget && dragOverPos === 'before' ? ' drag-over-before' : ''}${isDragTarget && dragOverPos === 'after' ? ' drag-over-after' : ''}`}
+                onClick={(e) => handleOpen(e, link)}
+                style={{ cursor: isModern ? 'default' : 'pointer' }}
+                {...dragHandlers}
+              >
+                {isModern && (
+                  <span
+                    className="drag-handle"
+                    onClick={(e) => e.stopPropagation()}
+                    title="Drag to reorder"
+                  >
+                    <GripVertical size={14} />
+                  </span>
+                )}
                 <div className="item-content">
                   <img
                     src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.domain}&sz=64`}
@@ -432,7 +521,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
                   <div className="item-text-stack">
                     <span className="item-text">
-                      {globalIndex < 9 && <span style={{ opacity: 0.5, marginRight: '6px', fontSize: '0.9em' }}>[{globalIndex + 1}]</span>}
+                      {!isModern && globalIndex < 9 && <span style={{ opacity: 0.5, marginRight: '6px', fontSize: '0.9em' }}>[{globalIndex + 1}]</span>}
                       {link.nickname}
                     </span>
                     {showLabelChip && link.label && <span className="label-chip">{link.label}</span>}
@@ -441,24 +530,26 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                 </div>
 
                 <div className="item-actions">
-                  <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 2px', gap: '0px' }}>
-                    <button
-                      className="icon-btn"
-                      onClick={(e) => handleMoveWithinDisplay(e, globalIndex, -1)}
-                      disabled={!canMoveUp}
-                      style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
-                    >
-                      <ChevronUp size={12} opacity={canMoveUp ? 0.8 : 0.3} />
-                    </button>
-                    <button
-                      className="icon-btn"
-                      onClick={(e) => handleMoveWithinDisplay(e, globalIndex, 1)}
-                      disabled={!canMoveDown}
-                      style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
-                    >
-                      <ChevronDown size={12} opacity={canMoveDown ? 0.8 : 0.3} />
-                    </button>
-                  </div>
+                  {!isModern && (
+                    <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 2px', gap: '0px' }}>
+                      <button
+                        className="icon-btn"
+                        onClick={(e) => handleMoveWithinDisplay(e, globalIndex, -1)}
+                        disabled={!canMoveUp}
+                        style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
+                      >
+                        <ChevronUp size={12} opacity={canMoveUp ? 0.8 : 0.3} />
+                      </button>
+                      <button
+                        className="icon-btn"
+                        onClick={(e) => handleMoveWithinDisplay(e, globalIndex, 1)}
+                        disabled={!canMoveDown}
+                        style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
+                      >
+                        <ChevronDown size={12} opacity={canMoveDown ? 0.8 : 0.3} />
+                      </button>
+                    </div>
+                  )}
 
                   <button
                     className={`icon-btn ${link.isFavorite ? 'favorited' : ''}`}
