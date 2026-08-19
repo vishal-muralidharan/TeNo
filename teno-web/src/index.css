@@ -446,9 +446,33 @@ textarea {
   padding: 4px 0 6px;
   font-family: inherit;
   font-size: 1rem;
-  transition: 0s;
+  transition: border-color 0.2s ease;
   caret-color: var(--color-text-main);
   caret-width: 2px;
+}
+
+/* Modern inputs: boxed style, no underline, native cursor */
+[data-style="modern"] input[type="text"],
+[data-style="modern"] input[type="email"],
+[data-style="modern"] input[type="password"],
+[data-style="modern"] input[type="url"],
+[data-style="modern"] input[type="search"],
+[data-style="modern"] input[type="tel"],
+[data-style="modern"] input[type="number"],
+[data-style="modern"] input.mono-input,
+[data-style="modern"] textarea.meta-input,
+[data-style="modern"] textarea {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-surface);
+  padding: 8px 12px;
+  caret-color: var(--color-text-main);
+}
+
+[data-style="modern"] input:focus,
+[data-style="modern"] textarea:focus {
+  border-color: var(--text-secondary);
+  outline: none;
 }
 
 input,
@@ -470,12 +494,13 @@ textarea {
   overflow: hidden;
 }
 
-.typing-caret-field--show-caret input,
-.typing-caret-field--show-caret textarea {
+/* Minimalist only: blinking underscore caret */
+[data-style="minimal"] .typing-caret-field--show-caret input,
+[data-style="minimal"] .typing-caret-field--show-caret textarea {
   caret-color: transparent;
 }
 
-.typing-caret-field--show-caret::after {
+[data-style="minimal"] .typing-caret-field--show-caret::after {
   content: '_';
   position: absolute;
   left: var(--typing-caret-left, 0px);
@@ -786,13 +811,20 @@ button.danger:hover {
 }
 
 .icon-btn:hover {
-  color: #000;
-  background-color: #fff;
-  border-color: #fff;
+  color: var(--text-primary);
+  background-color: var(--bg-surface-hover);
+  border-color: var(--border-color);
+}
+
+/* Modern mode: subtler icon hover — no heavy fill */
+[data-style="modern"] .icon-btn:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 .favorited {
-  color: #fff !important;
+  color: var(--color-accent) !important;
 }
 
 /* Dropdown Menu */
@@ -800,8 +832,8 @@ button.danger:hover {
   position: absolute;
   right: 0px;
   top: 35px;
-  background-color: #000;
-  border: 1px solid #fff;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
   padding: 0;
   z-index: 60;
   display: flex;
@@ -831,7 +863,7 @@ button.danger:hover {
   width: 100%;
   text-align: left;
   justify-content: flex-start;
-  color: #fff;
+  color: var(--text-primary);
   white-space: nowrap;
   border-radius: 0;
 }
@@ -841,8 +873,8 @@ button.danger:hover {
 }
 
 .dropdown-menu button:hover {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
 }
 
 .dropdown-menu button.danger {
@@ -850,8 +882,20 @@ button.danger:hover {
 }
 
 .dropdown-menu button.danger:hover {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--bg-surface-hover);
+  color: var(--color-danger);
+}
+
+/* Modern mode: rounded dropdown */
+[data-style="modern"] .dropdown-menu {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+[data-style="modern"] .dropdown-menu button {
+  border-radius: 0;
 }
 
 /* Global Terminal */
@@ -1176,9 +1220,9 @@ button.danger:hover {
 }
 
 .custom-modal {
-  background: #000;
+  background: var(--bg-surface);
   padding: 24px 20px;
-  border: 1px solid #fff;
+  border: 1px solid var(--border-color);
   text-align: center;
   width: 280px;
   max-width: 90%;
@@ -1186,14 +1230,26 @@ button.danger:hover {
 
 .custom-modal p {
   margin-bottom: 24px;
-  color: #fff;
+  color: var(--text-primary);
   font-weight: 700;
   font-size: 0.95rem;
 }
 
-.custom-modal p::before {
+/* Minimalist only: sys.warn> prefix */
+[data-style="minimal"] .custom-modal p::before {
   content: "sys.warn> ";
   color: #888;
+}
+
+/* Minimalist only: dashed underline inputs inside modal */
+[data-style="minimal"] .custom-modal input,
+[data-style="minimal"] .custom-modal textarea {
+  border-bottom: 1px dashed var(--color-border);
+}
+
+[data-style="minimal"] .custom-modal input:focus,
+[data-style="minimal"] .custom-modal textarea:focus {
+  border-bottom: 2px solid var(--text-primary);
 }
 
 .modal-actions {
@@ -1212,14 +1268,16 @@ button.danger:hover {
   text-align: left;
 }
 
-.custom-modal input,
-.custom-modal textarea {
-  border-bottom: 1px dashed var(--color-border);
+/* Modern modal: rounded, elevated, softer backdrop */
+[data-style="modern"] .custom-modal-overlay {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
 }
 
-.custom-modal input:focus,
-.custom-modal textarea:focus {
-  border-bottom: 2px solid #fff;
+[data-style="modern"] .custom-modal {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card), 0 20px 60px rgba(0, 0, 0, 0.4);
+  border-color: var(--border-color);
 }
 
 /* Settings Page */
@@ -1593,6 +1651,7 @@ button.danger:hover {
  * ::first-letter only works on block/inline-block elements, so we target every
  * text-bearing element type across the whole app.
  */
+/* Sentence case: UI chrome only — NOT user-typed content like nicknames/descriptions/labels */
 [data-style="modern"] h1,
 [data-style="modern"] h2,
 [data-style="modern"] h3,
@@ -1602,9 +1661,6 @@ button.danger:hover {
 [data-style="modern"] p,
 [data-style="modern"] label,
 [data-style="modern"] .tab-title,
-[data-style="modern"] .item-text,
-[data-style="modern"] .item-desc,
-[data-style="modern"] .label-chip,
 [data-style="modern"] .section-title,
 [data-style="modern"] .label-section-title,
 [data-style="modern"] .settings-card h3,
@@ -1631,9 +1687,6 @@ button.danger:hover {
 [data-style="modern"] p::first-letter,
 [data-style="modern"] label::first-letter,
 [data-style="modern"] .tab-title::first-letter,
-[data-style="modern"] .item-text::first-letter,
-[data-style="modern"] .item-desc::first-letter,
-[data-style="modern"] .label-chip::first-letter,
 [data-style="modern"] .section-title::first-letter,
 [data-style="modern"] .label-section-title::first-letter,
 [data-style="modern"] .settings-card h3::first-letter,
@@ -1649,6 +1702,13 @@ button.danger:hover {
 [data-style="modern"] .section-empty::first-letter,
 [data-style="modern"] .min-label::first-letter {
   text-transform: uppercase;
+}
+
+/* User-typed content: always display as-is in modern */
+[data-style="modern"] .item-text,
+[data-style="modern"] .item-desc,
+[data-style="modern"] .label-chip {
+  text-transform: none;
 }
 
 /* Logo: never sentence-cased — always exact "TeNo" or "teno" */
