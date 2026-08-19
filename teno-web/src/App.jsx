@@ -380,7 +380,7 @@ function App() {
 
   return (
     <>
-      {!isReadyToRender && <LoadingScreen />}
+      {!isReadyToRender && <LoadingScreen styleMode={styleMode} />}
       <div className={`app-content ${isReadyToRender ? 'fade-in' : 'hidden'}`}>
         <BrowserRouter>
           <Routes>

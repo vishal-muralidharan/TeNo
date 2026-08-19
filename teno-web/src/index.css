@@ -1913,7 +1913,7 @@ button.danger:hover {
   opacity: 1;
 }
 
-/* Fullscreen Loader */
+/* Fullscreen Loader — Minimalist */
 .fullscreen-loading {
   position: fixed;
   top: 0;
@@ -1929,7 +1929,7 @@ button.danger:hover {
 
 .loading-pulse {
   color: #fff;
-  font-family: monospace; /* fallback to mono if var not available */
+  font-family: monospace;
   font-size: 1rem;
   letter-spacing: 0.05em;
   animation: pulse 1.5s infinite ease-in-out;
@@ -1939,4 +1939,48 @@ button.danger:hover {
   0% { opacity: 0.3; }
   50% { opacity: 1; }
   100% { opacity: 0.3; }
+}
+
+/* Fullscreen Loader — Modern */
+.fullscreen-loading--modern {
+  background-color: var(--bg-app, #0a0a0a);
+}
+
+.loading-modern-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.loading-modern-logo {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary, #f8fafc);
+  letter-spacing: -0.02em;
+  opacity: 0.9;
+}
+
+.loading-modern-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.loading-modern-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--text-muted, #6b7280);
+  animation: dot-bounce 1.2s infinite ease-in-out;
+}
+
+.loading-modern-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-modern-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-modern-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+  40%           { transform: scale(1.2); opacity: 1; }
 }
