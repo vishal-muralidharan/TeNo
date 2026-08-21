@@ -716,6 +716,7 @@ button.danger:hover {
 }
 
 .list-item {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -732,6 +733,11 @@ button.danger:hover {
   gap: 8px;
 }
 
+/* Modern: extra bottom padding to clear the absolute drag handle */
+[data-style="modern"] .list-item {
+  padding-bottom: 28px;
+}
+
 .list-item:hover {
   border-color: var(--text-primary);
   background-color: var(--bg-surface-hover);
@@ -742,16 +748,19 @@ button.danger:hover {
   background-color: var(--bg-surface);
 }
 
-/* Drag handle — modern only */
+/* Drag handle — modern only, pinned to bottom-left of the card */
 .drag-handle {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
   display: flex;
   align-items: center;
   color: var(--text-muted);
   cursor: grab;
-  padding: 2px 4px 2px 0;
-  flex-shrink: 0;
+  padding: 2px;
   opacity: 0;
   transition: opacity 0.15s ease;
+  z-index: 1;
 }
 
 .list-item:hover .drag-handle {
@@ -767,13 +776,13 @@ button.danger:hover {
   opacity: 0.4;
 }
 
-/* Drop position indicators */
+/* Drop position indicators — sides of the card */
 .list-item.drag-over-before {
-  border-top: 2px solid var(--text-primary);
+  border-left: 3px solid var(--text-primary);
 }
 
 .list-item.drag-over-after {
-  border-bottom: 2px solid var(--text-primary);
+  border-right: 3px solid var(--text-primary);
 }
 
 

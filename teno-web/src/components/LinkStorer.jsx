@@ -32,9 +32,10 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const nicknameInputRef = useRef(null);
 
   // Drag & drop state (modern mode only)
-  const [dragOverId, setDragOverId] = useState(null);   // id of item being hovered
-  const [dragOverPos, setDragOverPos] = useState(null);  // 'before' | 'after'
-  const dragSourceRef = useRef(null);  // { id, sectionKey, globalIndex }
+  const [dragOverId, setDragOverId] = useState(null);   // id of item being hovered — drives visual indicator
+  const [dragOverPos, setDragOverPos] = useState(null);  // 'before' | 'after' — for CSS class only
+  const dragOverPosRef = useRef(null);  // always-current pos — read this in onDrop, not the state closure
+  const dragSourceRef = useRef(null);   // { id, sectionKey } — globalIndex recalculated at drop time
 
   const handleMoveSection = async (e, sectionLabel, direction) => {
     e.preventDefault();
@@ -89,10 +90,17 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // Sort logic combining both createdAt asc + favorites
+      // Sort: favorites first (by favoritedAt asc — starred in order), then regular (by createdAt asc)
       data.sort((a, b) => {
         if (a.isFavorite && !b.isFavorite) return -1;
         if (!a.isFavorite && b.isFavorite) return 1;
+        if (a.isFavorite && b.isFavorite) {
+          // Both favorites: sort by when they were starred (oldest star first = stable order)
+          const favA = a.favoritedAt?.toMillis?.() ?? (a.favoritedAt?.seconds ? a.favoritedAt.seconds * 1000 : 0);
+          const favB = b.favoritedAt?.toMillis?.() ?? (b.favoritedAt?.seconds ? b.favoritedAt.seconds * 1000 : 0);
+          return favA - favB;
+        }
+        // Both regular: sort by createdAt asc (lower = older = top)
         const timeA = a.createdAt?.toMillis?.() ?? (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
         const timeB = b.createdAt?.toMillis?.() ?? (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
         return timeA - timeB;
@@ -227,9 +235,24 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   };
 
   const toggleFavorite = async (id, currentFav) => {
-    await updateDoc(doc(db, 'users', user.uid, collectionName, id), {
-      isFavorite: !currentFav
-    });
+    const isNowFavorite = !currentFav;
+
+    if (isNowFavorite) {
+      // Starring: stamp favoritedAt = now → item goes to END of favorites
+      // (favorites sorted by favoritedAt asc, so newest star = last)
+      await updateDoc(doc(db, 'users', user.uid, collectionName, id), {
+        isFavorite: true,
+        favoritedAt: new Date().toISOString(),
+      });
+    } else {
+      // Unstarring: push createdAt to epoch so item floats to TOP of its label group
+      // (regular links sorted by createdAt asc, lowest = earliest = first)
+      await updateDoc(doc(db, 'users', user.uid, collectionName, id), {
+        isFavorite: false,
+        favoritedAt: null,
+        createdAt: new Date(0).toISOString(), // epoch → top of regular list
+      });
+    }
   };
 
   const requestDelete = (id) => {
@@ -310,6 +333,40 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
   };
 
+  // Normalise any createdAt value to milliseconds for reliable sorting.
+  // Handles: Firestore Timestamp, Firestore-like {seconds, nanoseconds}, ISO string, null.
+  const toMs = (v) => {
+    if (!v) return 0;
+    if (typeof v.toMillis === 'function') return v.toMillis();        // Firestore Timestamp
+    if (typeof v.seconds === 'number') return v.seconds * 1000;       // plain {seconds} object
+    if (typeof v === 'string') return new Date(v).getTime() || 0;     // ISO string
+    if (typeof v === 'number') return v;
+    return 0;
+  };
+
+  /**
+   * Reorder items in a section by stamping every item with a fresh, unique
+   * createdAt ISO string that encodes the desired position.
+   * This avoids all silent-failure cases (null, duplicate, or mixed-type timestamps).
+   *
+   * @param {string} secKey  - sectionKey to operate on
+   * @param {string[]} newIds - item IDs in the desired new order
+   */
+  const performSectionReorder = async (secKey, newIds) => {
+    const base = Date.now();
+    // Space items 1 s apart so there is clear gap for future insertions
+    // newIds[0] gets the oldest timestamp, newIds[last] gets the newest
+    const updates = newIds.map((id, i) => ({
+      id,
+      createdAt: new Date(base - (newIds.length - 1 - i) * 1000).toISOString(),
+    }));
+    await Promise.all(
+      updates.map(({ id, createdAt }) =>
+        updateDoc(doc(db, 'users', user.uid, collectionName, id), { createdAt })
+      )
+    );
+  };
+
   const normalizeLabel = (value) => value.trim().toLowerCase();
 
   const groupedLinks = links.reduce((groups, link) => {
@@ -337,10 +394,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
         }
-
-        const timeA = a.createdAt?.toMillis?.() ?? (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
-        const timeB = b.createdAt?.toMillis?.() ?? (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
-        return timeA - timeB;
+        return toMs(a.createdAt) - toMs(b.createdAt);
       }),
     }))
     .sort((a, b) => {
@@ -396,15 +450,17 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     if (targetIndex < 0 || targetIndex >= flattenedDisplay.length) return;
 
     const currentEntry = flattenedDisplay[currentIndex];
-    const targetEntry = flattenedDisplay[targetIndex];
+    const targetEntry  = flattenedDisplay[targetIndex];
     if (currentEntry.sectionKey !== targetEntry.sectionKey) return;
 
-    const current = currentEntry.link;
-    const target = targetEntry.link;
-    if (current.createdAt && target.createdAt) {
-      await updateDoc(doc(db, 'users', user.uid, collectionName, current.id), { createdAt: target.createdAt });
-      await updateDoc(doc(db, 'users', user.uid, collectionName, target.id), { createdAt: current.createdAt });
-    }
+    const secKey  = currentEntry.sectionKey;
+    const secItems = flattenedDisplay.filter(e => e.sectionKey === secKey).map(e => e.link.id);
+    // Swap the two positions in the section's id array
+    const localIdx = secItems.indexOf(currentEntry.link.id);
+    const localTgt = secItems.indexOf(targetEntry.link.id);
+    if (localIdx === -1 || localTgt === -1) return;
+    [secItems[localIdx], secItems[localTgt]] = [secItems[localTgt], secItems[localIdx]];
+    await performSectionReorder(secKey, secItems);
   };
 
   const isModern = styleMode === 'modern';
@@ -428,16 +484,17 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           const dragHandlers = isModern ? {
             draggable: true,
             onDragStart: (e) => {
-              dragSourceRef.current = { id: link.id, sectionKey, globalIndex };
+              dragSourceRef.current = { id: link.id, sectionKey }; // no globalIndex here — recalc at drop
+              dragOverPosRef.current = null;
               e.dataTransfer.effectAllowed = 'move';
               e.dataTransfer.setData('text/plain', link.id);
-              // slight opacity after drag starts
               setTimeout(() => e.target.classList.add('dragging'), 0);
             },
             onDragEnd: (e) => {
               e.target.classList.remove('dragging');
               setDragOverId(null);
               setDragOverPos(null);
+              dragOverPosRef.current = null;
               dragSourceRef.current = null;
             },
             onDragOver: (e) => {
@@ -446,13 +503,16 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
               if (dragSourceRef.current.sectionKey !== sectionKey) return;
               const rect = e.currentTarget.getBoundingClientRect();
               const midY = rect.top + rect.height / 2;
+              const pos = e.clientY < midY ? 'before' : 'after';
+              dragOverPosRef.current = pos;  // always-current, no closure staleness
               setDragOverId(link.id);
-              setDragOverPos(e.clientY < midY ? 'before' : 'after');
+              setDragOverPos(pos);
             },
             onDragLeave: (e) => {
               if (!e.currentTarget.contains(e.relatedTarget)) {
                 setDragOverId(null);
                 setDragOverPos(null);
+                // Don't reset dragOverPosRef — onDrop fires after dragLeave in some browsers
               }
             },
             onDrop: async (e) => {
@@ -460,31 +520,38 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
               const src = dragSourceRef.current;
               if (!src || src.id === link.id || src.sectionKey !== sectionKey) return;
 
-              const targetGlobalIndex = globalIndex;
-              const srcGlobalIndex   = src.globalIndex;
+              const pos = dragOverPosRef.current;
 
-              // Determine effective target position
-              let insertBefore = dragOverPos === 'before';
-              // Walk from src toward target, swapping one step at a time
-              const direction = targetGlobalIndex > srcGlobalIndex ? 1 : -1;
-              let currentIdx = srcGlobalIndex;
-              while (currentIdx !== targetGlobalIndex) {
-                const nextIdx = currentIdx + direction;
-                const curEntry = flattenedDisplay[currentIdx];
-                const nxtEntry = flattenedDisplay[nextIdx];
-                if (!curEntry || !nxtEntry) break;
-                if (curEntry.sectionKey !== sectionKey || nxtEntry.sectionKey !== sectionKey) break;
-                const curLink = curEntry.link;
-                const nxtLink = nxtEntry.link;
-                if (curLink.createdAt && nxtLink.createdAt) {
-                  await updateDoc(doc(db, 'users', user.uid, collectionName, curLink.id), { createdAt: nxtLink.createdAt });
-                  await updateDoc(doc(db, 'users', user.uid, collectionName, nxtLink.id), { createdAt: curLink.createdAt });
-                }
-                currentIdx = nextIdx;
+              // Build the section's current ordered id list
+              const secEntries = flattenedDisplay.filter(entry => entry.sectionKey === sectionKey);
+              const srcSectionIdx = secEntries.findIndex(entry => entry.link.id === src.id);
+              const tgtSectionIdx = secEntries.findIndex(entry => entry.link.id === link.id);
+              if (srcSectionIdx === -1 || tgtSectionIdx === -1) return;
+
+              // Compute insert position in the section list
+              // "before" = insert at tgt index, "after" = insert after tgt index
+              let insertAt = pos === 'after' ? tgtSectionIdx + 1 : tgtSectionIdx;
+              // After removing src from the list, indices shift if src was before tgt
+              if (srcSectionIdx < tgtSectionIdx) insertAt--;
+
+              // Build new order: remove src then insert at computed position
+              const ids = secEntries.map(entry => entry.link.id);
+              ids.splice(srcSectionIdx, 1);
+              ids.splice(insertAt, 0, src.id);
+
+              // No-op guard: check if order actually changed
+              const unchanged = ids.every((id, i) => id === secEntries[i]?.link.id);
+              if (unchanged) {
+                setDragOverId(null); setDragOverPos(null);
+                dragOverPosRef.current = null; dragSourceRef.current = null;
+                return;
               }
+
+              await performSectionReorder(sectionKey, ids);
 
               setDragOverId(null);
               setDragOverPos(null);
+              dragOverPosRef.current = null;
               dragSourceRef.current = null;
             },
           } : {};
