@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
@@ -36,6 +36,9 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [dragOverPos, setDragOverPos] = useState(null);  // 'before' | 'after' — for CSS class only
   const dragOverPosRef = useRef(null);  // always-current pos — read this in onDrop, not the state closure
   const dragSourceRef = useRef(null);   // { id, sectionKey } — globalIndex recalculated at drop time
+  
+  // FLIP animation state
+  const prevRectsRef = useRef({});
 
   const handleMoveSection = async (e, sectionLabel, direction) => {
     e.preventDefault();
@@ -465,6 +468,74 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   const isModern = styleMode === 'modern';
 
+  useLayoutEffect(() => {
+    const elements = Array.from(document.querySelectorAll('.list-item[data-link-id]'));
+    const currentRects = {};
+
+    // 0. Crucial fix: Clear any mid-flight animations BEFORE reading the new bounding rect.
+    // If a previous FLIP animation was still running, getBoundingClientRect would read the 
+    // visual position (with transform) rather than the new natural DOM position, causing items to fly away.
+    elements.forEach(el => {
+      el.style.transition = 'none';
+      el.style.transform = 'none';
+    });
+
+    // 1. Snapshot new natural positions
+    elements.forEach(el => {
+      const id = el.getAttribute('data-link-id');
+      currentRects[id] = el.getBoundingClientRect();
+    });
+
+    // 2. Invert (apply transform to move element back to old position instantly)
+    elements.forEach(el => {
+      const id = el.getAttribute('data-link-id');
+      const prevRect = prevRectsRef.current[id];
+      const currentRect = currentRects[id];
+
+      if (prevRect && !el.classList.contains('dragging')) {
+        const deltaY = prevRect.top - currentRect.top;
+        const deltaX = prevRect.left - currentRect.left;
+
+        if (deltaX !== 0 || deltaY !== 0) {
+          el.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        }
+      }
+    });
+
+    // 3. Force layout / reflow so the browser registers the inverted positions without transition
+    // eslint-disable-next-line no-unused-expressions
+    document.body.offsetHeight;
+
+    // 4. Play (remove transform and add transition to animate to new position)
+    requestAnimationFrame(() => {
+      elements.forEach(el => {
+        const id = el.getAttribute('data-link-id');
+        const prevRect = prevRectsRef.current[id];
+        const currentRect = currentRects[id];
+
+        if (prevRect && !el.classList.contains('dragging')) {
+          const deltaY = prevRect.top - currentRect.top;
+          const deltaX = prevRect.left - currentRect.left;
+
+          if (deltaX !== 0 || deltaY !== 0) {
+            el.style.transform = 'translate(0, 0)';
+            el.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            
+            // Clear transition after animation to prevent layout thrashing on window resize
+            clearTimeout(el._flipTimeout);
+            el._flipTimeout = setTimeout(() => {
+              el.style.transition = 'none';
+              el.style.transform = 'none';
+            }, 450);
+          }
+        }
+      });
+    });
+
+    // Save for next render
+    prevRectsRef.current = currentRects;
+  }, [flattenedDisplay]);
+
   const renderLinkCells = (sectionLinks, startIndex = 0, showLabelChip = true, sectionKey = '', gridClassName = '', gridStyle = {}) => {
     if (sectionLinks.length === 0) {
       return <p className="section-empty">No items yet</p>;
@@ -564,6 +635,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                 className={`list-item${isDragTarget && dragOverPos === 'before' ? ' drag-over-before' : ''}${isDragTarget && dragOverPos === 'after' ? ' drag-over-after' : ''}`}
                 onClick={(e) => handleOpen(e, link)}
                 style={{ cursor: isModern ? 'default' : 'pointer' }}
+                data-link-id={link.id}
                 {...dragHandlers}
               >
                 {isModern && (
