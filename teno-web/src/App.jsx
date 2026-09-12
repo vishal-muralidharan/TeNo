@@ -6,6 +6,7 @@ import { auth, db } from './firebase'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
+import JoinSharedLabelPage from './pages/JoinSharedLabelPage'
 import { setupTypingCaret } from '../sm/typingCaret'
 import { useTheme } from './ThemeContext'
 import { useFeatureFlags } from './FeatureFlagContext'
@@ -451,6 +452,7 @@ function App() {
                 )
               }
             />
+            <Route path="/join/:token" element={<JoinSharedLabelPage />} />
             <Route path="*" element={<Navigate to={user ? '/app' : '/login'} replace />} />
           </Routes>
         </BrowserRouter>
