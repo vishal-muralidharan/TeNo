@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isMemberOfLabel(labelId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/shared_labels/$(labelId)) &&
+             request.auth.uid in get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members;
+    }
+    
+    function getRole(labelId) {
+      return get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members[request.auth.uid];
+    }
+    
+    function hasEditAccess(labelId) {
+      return isMemberOfLabel(labelId) && (getRole(labelId) == 'owner' || getRole(labelId) == 'editor');
+    }
+
+    match /shared_labels/{labelId} {
+      // Read: Users can read if they are in the members map
+      allow read: if isMemberOfLabel(labelId) || 
+                  (isAuthenticated() && request.auth.uid in resource.data.members);
+                  
+      // Create: Authenticated users can create labels
+      allow create: if isAuthenticated();
+      
+      // Update/Delete: Only owners can delete or change top-level label settings
+      allow update, delete: if isAuthenticated() && 
+                            resource.data.members[request.auth.uid] == 'owner';
+    }
+
+    match /shared_links/{linkId} {
+      // Read: Users can read links if they are members of the associated label
+      allow read: if isMemberOfLabel(resource.data.labelId);
+      
+      // Create/Update/Delete: Only owners and editors can modify links
+      allow create: if hasEditAccess(request.resource.data.labelId);
+      allow update, delete: if hasEditAccess(resource.data.labelId);
+    }
+  }
+}
