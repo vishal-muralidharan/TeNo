@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { collection, query, getDocs, writeBatch, doc, onSnapshot, addDoc, deleteDoc, setDoc, updateDoc, increment } from 'firebase/firestore'
+import { collection, query, doc, onSnapshot, addDoc, deleteDoc, setDoc, updateDoc, increment } from 'firebase/firestore'
 import { auth, db } from './firebase'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -85,9 +85,7 @@ function App() {
       // Always land on Saved Links tab after login
       setActiveTab(TAB_INDEX.links)
 
-      if (currentUser) {
-        migrateExistingData(currentUser.uid)
-      }
+
     })
 
     return unsubscribe
@@ -176,34 +174,6 @@ function App() {
     return () => clearInterval(intervalId)
   }, [timerState, timerMode, timerStartTime, timerAccumulatedMs, timerTargetDuration, isEnabled])
 
-  const migrateExistingData = async (uid) => {
-    const collectionsToMigrate = ['saved_links', 'cart_items', 'reminders']
-
-    for (const colName of collectionsToMigrate) {
-      try {
-        const snapshot = await getDocs(query(collection(db, colName)))
-        const batch = writeBatch(db)
-        let count = 0
-
-        snapshot.forEach((document) => {
-          const data = document.data()
-          if (!data.migratedToSubcollection) {
-            const newDocRef = doc(db, 'users', uid, colName, document.id)
-            const { userId, ...cleanData } = data
-            batch.set(newDocRef, cleanData)
-            batch.update(doc(db, colName, document.id), { migratedToSubcollection: true })
-            count++
-          }
-        })
-
-        if (count > 0) {
-          await batch.commit()
-        }
-      } catch (error) {
-        console.error('Migration error:', error)
-      }
-    }
-  }
 
   const handleLogout = async () => {
     try {
