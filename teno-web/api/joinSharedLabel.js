@@ -1,18 +1,20 @@
-const admin = require('firebase-admin');
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
 // Initialize Firebase Admin if not already initialized
-if (!admin.apps.length) {
+if (!getApps().length) {
   try {
     // Requires FIREBASE_SERVICE_ACCOUNT environment variable in Vercel
-    admin.initializeApp({
-      credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
+    initializeApp({
+      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
     });
   } catch (error) {
     console.error('Firebase Admin initialization error:', error.stack);
   }
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -25,11 +27,11 @@ module.exports = async function handler(req, res) {
 
   try {
     // 1. Verify the idToken to get the user's UID
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const decodedToken = await getAuth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
     // 2. Query Firestore for the label matching the inviteToken
-    const db = admin.firestore();
+    const db = getFirestore();
     const labelsRef = db.collection('shared_labels');
     const snapshot = await labelsRef.where('inviteToken', '==', inviteToken).limit(1).get();
 
@@ -57,4 +59,4 @@ module.exports = async function handler(req, res) {
     console.error('Error joining shared label:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}
