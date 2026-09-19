@@ -1,11 +1,15 @@
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 
+// Load .env.local in development (Vercel dev doesn't inject it for API functions)
+config({ path: resolve(process.cwd(), '.env.local') });
+
 // Initialize Firebase Admin if not already initialized
 if (!getApps().length) {
   try {
-    // Requires FIREBASE_SERVICE_ACCOUNT environment variable in Vercel
     initializeApp({
       credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
     });
