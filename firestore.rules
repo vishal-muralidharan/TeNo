@@ -21,6 +21,16 @@ service cloud.firestore {
       return isMemberOfLabel(labelId) && (getRole(labelId) == 'owner' || getRole(labelId) == 'editor');
     }
 
+    // System Config (Feature Flags)
+    match /system_config/{document=**} {
+      allow read: if true;
+    }
+
+    // User Data
+    match /users/{userId}/{document=**} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     match /shared_labels/{labelId} {
       // Read: Users can read if they are in the members map
       allow read: if isMemberOfLabel(labelId) || 
