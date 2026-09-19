@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+const admin = require('firebase-admin');
 
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
@@ -12,7 +12,7 @@ if (!admin.apps.length) {
   }
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -57,4 +57,4 @@ export default async function handler(req, res) {
     console.error('Error joining shared label:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-}
+};
