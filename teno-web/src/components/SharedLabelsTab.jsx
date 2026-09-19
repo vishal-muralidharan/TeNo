@@ -69,7 +69,7 @@ export default function SharedLabelsTab({ user, isActive }) {
         className="toggle-form-btn" 
         onClick={() => setIsFormOpen(!isFormOpen)}
       >
-        {isFormOpen ? ui.toggleForm.close : "Create Shared Label"}
+        {isFormOpen ? ui.toggleForm.close : ui.toggleForm.open}
       </button>
 
       <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`}>

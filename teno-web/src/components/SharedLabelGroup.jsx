@@ -188,7 +188,7 @@ export default function SharedLabelGroup({ label, user }) {
                 onChange={(e) => setDescription(e.target.value)}
               />
               <button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Adding...' : ui.addBtn.text}
+                {isSubmitting ? 'Adding...' : ui.addBtn.links}
               </button>
             </form>
           </div>
