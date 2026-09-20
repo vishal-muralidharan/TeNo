@@ -187,6 +187,72 @@ export const themeTranslations = {
     minimal: 'search...',
     modern: 'Search...',
   },
+
+  // ── Share / Collaboration ─────────────────────────────────────────────────
+  share_btn_label: {
+    minimal: '[ ↗ share ]',
+    modern: 'Share',
+  },
+  share_badge: {
+    minimal: '[shared]',
+    modern: '● Shared',
+  },
+  share_badge_count: {
+    minimal: '[shared: {n}]',
+    modern: '● {n} members',
+  },
+  share_modal_title: {
+    minimal: 'share label',
+    modern: 'Share Label',
+  },
+  share_toggle_label: {
+    minimal: 'sharing enabled',
+    modern: 'Enable Sharing',
+  },
+  share_invite_link_label: {
+    minimal: 'invite link',
+    modern: 'Invite Link',
+  },
+  share_copy_link: {
+    minimal: '[ copy ]',
+    modern: 'Copy Link',
+  },
+  share_copied: {
+    minimal: '[ copied! ]',
+    modern: 'Copied!',
+  },
+  share_members_label: {
+    minimal: 'members',
+    modern: 'Members',
+  },
+  share_no_members: {
+    minimal: 'no other members yet.',
+    modern: 'No other members yet.',
+  },
+  share_close_btn: {
+    minimal: '[ close ]',
+    modern: 'Close',
+  },
+  role_owner: {
+    minimal: 'owner',
+    modern: 'Owner',
+  },
+  role_editor: {
+    minimal: 'editor',
+    modern: 'Editor',
+  },
+  role_viewer: {
+    minimal: 'viewer',
+    modern: 'Viewer',
+  },
+  share_kick_member: {
+    minimal: '[ remove ]',
+    modern: 'Remove',
+  },
+  share_leave_label: {
+    minimal: '[ leave ]',
+    modern: 'Leave',
+  },
 }
 
 /**
