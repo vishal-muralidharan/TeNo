@@ -39,7 +39,7 @@ export default function PrivacyPage({ currentUser, onSignOut }) {
 
         <section style={{ marginBottom: '24px', lineHeight: '1.6' }}>
           <h3>6. Cookies and Analytics</h3>
-          <p>We use cookies solely for essential functional purposes (such as session management). <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 4px' }}>[TODO: confirm usage or state none for analytics]</span></p>
+          <p>We do not currently use any cookies.</p>
         </section>
 
         <section style={{ marginBottom: '24px', lineHeight: '1.6' }}>
