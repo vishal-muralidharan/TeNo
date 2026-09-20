@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth'
 import { auth } from '../firebase'
 import { useTheme } from '../ThemeContext'
 import { getUiConfig } from '../utils/uiConfig'
 import { useFeatureFlags } from '../FeatureFlagContext'
 import { DEFAULT_FEATURE_FLAGS } from '../utils/featureFlags'
+import { deleteUserAccount } from '../api/user'
+import ConfirmModal from '../components/ConfirmModal'
 
 const normalizeLabel = (value) => (value || '').trim().toLowerCase()
 const getDisplayName = (item) => item.nickname || item.title || item.url || 'untitled'
@@ -35,6 +37,9 @@ export default function SettingsPage({
   const [passwordStatus, setPasswordStatus] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [isSavingPassword, setIsSavingPassword] = useState(false)
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const allItems = [...savedLinks, ...cartItems]
   
   const { theme, styleMode, setTheme, setStyleMode } = useTheme()
@@ -170,6 +175,19 @@ export default function SettingsPage({
     setConfirmNewPassword('')
   }
 
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setIsDeleting(true);
+    try {
+      await deleteUserAccount();
+      onLogout(); // Triggers sign out and redirects to login
+    } catch (error) {
+      console.error(error);
+      alert('Failed to delete account: ' + error.message);
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <div className="app-layout settings-layout">
       <header className="app-header">
@@ -178,9 +196,6 @@ export default function SettingsPage({
           <div className="topbar-actions">
               <button type="button" className="topbar-action-btn" onClick={() => navigate('/app')}>
                 {ui.icons.back} {ui.nav.back}
-              </button>
-              <button type="button" className="topbar-action-btn" onClick={onLogout}>
-                {ui.icons.logout} {ui.nav.logout}
               </button>
             </div>
         </div>
@@ -248,6 +263,49 @@ export default function SettingsPage({
             {isEnabled('changePassword') && (
               <button type="button" className="settings-password-trigger" onClick={openPasswordModal}>{ui.settings.changePassword}</button>
             )}
+            <button type="button" className="btn-primary" style={{ marginTop: '16px', width: '100%' }} onClick={() => setShowSignOutConfirm(true)}>
+              Sign Out
+            </button>
+          </article>
+
+          <article className="settings-card">
+            <h3>Legal & Privacy</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+              <Link to="/terms" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms of Service</Link>
+              <Link to="/privacy" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Privacy Policy</Link>
+              <Link to="/terms-and-conditions" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms and Conditions</Link>
+              <Link to="/dpdp" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Manage My Data / DPDP</Link>
+            </div>
+          </article>
+
+          <article className="settings-card">
+            <h3>Contact</h3>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '12px' }}>
+              Need help? Reach out to us at <a href="mailto:[TODO: verify support email]" style={{ color: 'var(--text-primary)' }}>[TODO: verify support email]</a>.
+            </p>
+          </article>
+
+          <article className="settings-card" style={{ border: '1px solid var(--color-danger)' }}>
+            <h3 style={{ color: 'var(--color-danger)' }}>Danger Zone</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Deleting your account is irreversible. All your data will be permanently removed.
+            </p>
+            <input 
+              type="text" 
+              placeholder="Type DELETE to confirm" 
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              style={{ width: '100%', padding: '8px', marginBottom: '16px', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+            />
+            <button 
+              type="button" 
+              className="btn-primary" 
+              disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+              onClick={handleDeleteAccount}
+              style={{ width: '100%', background: 'var(--color-danger)', color: 'white', opacity: (deleteConfirmText !== 'DELETE' || isDeleting) ? 0.5 : 1, cursor: (deleteConfirmText !== 'DELETE' || isDeleting) ? 'not-allowed' : 'pointer' }}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Account'}
+            </button>
           </article>
 
 
@@ -492,6 +550,16 @@ export default function SettingsPage({
             </form>
           </div>
         </div>
+      )}
+
+      {showSignOutConfirm && (
+        <ConfirmModal
+          message="Sign out? You'll need to sign in again to continue."
+          confirmLabel="Sign out"
+          cancelLabel="Cancel"
+          onConfirm={() => { onLogout(); setShowSignOutConfirm(false) }}
+          onCancel={() => setShowSignOutConfirm(false)}
+        />
       )}
     </div>
   )

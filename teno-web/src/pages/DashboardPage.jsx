@@ -133,9 +133,6 @@ export default function DashboardPage({
                 {ui.icons.settings} {ui.nav.settings}
               </button>
             )}
-            <button type="button" className="topbar-action-btn" onClick={() => setShowLogoutConfirm(true)}>
-              {ui.icons.logout} {ui.nav.logout}
-            </button>
           </div>
         </div>
       </header>
