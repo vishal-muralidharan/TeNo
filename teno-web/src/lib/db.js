@@ -67,6 +67,18 @@ export class TeNoDatabase {
     return onSnapshot(q, callback);
   }
 
+  /**
+   * Subscribe to root-level shared cart_items for labels this user belongs to.
+   * Returns docs where memberUids array-contains uid.
+   */
+  subscribeSharedCartItems(callback) {
+    const q = query(
+      collection(db, 'cart_items'),
+      where('memberUids', 'array-contains', this.uid)
+    );
+    return onSnapshot(q, callback);
+  }
+
   async addCartItem(data) {
     return addDoc(collection(db, 'users', this.uid, 'cart_items'), {
       ...data,
@@ -74,17 +86,58 @@ export class TeNoDatabase {
     });
   }
 
+  /**
+   * Add a cart item to a shared label — goes to root cart_items collection.
+   * @param {string} labelId
+   * @param {string[]} memberUids - synced from parent label
+   * @param {object} data - item fields
+   */
+  async addSharedCartItem(labelId, memberUids, data) {
+    return addDoc(collection(db, 'cart_items'), {
+      ...data,
+      labelId,
+      ownerId: this.uid,
+      memberUids: memberUids || [this.uid],
+      createdAt: serverTimestamp(),
+    });
+  }
+
   async updateCartItem(id, data) {
     return updateDoc(doc(db, 'users', this.uid, 'cart_items', id), data);
+  }
+
+  /**
+   * Update a shared cart item (root collection). Safe to call regardless of collection.
+   */
+  async updateSharedCartItem(id, data) {
+    return updateDoc(doc(db, 'cart_items', id), data);
   }
 
   async deleteCartItem(id) {
     return deleteDoc(doc(db, 'users', this.uid, 'cart_items', id));
   }
 
+  /**
+   * Delete a shared cart item from root collection.
+   */
+  async deleteSharedCartItem(id) {
+    return deleteDoc(doc(db, 'cart_items', id));
+  }
+
   // --- Reminders ---
   subscribeReminders(callback) {
     const q = query(collection(db, 'users', this.uid, 'reminders'));
+    return onSnapshot(q, callback);
+  }
+
+  /**
+   * Subscribe to root-level shared reminders for labels this user belongs to.
+   */
+  subscribeSharedReminders(callback) {
+    const q = query(
+      collection(db, 'reminders'),
+      where('memberUids', 'array-contains', this.uid)
+    );
     return onSnapshot(q, callback);
   }
 
@@ -95,12 +148,36 @@ export class TeNoDatabase {
     });
   }
 
+  /**
+   * Add a reminder to a shared label — goes to root reminders collection.
+   * @param {string} labelId
+   * @param {string[]} memberUids - synced from parent label
+   * @param {object} data - { text, label }
+   */
+  async addSharedReminder(labelId, memberUids, data) {
+    return addDoc(collection(db, 'reminders'), {
+      ...data,
+      labelId,
+      ownerId: this.uid,
+      memberUids: memberUids || [this.uid],
+      createdAt: serverTimestamp(),
+    });
+  }
+
   async deleteReminder(id) {
     return deleteDoc(doc(db, 'users', this.uid, 'reminders', id));
   }
 
   async updateReminder(id, data) {
     return updateDoc(doc(db, 'users', this.uid, 'reminders', id), data);
+  }
+
+  async updateSharedReminder(id, data) {
+    return updateDoc(doc(db, 'reminders', id), data);
+  }
+
+  async deleteSharedReminder(id) {
+    return deleteDoc(doc(db, 'reminders', id));
   }
   
   async deleteAllReminders(ids) {
