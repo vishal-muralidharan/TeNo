@@ -1,4 +1,4 @@
-import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, setDoc, getDoc, getDocs, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export class TeNoDatabase {
@@ -199,7 +199,86 @@ export class TeNoDatabase {
   }
 
 
+  // ─── Unified Label Management ──────────────────────────────────────────────
+
+  /**
+   * Subscribe to all labels of a given type that this user is a member of.
+   * Used by LinkStorer / Reminders to render share badges on section headers.
+   *
+   * @param {string} type - 'links' | 'cart' | 'reminders'
+   * @param {function} callback - onSnapshot callback
+   */
+  subscribeLabelsForSection(type, callback) {
+    const q = query(
+      collection(db, 'labels'),
+      where('type', '==', type),
+      where('memberUids', 'array-contains', this.uid)
+    );
+    return onSnapshot(q, callback);
+  }
+
+  /**
+   * Find the labels doc whose name matches `name` + type, or create it if absent.
+   * Returns the labels doc id.
+   * This is called when the user first clicks "Share" on a private label.
+   *
+   * @param {string} name  - label name (e.g. "a4p")
+   * @param {string} type  - 'links' | 'cart' | 'reminders'
+   * @param {object} userInfo - { displayName, email }
+   * @returns {Promise<string>} - the label doc id
+   */
+  async createOrGetLabel(name, type, userInfo = {}) {
+    // Query for existing doc owned by this user with same name + type
+    const q = query(
+      collection(db, 'labels'),
+      where('ownerId', '==', this.uid),
+      where('name', '==', name),
+      where('type', '==', type)
+    );
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      return snap.docs[0].id;
+    }
+
+    // Create new label doc
+    const docRef = await addDoc(collection(db, 'labels'), {
+      name,
+      type,
+      ownerId: this.uid,
+      isShared: false,
+      inviteToken: null,
+      visibility: 'private',
+      memberUids: [this.uid],
+      members: {
+        [this.uid]: {
+          role: 'owner',
+          name: userInfo.displayName || 'Unknown User',
+          email: userInfo.email || '',
+          joinedAt: serverTimestamp(),
+        },
+      },
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
+  }
+
+  /**
+   * Generic update for a labels doc.
+   * Used by ShareModal for isShared, inviteToken, members.*.role, etc.
+   *
+   * @param {string} labelId
+   * @param {object} data  - Firestore update payload (supports dot-path keys)
+   */
+  async updateLabel(labelId, data) {
+    return updateDoc(doc(db, 'labels', labelId), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
   // --- Generic Helpers for LinkStorer ---
+
   subscribeEntries(collectionName, callback) {
     if (collectionName === 'saved_links' || collectionName === 'links') return this.subscribeLinks(callback);
     if (collectionName === 'cart_items') return this.subscribeCart(callback);
