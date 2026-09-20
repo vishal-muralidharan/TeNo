@@ -111,7 +111,9 @@ export default function LoginPage({ user, loadingAuth }) {
           uid: userCredential.user.uid,
           name: name,
           email: email,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          agreed_to_terms: true,
+          preferences: { theme: 'system', styleMode: 'modern' }
         })
 
         await auth.currentUser.reload()
