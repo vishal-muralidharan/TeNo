@@ -340,7 +340,7 @@ export default function SettingsPage({
         </section>
       )}
 
-        <section className="settings-grid" style={{ marginTop: '24px' }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
           <article className="settings-card">
             <h3>{ui.settings.contact}</h3>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '12px' }}>
