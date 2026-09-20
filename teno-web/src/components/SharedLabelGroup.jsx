@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, writeBatch } from 'firebase/firestore';
-import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical, Users } from 'lucide-react';
+import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical, Users, Plus } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 import GenerateInvite from './GenerateInvite';
@@ -153,6 +153,11 @@ export default function SharedLabelGroup({ label, user }) {
           </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {canEdit && (
+            <button className="icon-btn" onClick={() => setIsFormOpen(!isFormOpen)} title={isFormOpen ? "Close Form" : "Add Link"} style={{ padding: '4px' }}>
+              <Plus size={16} style={{ transform: isFormOpen ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s ease' }} />
+            </button>
+          )}
           {isOwner && (
             <>
               <GenerateInvite labelId={label.id} currentToken={label.inviteToken} />
@@ -166,14 +171,6 @@ export default function SharedLabelGroup({ label, user }) {
 
       {canEdit && (
         <>
-          <button 
-            type="button"
-            className="toggle-form-btn" 
-            onClick={() => setIsFormOpen(!isFormOpen)}
-          >
-            {isFormOpen ? ui.toggleForm.close : ui.toggleForm.open}
-          </button>
-
           <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`}>
             <form className="input-group" onSubmit={handleSubmit}>
               <div className="typing-caret-field" data-empty={!nickname}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
-import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy, GripVertical } from 'lucide-react';
+import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy, GripVertical, Plus } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 
@@ -856,30 +856,40 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
           return (
             <section key={section.key} className="section-block label-group-card">
-              <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>{section.title}</span>
-                <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 2px', gap: '0px' }}>
-                  <button 
-                    type="button"
-                    className="icon-btn" 
-                    onClick={(e) => handleMoveSection(e, section.label, -1)}
-                    disabled={!canSectionMoveUp}
-                    style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
-                    title="Move section up"
-                  >
-                    <ChevronUp size={12} opacity={canSectionMoveUp ? 0.8 : 0.3} />
-                  </button>
-                  <button 
-                    type="button"
-                    className="icon-btn" 
-                    onClick={(e) => handleMoveSection(e, section.label, 1)}
-                    disabled={!canSectionMoveDown}
-                    style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
-                    title="Move section down"
-                  >
-                    <ChevronDown size={12} opacity={canSectionMoveDown ? 0.8 : 0.3} />
-                  </button>
+              <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>{section.title}</span>
+                  <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 2px', gap: '0px' }}>
+                    <button 
+                      type="button"
+                      className="icon-btn" 
+                      onClick={(e) => handleMoveSection(e, section.label, -1)}
+                      disabled={!canSectionMoveUp}
+                      style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
+                      title="Move section up"
+                    >
+                      <ChevronUp size={12} opacity={canSectionMoveUp ? 0.8 : 0.3} />
+                    </button>
+                    <button 
+                      type="button"
+                      className="icon-btn" 
+                      onClick={(e) => handleMoveSection(e, section.label, 1)}
+                      disabled={!canSectionMoveDown}
+                      style={{ padding: '0px', border: 'none', height: '12px', lineHeight: 1 }}
+                      title="Move section down"
+                    >
+                      <ChevronDown size={12} opacity={canSectionMoveDown ? 0.8 : 0.3} />
+                    </button>
+                  </div>
                 </div>
+                <button 
+                  className="icon-btn" 
+                  onClick={() => { setLabel(section.label); setIsFormOpen(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  title={`Add to ${section.title}`}
+                  style={{ padding: '4px' }}
+                >
+                  <Plus size={16} />
+                </button>
               </h3>
               {renderLinkCells(section.items, 0, false, section.key, 'label-links-grid')}
             </section>

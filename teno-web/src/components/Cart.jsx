@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { collection, query, addDoc, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus } from 'lucide-react';
 
 function Cart({ user, openFormSignal }) {
   const [items, setItems] = useState([]);
@@ -149,7 +149,19 @@ function Cart({ user, openFormSignal }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {groupedSections.map((section) => (
             <div key={section.label || 'ungrouped'} className="section-block">
-              <h3 className="section-title">{section.label || 'ungrouped'}</h3>
+              <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>{section.label || 'ungrouped'}</span>
+                {section.label && (
+                  <button 
+                    className="icon-btn" 
+                    onClick={() => { setLabel(section.label); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    title={`Add to ${section.label}`}
+                    style={{ padding: '4px' }}
+                  >
+                    <Plus size={16} />
+                  </button>
+                )}
+              </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {section.items.map((item) => (
                   <div key={item.id} className="item-row" onClick={(e) => { if (item.url) { e.preventDefault(); window.open(item.url, '_blank'); } }} style={{ cursor: item.url ? 'pointer' : 'default' }}>
