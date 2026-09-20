@@ -47,24 +47,39 @@ export default async function handler(req, res) {
     const labelId = labelDoc.id;
     const labelData = labelDoc.data();
 
-    // 3. Check if user is already a member
+    // 3. Check if user is already a member or pending
     if (labelData.members && labelData.members[uid]) {
-      return res.status(200).json({ message: 'Already a member', labelId });
+      return res.status(200).json({ status: 'joined', message: 'Already a member', labelId });
+    }
+    if (labelData.pendingMembers && labelData.pendingMembers[uid]) {
+      return res.status(200).json({ status: 'pending', message: 'Request pending approval', labelId });
     }
 
-    // 4. Update the label's members map to add this user as an 'editor' with their profile info
     const name = decodedToken.name || reqName || 'Unknown User';
     const email = decodedToken.email || reqEmail || '';
-    
-    await labelsRef.doc(labelId).update({
-      [`members.${uid}`]: {
-        role: 'viewer',
-        name: name,
-        email: email
-      }
-    });
 
-    return res.status(200).json({ message: 'Successfully joined label', labelId });
+    // 4. Check label visibility
+    const isPrivate = labelData.visibility === 'private';
+
+    if (isPrivate) {
+      await labelsRef.doc(labelId).update({
+        [`pendingMembers.${uid}`]: {
+          name: name,
+          email: email,
+          timestamp: new Date().toISOString()
+        }
+      });
+      return res.status(200).json({ status: 'pending', message: 'Request sent to owner', labelId });
+    } else {
+      await labelsRef.doc(labelId).update({
+        [`members.${uid}`]: {
+          role: 'viewer',
+          name: name,
+          email: email
+        }
+      });
+      return res.status(200).json({ status: 'joined', message: 'Successfully joined label', labelId });
+    }
 
   } catch (error) {
     console.error('Error joining shared label:', error);

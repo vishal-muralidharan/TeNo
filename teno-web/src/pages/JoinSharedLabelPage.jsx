@@ -40,11 +40,15 @@ export default function JoinSharedLabelPage() {
           throw new Error(data.error || 'Failed to join label');
         }
 
-        setStatus('Successfully joined! Redirecting...');
-        
-        setTimeout(() => {
-          navigate('/app', { state: { targetTab: 'shared' } });
-        }, 1500);
+        if (data.status === 'pending') {
+          setStatus('Access requested. Waiting for owner approval.');
+          // Don't redirect immediately, let them read the message.
+        } else {
+          setStatus('Successfully joined! Redirecting...');
+          setTimeout(() => {
+            navigate('/app', { state: { targetTab: 'shared' } });
+          }, 1500);
+        }
 
       } catch (err) {
         console.error(err);
@@ -63,6 +67,17 @@ export default function JoinSharedLabelPage() {
         
         {status && <p className="text-blue-600 dark:text-blue-400">{status}</p>}
         
+        {status === 'Access requested. Waiting for owner approval.' && (
+          <div className="mt-4">
+            <button 
+              onClick={() => navigate('/app')}
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        )}
+
         {error && (
           <div className="mt-4">
             <p className="text-red-500 mb-4">{error}</p>

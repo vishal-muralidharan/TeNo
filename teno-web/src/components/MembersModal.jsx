@@ -23,7 +23,11 @@ export default function MembersModal({ label, currentUser, onClose }) {
         setIsFetchingProfiles(false);
         return;
       }
-      const uids = Object.keys(label.members).filter(uid => uid !== currentUser.uid);
+      
+      const memberUids = Object.keys(label.members).filter(uid => uid !== currentUser.uid);
+      const pendingUids = Object.keys(label.pendingMembers || {});
+      const uids = [...new Set([...memberUids, ...pendingUids])];
+      
       if (uids.length === 0) {
         setIsFetchingProfiles(false);
         return;
@@ -46,6 +50,47 @@ export default function MembersModal({ label, currentUser, onClose }) {
     };
     fetchProfiles();
   }, [label, currentUser.uid]);
+
+  const handleVisibilityChange = async (newVisibility) => {
+    if (!isOwner) return;
+    try {
+      await updateDoc(doc(db, 'shared_labels', label.id), {
+        visibility: newVisibility
+      });
+    } catch (err) {
+      console.error('Failed to update visibility:', err);
+      alert('Failed to update visibility.');
+    }
+  };
+
+  const handleApproveMember = async (uid, name, email) => {
+    setLoadingId(uid);
+    try {
+      const docRef = doc(db, 'shared_labels', label.id);
+      await updateDoc(docRef, {
+        [`members.${uid}`]: { role: 'viewer', name, email },
+        [`pendingMembers.${uid}`]: deleteField()
+      });
+    } catch (err) {
+      console.error('Failed to approve member:', err);
+      alert('Failed to approve member.');
+    }
+    setLoadingId(null);
+  };
+
+  const handleRejectMember = async (uid) => {
+    setLoadingId(uid);
+    try {
+      const docRef = doc(db, 'shared_labels', label.id);
+      await updateDoc(docRef, {
+        [`pendingMembers.${uid}`]: deleteField()
+      });
+    } catch (err) {
+      console.error('Failed to reject member:', err);
+      alert('Failed to reject member.');
+    }
+    setLoadingId(null);
+  };
 
   const handleRoleChange = async (uid, newRole) => {
     if (!isOwner) return;
@@ -101,15 +146,85 @@ export default function MembersModal({ label, currentUser, onClose }) {
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-            <Users size={18} /> Members
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+              <Users size={18} /> Members
+            </h3>
+            {isOwner && (
+              <select
+                value={label.visibility || 'public'}
+                onChange={(e) => handleVisibilityChange(e.target.value)}
+                style={{ padding: '4px 8px', borderRadius: 'var(--border-radius)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontSize: '0.85rem' }}
+              >
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+            )}
+          </div>
           <button className="icon-btn" onClick={onClose} style={{ padding: '4px' }}>
             <X size={16} />
           </button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '500px', overflowY: 'auto', paddingRight: '8px' }}>
+          
+          {isOwner && label.pendingMembers && Object.keys(label.pendingMembers).length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pending Requests</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {Object.entries(label.pendingMembers).map(([uid, data]) => {
+                  let rawName = data.name;
+                  let email = data.email;
+                  
+                  if (liveProfiles[uid]) {
+                    rawName = liveProfiles[uid].name || rawName;
+                    email = liveProfiles[uid].email || email;
+                  }
+
+                  const name = (rawName && rawName.toLowerCase() !== 'unknown user') ? rawName : (email ? email.split('@')[0] : (isFetchingProfiles ? 'Loading...' : `User-${uid.substring(0, 4)}`));
+
+                  return (
+                    <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-surface)', borderRadius: 'var(--border-radius)', border: '1px var(--border-style) var(--border-color)', boxShadow: 'var(--shadow-card)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <UserIcon size={18} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: '500', display: 'flex', alignItems: 'center', fontSize: '1.05rem' }}>
+                            {name}
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button 
+                          className="btn-primary" 
+                          onClick={() => handleApproveMember(uid, data.name, data.email)}
+                          disabled={loadingId === uid}
+                          style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          className="icon-btn" 
+                          onClick={() => handleRejectMember(uid)}
+                          disabled={loadingId === uid}
+                          style={{ padding: '6px' }}
+                          title="Reject"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {isOwner && label.pendingMembers && Object.keys(label.pendingMembers).length > 0 && (
+            <h4 style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '4px', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Members</h4>
+          )}
+
           {Object.entries(label.members)
             .sort((a, b) => {
               if (a[0] === currentUser.uid) return -1;
