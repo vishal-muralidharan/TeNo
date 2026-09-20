@@ -14,7 +14,8 @@ service cloud.firestore {
     }
     
     function getRole(labelId) {
-      return get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members[request.auth.uid];
+      let rawRole = get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members[request.auth.uid];
+      return (rawRole is string) ? rawRole : rawRole.role;
     }
     
     function hasEditAccess(labelId) {
@@ -41,7 +42,10 @@ service cloud.firestore {
       
       // Update/Delete: Only owners can delete or change top-level label settings
       allow update, delete: if isAuthenticated() && 
-                            resource.data.members[request.auth.uid] == 'owner';
+                            (
+                              (resource.data.members[request.auth.uid] is string && resource.data.members[request.auth.uid] == 'owner') ||
+                              (resource.data.members[request.auth.uid] is map && resource.data.members[request.auth.uid].role == 'owner')
+                            );
     }
 
     match /shared_links/{linkId} {
