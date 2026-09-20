@@ -1,70 +1,105 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- HELPER FUNCTIONS ---
+
+    // ─── HELPER FUNCTIONS ────────────────────────────────────────────────────
+
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(uid) {
       return isSignedIn() && request.auth.uid == uid;
     }
-    
+
+    // Checks membership using the memberUids array (new schema) OR
+    // the members map (old schema) for backwards compatibility.
     function isMember(data) {
-      // Support both new schema array (memberUids) and old schema map (members)
       return isSignedIn() && (
         (data.get('memberUids', [])).hasAny([request.auth.uid]) ||
-        (data.get('members', {}).get(request.auth.uid, null) != null) ||
-        (request.auth.uid in data.get('memberUids', []))
+        (data.get('members', {}).get(request.auth.uid, null) != null)
       );
     }
-    
-    function getRole(labelData) {
-      let rawRole = labelData.members[request.auth.uid];
-      return (rawRole is string) ? rawRole : rawRole.role;
+
+    // Returns true when the requesting user has an owner or editor role
+    // in the given data's members map.
+    function canWrite(data) {
+      return isSignedIn() && isMember(data) && (
+        data.get('members', {}).get(request.auth.uid, {}).get('role', '') in ['owner', 'editor'] ||
+        data.get('members', {}).get(request.auth.uid, '') in ['owner', 'editor']
+      );
     }
 
     function isAdmin() {
-      return isSignedIn() && request.auth.token.admin == true; 
+      return isSignedIn() && request.auth.token.admin == true;
     }
 
-    function getLabel(labelId) {
-      return get(/databases/$(database)/documents/labels/$(labelId)).data;
-    }
-
-    // --- SYSTEM PATHS ---
+    // ─── SYSTEM PATHS ────────────────────────────────────────────────────────
     match /system_config/feature_flags {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // --- USER PROFILE ---
+    // ─── USER PROFILE ────────────────────────────────────────────────────────
     match /users/{userId} {
       allow read, create: if isOwner(userId);
       allow update: if isOwner(userId)
                     && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription', 'isAdmin', 'words_left', 'words_used', 'max_words']));
       allow delete: if false;
-      
-      // Kept old subcollections for transition/backup (e.g. saved_links, cart_items, reminders, settings)
+
+      // Private subcollections — blanket owner rule (cart_items, reminders,
+      // saved_links, settings kept here for transition / private-only data)
       match /{document=**} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // --- UNIFIED SCHEMA: LABELS ---
+    // ─── UNIFIED SCHEMA: LABELS ──────────────────────────────────────────────
+    // A label doc may be type 'links' | 'cart' | 'reminders'.
+    // Read: any member (memberUids array-contains or members map).
+    // Create: owner creating their own label.
+    // Update: any member can update (covers ShareModal role changes, isShared toggle).
+    //         Sensitive fields (ownerId, type) should only be changed by owner — enforced
+    //         server-side in the joinLabel API function; Firestore rules keep it simple.
+    // Delete: owner only.
     match /labels/{labelId} {
-      allow read, update, delete: if isMember(resource.data);
+      allow read: if isMember(resource.data);
       allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+      allow update: if isMember(resource.data);
+      allow delete: if isOwner(resource.data.ownerId);
     }
 
-    // --- UNIFIED SCHEMA: LINKS ---
+    // ─── UNIFIED SCHEMA: LINKS ───────────────────────────────────────────────
+    // Root-level links collection. Used by both the private default label
+    // (memberUids: [uid]) and shared labels.
     match /links/{linkId} {
-      allow read, update, delete: if isMember(resource.data);
+      allow read: if isMember(resource.data);
       allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+      allow update: if isMember(resource.data);
+      allow delete: if isMember(resource.data);
     }
 
-    // --- OLD SCHEMA: SHARED LABELS & LINKS ---
+    // ─── UNIFIED SCHEMA: CART ITEMS (root) ──────────────────────────────────
+    // Root-level cart_items only created for shared labels.
+    // Private cart items remain in users/{uid}/cart_items subcollection.
+    match /cart_items/{itemId} {
+      allow read: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+      allow update: if isMember(resource.data);
+      allow delete: if isMember(resource.data);
+    }
+
+    // ─── UNIFIED SCHEMA: REMINDERS (root) ───────────────────────────────────
+    // Root-level reminders only created for shared labels.
+    // Private reminders remain in users/{uid}/reminders subcollection.
+    match /reminders/{reminderId} {
+      allow read: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+      allow update: if isMember(resource.data);
+      allow delete: if isMember(resource.data);
+    }
+
+    // ─── OLD SCHEMA: SHARED LABELS & LINKS (kept for rollback safety) ────────
     match /shared_labels/{labelId} {
       allow read, update, delete: if isMember(resource.data);
       allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
