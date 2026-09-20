@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where } from 'firebase/firestore';
 import { Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 
-export default function Reminders({ user }) {
+export default function Reminders({ user, dbApi }) {
   const { styleMode } = useTheme();
   const ui = getUiConfig(styleMode);
   const [text, setText] = useState('');
@@ -19,11 +17,8 @@ export default function Reminders({ user }) {
   const [editingReminder, setEditingReminder] = useState(null);
 
   useEffect(() => {
-    if (!user) return;
-    const q = query(
-      collection(db, 'users', user.uid, 'reminders')
-    );
-    const unsub = onSnapshot(q, (snapshot) => {
+    if (!user || !dbApi) return;
+    const unsub = dbApi.subscribeReminders((snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
       data.sort((a, b) => {
@@ -39,7 +34,7 @@ export default function Reminders({ user }) {
       setReminders(data);
     });
     return unsub;
-  }, [user]);
+  }, [user, dbApi]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,11 +42,14 @@ export default function Reminders({ user }) {
 
     setIsSubmitting(true);
     const cleanLabel = label.trim().toLowerCase();
-    await addDoc(collection(db, 'users', user.uid, 'reminders'), {
-      text: text.trim(),
-      label: cleanLabel,
-      createdAt: serverTimestamp()
-    });
+    
+    if (dbApi) {
+      await dbApi.addReminder({
+        text: text.trim(),
+        label: cleanLabel,
+      });
+    }
+    
     setText('');
     setLabel('');
     setIsSubmitting(false);
@@ -62,8 +60,8 @@ export default function Reminders({ user }) {
   };
 
   const confirmComplete = async () => {
-    if (pendingDelete) {
-      await deleteDoc(doc(db, 'users', user.uid, 'reminders', pendingDelete));
+    if (pendingDelete && dbApi) {
+      await dbApi.deleteReminder(pendingDelete);
       setPendingDelete(null);
     }
   };
@@ -74,8 +72,8 @@ export default function Reminders({ user }) {
 
   const handleEditSave = async (e) => {
     e.preventDefault();
-    if (!editingReminder.text.trim()) return;
-    await updateDoc(doc(db, 'users', user.uid, 'reminders', editingReminder.id), {
+    if (!editingReminder.text.trim() || !dbApi) return;
+    await dbApi.updateReminder(editingReminder.id, {
       text: editingReminder.text.trim(),
       label: editingReminder.label.trim().toLowerCase(),
     });
@@ -84,25 +82,25 @@ export default function Reminders({ user }) {
 
   const handleMoveUp = async (e, index) => {
     e.stopPropagation();
-    if (index <= 0) return;
+    if (index <= 0 || !dbApi) return;
     const current = reminders[index];
     const prev = reminders[index - 1];
     
     if (current.createdAt && prev.createdAt) {
-      await updateDoc(doc(db, 'users', user.uid, 'reminders', current.id), { createdAt: prev.createdAt });
-      await updateDoc(doc(db, 'users', user.uid, 'reminders', prev.id), { createdAt: current.createdAt });
+      await dbApi.updateReminder(current.id, { createdAt: prev.createdAt });
+      await dbApi.updateReminder(prev.id, { createdAt: current.createdAt });
     }
   };
 
   const handleMoveDown = async (e, index) => {
     e.stopPropagation();
-    if (index >= reminders.length - 1) return;
+    if (index >= reminders.length - 1 || !dbApi) return;
     const current = reminders[index];
     const next = reminders[index + 1];
     
     if (current.createdAt && next.createdAt) {
-      await updateDoc(doc(db, 'users', user.uid, 'reminders', current.id), { createdAt: next.createdAt });
-      await updateDoc(doc(db, 'users', user.uid, 'reminders', next.id), { createdAt: current.createdAt });
+      await dbApi.updateReminder(current.id, { createdAt: next.createdAt });
+      await dbApi.updateReminder(next.id, { createdAt: current.createdAt });
     }
   };
 
@@ -155,9 +153,9 @@ export default function Reminders({ user }) {
 
     const current = currentEntry.reminder;
     const target = targetEntry.reminder;
-    if (current.createdAt && target.createdAt) {
-      await updateDoc(doc(db, 'users', user.uid, 'reminders', current.id), { createdAt: target.createdAt });
-      await updateDoc(doc(db, 'users', user.uid, 'reminders', target.id), { createdAt: current.createdAt });
+    if (current.createdAt && target.createdAt && dbApi) {
+      await dbApi.updateReminder(current.id, { createdAt: target.createdAt });
+      await dbApi.updateReminder(target.id, { createdAt: current.createdAt });
     }
   };
 

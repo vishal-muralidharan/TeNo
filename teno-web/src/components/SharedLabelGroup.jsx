@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { db } from '../firebase';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical, Users, Plus, ChevronDown } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 import GenerateInvite from './GenerateInvite';
 import MembersModal from './MembersModal';
 
-export default function SharedLabelGroup({ label, user }) {
+export default function SharedLabelGroup({ label, user, dbApi }) {
   const { styleMode } = useTheme();
   const ui = getUiConfig(styleMode);
   
@@ -39,8 +37,8 @@ export default function SharedLabelGroup({ label, user }) {
   const canEdit = isOwner || role === 'editor';
 
   useEffect(() => {
-    const q = query(collection(db, 'shared_links'), where('labelId', '==', label.id));
-    const unsub = onSnapshot(q, (snapshot) => {
+    if (!dbApi) return;
+    const unsub = dbApi.subscribeSharedLinks(label.id, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       data.sort((a, b) => {
         const timeA = a.createdAt?.toMillis?.() ?? (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
@@ -50,7 +48,7 @@ export default function SharedLabelGroup({ label, user }) {
       setLinks(data);
     });
     return () => unsub();
-  }, [label.id]);
+  }, [label.id, dbApi]);
 
   useEffect(() => {
     const handleClickOutside = () => setActiveMenu(null);
@@ -76,15 +74,16 @@ export default function SharedLabelGroup({ label, user }) {
     }
 
     setIsSubmitting(true);
-    await addDoc(collection(db, 'shared_links'), {
-      url: cleanUrl,
-      nickname: nickname.trim(),
-      description: description.trim(),
-      domain: domain,
-      labelId: label.id,
-      createdBy: user.uid,
-      createdAt: serverTimestamp()
-    });
+    if (dbApi) {
+      await dbApi.addSharedLink({
+        url: cleanUrl,
+        nickname: nickname.trim(),
+        description: description.trim(),
+        domain: domain,
+        labelId: label.id,
+        createdBy: user.uid,
+      });
+    }
     setUrl('');
     setNickname('');
     setDescription('');
@@ -107,12 +106,14 @@ export default function SharedLabelGroup({ label, user }) {
       domain = cleanUrl;
     }
 
-    await updateDoc(doc(db, 'shared_links', editingItem.id), {
-       nickname: editingItem.nickname.trim(),
-       url: cleanUrl,
-       domain,
-       description: editingItem.description.trim(),
-    });
+    if (dbApi) {
+      await dbApi.updateSharedLink(editingItem.id, {
+         nickname: editingItem.nickname.trim(),
+         url: cleanUrl,
+         domain,
+         description: editingItem.description.trim(),
+      });
+    }
     setEditingItem(null);
   };
 
@@ -123,8 +124,8 @@ export default function SharedLabelGroup({ label, user }) {
   };
 
   const confirmDeleteLink = async () => {
-    if (!pendingDeleteLink) return;
-    await deleteDoc(doc(db, 'shared_links', pendingDeleteLink));
+    if (!pendingDeleteLink || !dbApi) return;
+    await dbApi.deleteSharedLink(pendingDeleteLink);
     setPendingDeleteLink(null);
   };
 
@@ -135,9 +136,9 @@ export default function SharedLabelGroup({ label, user }) {
 
   const saveEditedLabel = async (e) => {
     e.preventDefault();
-    if (!editedLabelName.trim() || !isOwner) return;
+    if (!editedLabelName.trim() || !isOwner || !dbApi) return;
     try {
-      await updateDoc(doc(db, 'shared_labels', label.id), {
+      await dbApi.updateSharedLabel(label.id, {
         name: editedLabelName.trim(),
         visibility: editedVisibility
       });
@@ -150,12 +151,9 @@ export default function SharedLabelGroup({ label, user }) {
 
   const confirmDeleteLabel = async () => {
     try {
-      const batch = writeBatch(db);
-      links.forEach(link => {
-        batch.delete(doc(db, 'shared_links', link.id));
-      });
-      batch.delete(doc(db, 'shared_labels', label.id));
-      await batch.commit();
+      if (dbApi) {
+        await dbApi.batchDeleteSharedLabelAndLinks(label.id, links);
+      }
     } catch (e) {
       console.error('Error deleting label:', e);
       alert('Failed to delete label.');

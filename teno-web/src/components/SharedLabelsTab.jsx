@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebase';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import SharedLabelGroup from './SharedLabelGroup';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 
-export default function SharedLabelsTab({ user, isActive }) {
+export default function SharedLabelsTab({ user, isActive, dbApi }) {
   const { styleMode } = useTheme();
   const ui = getUiConfig(styleMode);
   
@@ -15,15 +13,9 @@ export default function SharedLabelsTab({ user, isActive }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
-    if (!user || !isActive) return;
+    if (!user || !isActive || !dbApi) return;
 
-    // Securely query labels where the user is a member
-    const q = query(
-      collection(db, 'shared_labels'),
-      where(`members.${user.uid}`, '!=', null)
-    );
-
-    const unsub = onSnapshot(q, (snapshot) => {
+    const unsub = dbApi.subscribeSharedLabels((snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       // Sort alphabetically by name
       data.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -31,15 +23,15 @@ export default function SharedLabelsTab({ user, isActive }) {
     });
 
     return () => unsub();
-  }, [user, isActive]);
+  }, [user, isActive, dbApi]);
 
   const handleCreateLabel = async (e) => {
     e.preventDefault();
-    if (!newLabelName.trim() || !user) return;
+    if (!newLabelName.trim() || !user || !dbApi) return;
 
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'shared_labels'), {
+      await dbApi.addSharedLabel({
         name: newLabelName.trim(),
         ownerId: user.uid,
         inviteToken: crypto.randomUUID().split('-')[0], // pre-generate short invite token
@@ -50,8 +42,7 @@ export default function SharedLabelsTab({ user, isActive }) {
             name: user.displayName || 'Unknown User',
             email: user.email || ''
           }
-        },
-        createdAt: serverTimestamp()
+        }
       });
       setNewLabelName('');
       setIsFormOpen(false);
@@ -97,7 +88,7 @@ export default function SharedLabelsTab({ user, isActive }) {
       ) : (
         <div style={{ marginTop: '24px' }}>
           {labels.map(label => (
-            <SharedLabelGroup key={label.id} label={label} user={user} />
+            <SharedLabelGroup key={label.id} label={label} user={user} dbApi={dbApi} />
           ))}
         </div>
       )}

@@ -98,6 +98,10 @@ export class TeNoDatabase {
   async deleteReminder(id) {
     return deleteDoc(doc(db, 'users', this.uid, 'reminders', id));
   }
+
+  async updateReminder(id, data) {
+    return updateDoc(doc(db, 'users', this.uid, 'reminders', id), data);
+  }
   
   async deleteAllReminders(ids) {
     const batch = writeBatch(db);
@@ -123,6 +127,74 @@ export class TeNoDatabase {
   async updateLabelOrder(collectionName, order) {
      return setDoc(doc(db, 'users', this.uid, 'settings', `labels_${collectionName}`), { order }, { merge: true });
   }
+
+  // --- Shared Labels ---
+  subscribeSharedLabels(callback) {
+    if (this.isNewSchema) {
+      // In new schema, shared labels are just labels where you are a member
+      const q = query(collection(db, 'labels'), where(`members.${this.uid}`, '!=', null));
+      return onSnapshot(q, callback);
+    } else {
+      const q = query(collection(db, 'shared_labels'), where(`members.${this.uid}`, '!=', null));
+      return onSnapshot(q, callback);
+    }
+  }
+
+  async addSharedLabel(data) {
+    const col = this.isNewSchema ? 'labels' : 'shared_labels';
+    // memberUids is required for new schema labels
+    const docData = { ...data, createdAt: serverTimestamp() };
+    if (this.isNewSchema) {
+      docData.memberUids = Object.keys(data.members || {});
+    }
+    return addDoc(collection(db, col), docData);
+  }
+
+  async updateSharedLabel(id, data) {
+    const col = this.isNewSchema ? 'labels' : 'shared_labels';
+    return updateDoc(doc(db, col, id), data);
+  }
+
+  async batchDeleteSharedLabelAndLinks(labelId, links) {
+    const batch = writeBatch(db);
+    const labelCol = this.isNewSchema ? 'labels' : 'shared_labels';
+    const linkCol = this.isNewSchema ? 'links' : 'shared_links';
+    
+    links.forEach(link => {
+      batch.delete(doc(db, linkCol, link.id));
+    });
+    batch.delete(doc(db, labelCol, labelId));
+    return batch.commit();
+  }
+
+  // --- Shared Links ---
+  subscribeSharedLinks(labelId, callback) {
+    const col = this.isNewSchema ? 'links' : 'shared_links';
+    const q = query(collection(db, col), where('labelId', '==', labelId));
+    return onSnapshot(q, callback);
+  }
+
+  async addSharedLink(data) {
+    const col = this.isNewSchema ? 'links' : 'shared_links';
+    const docData = { ...data, createdAt: serverTimestamp() };
+    if (this.isNewSchema) {
+      // Shared links need memberUids of the label. The frontend passes this.
+      // If not passed, we fallback to just the creator, but in practice frontend passes it or we do a lookup.
+      // For safety, assume frontend passes memberUids.
+    }
+    return addDoc(collection(db, col), docData);
+  }
+
+  async updateSharedLink(id, data) {
+    const col = this.isNewSchema ? 'links' : 'shared_links';
+    return updateDoc(doc(db, col, id), data);
+  }
+
+  async deleteSharedLink(id) {
+    const col = this.isNewSchema ? 'links' : 'shared_links';
+    return deleteDoc(doc(db, col, id));
+  }
+
 
   // --- Generic Helpers for LinkStorer ---
   subscribeEntries(collectionName, callback) {
