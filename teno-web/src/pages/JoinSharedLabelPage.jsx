@@ -29,6 +29,8 @@ export default function JoinSharedLabelPage() {
           body: JSON.stringify({
             inviteToken: token,
             idToken: idToken,
+            name: user.displayName || '',
+            email: user.email || '',
           }),
         });
 

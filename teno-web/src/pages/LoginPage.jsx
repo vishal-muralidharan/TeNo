@@ -104,6 +104,7 @@ export default function LoginPage({ user, loadingAuth }) {
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         await updateProfile(userCredential.user, { displayName: name })
+        await auth.currentUser.reload()
         setAuthStatus('Registration successful.')
       } else {
         await signInWithEmailAndPassword(auth, email, password)

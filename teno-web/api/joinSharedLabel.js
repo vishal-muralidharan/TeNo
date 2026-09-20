@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { inviteToken, idToken } = req.body;
+  const { inviteToken, idToken, name: reqName, email: reqEmail } = req.body;
 
   if (!inviteToken || !idToken) {
     return res.status(400).json({ error: 'Missing inviteToken or idToken' });
@@ -53,7 +53,9 @@ export default async function handler(req, res) {
     }
 
     // 4. Update the label's members map to add this user as an 'editor' with their profile info
-    const { name = 'Unknown User', email = '' } = decodedToken;
+    const name = decodedToken.name || reqName || 'Unknown User';
+    const email = decodedToken.email || reqEmail || '';
+    
     await labelsRef.doc(labelId).update({
       [`members.${uid}`]: {
         role: 'editor',
