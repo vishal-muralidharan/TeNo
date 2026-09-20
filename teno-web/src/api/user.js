@@ -51,13 +51,21 @@ export async function exportUserData() {
     remindersSnap.forEach(doc => exportData.reminders.push({ id: doc.id, ...doc.data() }));
 
     // 3. Shared/global collections where ownerId == uid
-    const labelsQuery = query(collection(db, 'labels'), where('ownerId', '==', uid));
+    const labelsQuery = query(collection(db, 'labels'), where('memberUids', 'array-contains', uid));
     const labelsSnap = await getDocs(labelsQuery);
-    labelsSnap.forEach(doc => exportData.labels.push({ id: doc.id, ...doc.data() }));
+    labelsSnap.forEach(doc => {
+      if (doc.data().ownerId === uid) {
+        exportData.labels.push({ id: doc.id, ...doc.data() });
+      }
+    });
 
-    const linksQuery = query(collection(db, 'links'), where('ownerId', '==', uid));
+    const linksQuery = query(collection(db, 'links'), where('memberUids', 'array-contains', uid));
     const linksSnap = await getDocs(linksQuery);
-    linksSnap.forEach(doc => exportData.links.push({ id: doc.id, ...doc.data() }));
+    linksSnap.forEach(doc => {
+      if (doc.data().ownerId === uid) {
+        exportData.links.push({ id: doc.id, ...doc.data() });
+      }
+    });
 
     return exportData;
   } catch (error) {
