@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical, Users } from 'lucide-react';
@@ -20,7 +21,10 @@ export default function SharedLabelGroup({ label, user }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [copiedFading, setCopiedFading] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const copiedTimerRef = useRef(null);
+  const copiedFadeRef = useRef(null);
 
   const role = label.members[user.uid];
   const isOwner = role === 'owner';
@@ -172,27 +176,32 @@ export default function SharedLabelGroup({ label, user }) {
 
           <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`}>
             <form className="input-group" onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Link Title"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                required
-              />
-              <input
-                type="url"
-                placeholder="URL (e.g. https://example.com)"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Description (optional)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              <button type="submit" disabled={isSubmitting}>
+              <div className="typing-caret-field" data-empty={!nickname}>
+                <input
+                  type="text"
+                  placeholder="Add Nickname"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                />
+              </div>
+              <div className="typing-caret-field" data-empty={!url}>
+                <input
+                  type="text"
+                  placeholder="Enter URL"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+              </div>
+              <div className="typing-caret-field" data-empty={!description}>
+                <textarea
+                  placeholder="Description (optional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={1}
+                  className="meta-input"
+                />
+              </div>
+              <button type="submit" disabled={isSubmitting || !url || !nickname}>
                 {isSubmitting ? 'Adding...' : ui.addBtn.links}
               </button>
             </form>
@@ -228,18 +237,27 @@ export default function SharedLabelGroup({ label, user }) {
                 </div>
 
                 <div className="item-actions">
-                  <button
-                    className="icon-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigator.clipboard.writeText(link.url);
-                      setCopiedId(link.id);
-                      setTimeout(() => setCopiedId(null), 1500);
-                    }}
-                    title="Copy URL"
-                  >
-                    {copiedId === link.id ? <Check size={14} /> : <Copy size={14} />}
-                  </button>
+                    <button
+                      className="icon-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(link.url);
+                        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+                        if (copiedFadeRef.current) clearTimeout(copiedFadeRef.current);
+                        setCopiedId(link.id);
+                        setCopiedFading(false);
+                        copiedTimerRef.current = setTimeout(() => {
+                          setCopiedFading(true);
+                          copiedFadeRef.current = setTimeout(() => {
+                            setCopiedId(null);
+                            setCopiedFading(false);
+                          }, 300);
+                        }, 2000);
+                      }}
+                      title="Copy URL"
+                    >
+                      <Copy size={14} />
+                    </button>
 
                   <div className="menu-wrapper">
                     <button
@@ -272,42 +290,59 @@ export default function SharedLabelGroup({ label, user }) {
                 </div>
               </div>
 
-              {editingItem && editingItem.id === link.id && (
-                <form className="edit-form" onSubmit={handleEditSave} onClick={(e) => e.stopPropagation()}>
-                  <div className="edit-form-row">
-                    <input
-                      type="text"
-                      value={editingItem.nickname}
-                      onChange={(e) => setEditingItem({ ...editingItem, nickname: e.target.value })}
-                      placeholder="Title"
-                      autoFocus
-                      required
-                    />
-                    <input
-                      type="url"
-                      value={editingItem.url}
-                      onChange={(e) => setEditingItem({ ...editingItem, url: e.target.value })}
-                      placeholder="URL"
-                      required
-                    />
-                  </div>
-                  <div className="edit-form-row">
-                    <input
-                      type="text"
-                      value={editingItem.description}
-                      onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
-                      placeholder="Description"
-                    />
-                  </div>
-                  <div className="edit-actions">
-                    <button type="button" className="cancel-btn" onClick={() => setEditingItem(null)}>Cancel</button>
-                    <button type="submit" className="save-btn">Save</button>
-                  </div>
-                </form>
-              )}
             </React.Fragment>
           ))}
         </div>
+      )}
+      {editingItem && createPortal(
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setEditingItem(null); }}>
+          <div className="custom-modal">
+            <p style={{marginBottom: "16px"}}>Edit Item</p>
+            <form onSubmit={handleEditSave} className="input-group">
+               <div className="typing-caret-field" data-empty={!editingItem.nickname}>
+                 <input 
+                   type="text" 
+                   value={editingItem.nickname} 
+                   onChange={e => setEditingItem({...editingItem, nickname: e.target.value})}
+                   placeholder="Nickname"
+                 />
+               </div>
+               <div className="typing-caret-field" data-empty={!editingItem.url}>
+                 <input 
+                   type="text" 
+                   value={editingItem.url} 
+                   onChange={e => setEditingItem({...editingItem, url: e.target.value})}
+                   placeholder="URL"
+                 />
+               </div>
+               <div className="typing-caret-field" data-empty={!editingItem.description}>
+                 <textarea 
+                   value={editingItem.description}
+                   onChange={e => setEditingItem({...editingItem, description: e.target.value})}
+                   rows={2}
+                   className="meta-input"
+                   placeholder="Description"
+                 />
+               </div>
+               <div className="modal-actions" style={{marginTop: "8px"}}>
+                 <button type="button" onClick={() => setEditingItem(null)}>Cancel</button>
+                 <button type="submit" className="btn-primary" disabled={!editingItem.nickname.trim()}>Save</button>
+               </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+      {copiedId && createPortal(
+        <div className={`copied-overlay${copiedFading ? ' copied-overlay-out' : ''}`} onClick={() => {
+          if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+          if (copiedFadeRef.current) clearTimeout(copiedFadeRef.current);
+          setCopiedFading(true);
+          copiedFadeRef.current = setTimeout(() => { setCopiedId(null); setCopiedFading(false); }, 300);
+        }}>
+          <span className="copied-overlay-text">link copied!</span>
+        </div>,
+        document.body
       )}
       {isMembersModalOpen && (
         <MembersModal
