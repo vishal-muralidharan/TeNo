@@ -6,7 +6,8 @@ import {
   updateProfile,
   signInWithEmailAndPassword,
 } from 'firebase/auth'
-import { auth } from '../firebase'
+import { auth, db } from '../firebase'
+import { doc, setDoc } from 'firebase/firestore'
 import { useTheme } from '../ThemeContext'
 import { getUiConfig } from '../utils/uiConfig'
 
@@ -104,6 +105,15 @@ export default function LoginPage({ user, loadingAuth }) {
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         await updateProfile(userCredential.user, { displayName: name })
+        
+        // Ensure user is stored in the database with their UID as the primary key
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          name: name,
+          email: email,
+          createdAt: new Date().toISOString()
+        })
+
         await auth.currentUser.reload()
         setAuthStatus('Registration successful.')
       } else {
