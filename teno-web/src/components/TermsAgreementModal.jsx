@@ -55,7 +55,7 @@ export default function TermsAgreementModal({ user, onClose }) {
             onChange={(e) => setAgreed(e.target.checked)} 
             style={{ marginTop: '4px' }}
           />
-          <span>I have read and agree to the Terms of Service, Terms and Conditions, and Privacy Policy.</span>
+          <span>I have read and agreed to the Terms of Service, Terms and Conditions, and Privacy Policy.</span>
         </label>
 
         <div className="confirm-modal-actions" style={{ justifyContent: 'flex-end' }}>
