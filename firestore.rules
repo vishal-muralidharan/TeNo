@@ -36,7 +36,10 @@ service cloud.firestore {
 
     // --- USER PROFILE ---
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, create: if isOwner(userId);
+      allow update: if isOwner(userId)
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription', 'isAdmin', 'words_left', 'words_used', 'max_words']));
+      allow delete: if false;
       
       // Kept old subcollections for transition/backup (e.g. saved_links)
       match /{document=**} {
@@ -46,43 +49,14 @@ service cloud.firestore {
 
     // --- UNIFIED SCHEMA: LABELS ---
     match /labels/{labelId} {
-      allow read: if resource.data.visibility == 'public' || isMember(resource.data);
-      
-      allow create: if isOwner(request.resource.data.ownerId) && 
-                       request.resource.data.memberUids == [request.auth.uid] &&
-                       getRole(request.resource.data) == 'owner' &&
-                       request.resource.data.name is string;
-                       
-      allow update: if isMember(resource.data) && 
-                       getRole(resource.data) == 'owner' &&
-                       request.resource.data.ownerId == resource.data.ownerId; // ownerId is immutable
-                       
-      allow delete: if isMember(resource.data) && getRole(resource.data) == 'owner';
+      allow read, update, delete: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
     }
 
     // --- UNIFIED SCHEMA: LINKS ---
     match /links/{linkId} {
-      allow read: if isMember(resource.data) || getLabel(resource.data.labelId).visibility == 'public';
-      
-      allow create: if isOwner(request.resource.data.ownerId) &&
-                       exists(/databases/$(database)/documents/labels/$(request.resource.data.labelId)) &&
-                       isMember(getLabel(request.resource.data.labelId)) && 
-                       (getRole(getLabel(request.resource.data.labelId)) == 'owner' || getRole(getLabel(request.resource.data.labelId)) == 'editor') &&
-                       request.resource.data.memberUids == getLabel(request.resource.data.labelId).memberUids; // Cannot forge access
-                       
-      allow update: if isMember(resource.data) &&
-                       exists(/databases/$(database)/documents/labels/$(resource.data.labelId)) &&
-                       isMember(getLabel(resource.data.labelId)) && 
-                       (getRole(getLabel(resource.data.labelId)) == 'owner' || getRole(getLabel(resource.data.labelId)) == 'editor') &&
-                       request.resource.data.labelId == resource.data.labelId && // immutable
-                       request.resource.data.ownerId == resource.data.ownerId && // immutable
-                       request.resource.data.memberUids == resource.data.memberUids; // immutable
-                       
-      allow delete: if isMember(resource.data) && 
-                       (
-                         isOwner(resource.data.ownerId) ||
-                         getRole(getLabel(resource.data.labelId)) == 'owner'
-                       );
+      allow read, update, delete: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
     }
   }
 }
