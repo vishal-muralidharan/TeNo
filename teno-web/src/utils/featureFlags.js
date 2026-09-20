@@ -18,6 +18,7 @@ export const DEFAULT_FEATURE_FLAGS = {
   cart:            true,
   reminders:       true,
   timer:           true,
+  shared:          true,
 
   /** Structural UI */
   terminal:        true,

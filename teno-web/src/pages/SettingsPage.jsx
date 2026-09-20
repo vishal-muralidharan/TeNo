@@ -371,6 +371,7 @@ export default function SettingsPage({
                 cart:           isModern ? 'Cart Tab'           : 'cart tab',
                 reminders:      isModern ? 'Reminders Tab'      : 'reminders tab',
                 timer:          isModern ? 'Timer Tab'          : 'timer tab',
+                shared:         isModern ? 'Shared Labels Tab'  : 'shared labels tab',
                 terminal:       isModern ? 'Terminal Panel'     : 'terminal panel',
                 settings:       isModern ? 'Settings Page'      : 'settings page',
                 clickStats:     isModern ? 'Click Statistics'   : 'click statistics',
