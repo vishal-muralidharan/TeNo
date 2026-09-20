@@ -2,59 +2,116 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper functions
-    function isAuthenticated() {
+    // --- NEW HELPER FUNCTIONS ---
+    function isSignedIn() {
       return request.auth != null;
     }
     
-    function isMemberOfLabel(labelId) {
-      return isAuthenticated() && 
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    
+    function isMember(data) {
+      return isSignedIn() && (request.auth.uid in data.memberUids);
+    }
+    
+    function getRole(labelData) {
+      let rawRole = labelData.members[request.auth.uid];
+      return (rawRole is string) ? rawRole : rawRole.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true; 
+    }
+
+    function getLabel(labelId) {
+      return get(/databases/$(database)/documents/labels/$(labelId)).data;
+    }
+
+    // --- OLD PATHS (kept for transition) ---
+    function isOldMemberOfLabel(labelId) {
+      return isSignedIn() && 
              exists(/databases/$(database)/documents/shared_labels/$(labelId)) &&
              request.auth.uid in get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members;
     }
     
-    function getRole(labelId) {
+    function getOldRole(labelId) {
       let rawRole = get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members[request.auth.uid];
       return (rawRole is string) ? rawRole : rawRole.role;
     }
     
-    function hasEditAccess(labelId) {
-      return isMemberOfLabel(labelId) && (getRole(labelId) == 'owner' || getRole(labelId) == 'editor');
-    }
-
-    // System Config (Feature Flags)
-    match /system_config/{document=**} {
-      allow read: if true;
-    }
-
-    // User Data
-    match /users/{userId}/{document=**} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    function hasOldEditAccess(labelId) {
+      return isOldMemberOfLabel(labelId) && (getOldRole(labelId) == 'owner' || getOldRole(labelId) == 'editor');
     }
 
     match /shared_labels/{labelId} {
-      // Read: Users can read if they are in the members map
-      allow read: if isMemberOfLabel(labelId) || 
-                  (isAuthenticated() && request.auth.uid in resource.data.members);
-                  
-      // Create: Authenticated users can create labels
-      allow create: if isAuthenticated();
-      
-      // Update/Delete: Only owners can delete or change top-level label settings
-      allow update, delete: if isAuthenticated() && 
+      allow read: if isOldMemberOfLabel(labelId) || 
+                  (isSignedIn() && request.auth.uid in resource.data.members);
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && 
                             (
                               (resource.data.members[request.auth.uid] is string && resource.data.members[request.auth.uid] == 'owner') ||
                               (resource.data.members[request.auth.uid] is map && resource.data.members[request.auth.uid].role == 'owner')
                             );
     }
-
     match /shared_links/{linkId} {
-      // Read: Users can read links if they are members of the associated label
-      allow read: if isMemberOfLabel(resource.data.labelId);
+      allow read: if isOldMemberOfLabel(resource.data.labelId);
+      allow create: if hasOldEditAccess(request.resource.data.labelId);
+      allow update, delete: if hasOldEditAccess(resource.data.labelId);
+    }
+
+    // --- NEW PATHS ---
+    match /system_config/flags {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
       
-      // Create/Update/Delete: Only owners and editors can modify links
-      allow create: if hasEditAccess(request.resource.data.labelId);
-      allow update, delete: if hasEditAccess(resource.data.labelId);
+      // Kept old subcollections for transition (if any existed before the move)
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    match /labels/{labelId} {
+      allow read: if resource.data.visibility == 'public' || isMember(resource.data);
+      
+      allow create: if isOwner(request.resource.data.ownerId) && 
+                       request.resource.data.memberUids == [request.auth.uid] &&
+                       getRole(request.resource.data) == 'owner' &&
+                       request.resource.data.name is string;
+                       
+      allow update: if isMember(resource.data) && 
+                       getRole(resource.data) == 'owner' &&
+                       request.resource.data.ownerId == resource.data.ownerId; // ownerId is immutable
+                       
+      allow delete: if isMember(resource.data) && getRole(resource.data) == 'owner';
+    }
+
+    match /links/{linkId} {
+      allow read: if isMember(resource.data) || getLabel(resource.data.labelId).visibility == 'public';
+      
+      allow create: if isOwner(request.resource.data.ownerId) &&
+                       exists(/databases/$(database)/documents/labels/$(request.resource.data.labelId)) &&
+                       isMember(getLabel(request.resource.data.labelId)) && 
+                       (getRole(getLabel(request.resource.data.labelId)) == 'owner' || getRole(getLabel(request.resource.data.labelId)) == 'editor') &&
+                       request.resource.data.memberUids == getLabel(request.resource.data.labelId).memberUids; // Cannot forge access
+                       
+      allow update: if isMember(resource.data) &&
+                       exists(/databases/$(database)/documents/labels/$(resource.data.labelId)) &&
+                       isMember(getLabel(resource.data.labelId)) && 
+                       (getRole(getLabel(resource.data.labelId)) == 'owner' || getRole(getLabel(resource.data.labelId)) == 'editor') &&
+                       request.resource.data.labelId == resource.data.labelId && // immutable
+                       request.resource.data.ownerId == resource.data.ownerId && // immutable
+                       request.resource.data.memberUids == resource.data.memberUids; // immutable
+                       
+      allow delete: if isMember(resource.data) && 
+                       (
+                         isOwner(resource.data.ownerId) ||
+                         getRole(getLabel(resource.data.labelId)) == 'owner'
+                       );
     }
   }
 }
