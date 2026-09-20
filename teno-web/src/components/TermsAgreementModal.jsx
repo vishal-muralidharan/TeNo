@@ -28,6 +28,14 @@ export default function TermsAgreementModal({ user, onClose }) {
 
   return (
     <div className={`confirm-modal-overlay ${isModern ? 'confirm-modal-overlay--modern' : ''}`} style={{ zIndex: 9999 }}>
+      <style>{`
+        .confirm-modal a {
+          color: white;
+        }
+        .confirm-modal a:focus-visible {
+          outline-color: white;
+        }
+      `}</style>
       <div className={`confirm-modal ${isModern ? 'confirm-modal--modern' : ''}`} style={{ width: '90%', maxWidth: '500px', padding: '24px' }}>
         <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Updated Legal Terms</h3>
         <p style={{ marginBottom: '16px', lineHeight: '1.5', fontSize: '0.95rem' }}>
