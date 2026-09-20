@@ -187,6 +187,8 @@ export default function SharedLabelGroup({ label, user }) {
               <div className="typing-caret-field" data-empty={!nickname}>
                 <input
                   type="text"
+                  id={`nickname-${label.id}`}
+                  name="nickname"
                   placeholder="Add Nickname"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
@@ -195,6 +197,8 @@ export default function SharedLabelGroup({ label, user }) {
               <div className="typing-caret-field" data-empty={!url}>
                 <input
                   type="text"
+                  id={`url-${label.id}`}
+                  name="url"
                   placeholder="Enter URL"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
@@ -202,6 +206,8 @@ export default function SharedLabelGroup({ label, user }) {
               </div>
               <div className="typing-caret-field" data-empty={!description}>
                 <textarea
+                  id={`description-${label.id}`}
+                  name="description"
                   placeholder="Description (optional)"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -310,6 +316,8 @@ export default function SharedLabelGroup({ label, user }) {
                <div className="typing-caret-field" data-empty={!editingItem.nickname}>
                  <input 
                    type="text" 
+                   id="edit-nickname"
+                   name="edit-nickname"
                    value={editingItem.nickname} 
                    onChange={e => setEditingItem({...editingItem, nickname: e.target.value})}
                    placeholder="Nickname"
@@ -318,6 +326,8 @@ export default function SharedLabelGroup({ label, user }) {
                <div className="typing-caret-field" data-empty={!editingItem.url}>
                  <input 
                    type="text" 
+                   id="edit-url"
+                   name="edit-url"
                    value={editingItem.url} 
                    onChange={e => setEditingItem({...editingItem, url: e.target.value})}
                    placeholder="URL"
@@ -325,6 +335,8 @@ export default function SharedLabelGroup({ label, user }) {
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.description}>
                  <textarea 
+                   id="edit-description"
+                   name="edit-description"
                    value={editingItem.description}
                    onChange={e => setEditingItem({...editingItem, description: e.target.value})}
                    rows={2}
