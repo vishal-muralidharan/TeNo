@@ -21,14 +21,12 @@ export default function JoinSharedLabelPage() {
         setStatus('Joining shared label...');
         const idToken = await user.getIdToken();
 
-        const response = await fetch('/api/joinSharedLabel', {
+        const response = await fetch('/api/joinLabel', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             inviteToken: token,
-            idToken: idToken,
+            idToken,
             name: user.displayName || '',
             email: user.email || '',
           }),
@@ -40,15 +38,19 @@ export default function JoinSharedLabelPage() {
           throw new Error(data.error || 'Failed to join label');
         }
 
-        if (data.status === 'pending') {
-          setStatus('Access requested. Waiting for owner approval.');
-          // Don't redirect immediately, let them read the message.
+        // Determine which tab to redirect to based on the label type
+        // type is one of: 'links' | 'cart' | 'reminders'
+        const targetTab = data.type || 'links';
+        const labelName = data.labelName ? `"${data.labelName}"` : 'the label';
+
+        if (data.status === 'already_member') {
+          setStatus(`You're already a member of ${labelName}. Redirecting...`);
+          setTimeout(() => navigate('/app', { state: { targetTab } }), 1500);
         } else {
-          setStatus('Successfully joined! Redirecting...');
-          setTimeout(() => {
-            navigate('/app', { state: { targetTab: 'shared' } });
-          }, 1500);
+          setStatus(`Successfully joined ${labelName}! Redirecting to ${targetTab}...`);
+          setTimeout(() => navigate('/app', { state: { targetTab } }), 1500);
         }
+
 
       } catch (err) {
         console.error(err);
