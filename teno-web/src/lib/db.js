@@ -167,13 +167,12 @@ export class TeNoDatabase {
     return batch.commit();
   }
 
-  // --- Shared Links ---
   subscribeSharedLinks(labelId, callback) {
     if (this.isNewSchema) {
       const q = query(collection(db, 'links'), where('labelId', '==', labelId), where('memberUids', 'array-contains', this.uid));
       return onSnapshot(q, callback);
     } else {
-      const q = query(collection(db, 'shared_links'), where('labelId', '==', labelId), where(`members.${this.uid}`, '!=', null));
+      const q = query(collection(db, 'shared_links'), where('labelId', '==', labelId), where('memberUids', 'array-contains', this.uid));
       return onSnapshot(q, callback);
     }
   }

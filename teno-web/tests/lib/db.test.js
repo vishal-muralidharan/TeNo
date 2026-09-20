@@ -214,7 +214,7 @@ describe('TeNoDatabase — Core operations', () => {
       const dbNew = new TeNoDatabase(UID, true)
       dbNew.subscribeSharedLabels(vi.fn())
       expect(collection).toHaveBeenCalledWith(expect.anything(), 'labels')
-      expect(where).toHaveBeenCalledWith(`members.${UID}`, '!=', null)
+      expect(where).toHaveBeenCalledWith('memberUids', 'array-contains', UID)
 
       const dbOld = new TeNoDatabase(UID, false)
       dbOld.subscribeSharedLabels(vi.fn())
@@ -263,6 +263,7 @@ describe('TeNoDatabase — Core operations', () => {
       db.subscribeSharedLinks('lab1', vi.fn())
       expect(collection).toHaveBeenCalledWith(expect.anything(), 'links')
       expect(where).toHaveBeenCalledWith('labelId', '==', 'lab1')
+      expect(where).toHaveBeenCalledWith('memberUids', 'array-contains', UID)
       expect(onSnapshot).toHaveBeenCalled()
 
       await db.addSharedLink({ url: 'test.com' })

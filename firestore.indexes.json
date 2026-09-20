@@ -59,6 +59,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "shared_links",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "labelId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "memberUids",
+          "arrayConfig": "CONTAINS"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -82,6 +82,9 @@ export default function SharedLabelGroup({ label, user, dbApi }) {
         domain: domain,
         labelId: label.id,
         createdBy: user.uid,
+        members: label.members || {},
+        memberUids: Object.keys(label.members || {}),
+        ownerId: user.uid, // Required for isOwner rule
       });
     }
     setUrl('');
