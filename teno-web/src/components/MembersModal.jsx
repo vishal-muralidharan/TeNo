@@ -101,7 +101,16 @@ export default function MembersModal({ label, currentUser, onClose }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '500px', overflowY: 'auto', paddingRight: '8px' }}>
-          {Object.entries(label.members).map(([uid, data]) => {
+          {Object.entries(label.members)
+            .sort((a, b) => {
+              if (a[0] === currentUser.uid) return -1;
+              if (b[0] === currentUser.uid) return 1;
+              const roleA = typeof a[1] === 'string' ? a[1] : a[1].role;
+              const roleB = typeof b[1] === 'string' ? b[1] : b[1].role;
+              const roleOrder = { owner: 1, editor: 2, viewer: 3 };
+              return (roleOrder[roleA] || 99) - (roleOrder[roleB] || 99);
+            })
+            .map(([uid, data]) => {
             const role = typeof data === 'string' ? data : data.role;
             let rawName = typeof data === 'string' ? null : data.name;
             let email = typeof data === 'string' ? '' : data.email;
