@@ -11,6 +11,7 @@ import { setupTypingCaret } from '../sm/typingCaret'
 import { useTheme } from './ThemeContext'
 import { useFeatureFlags } from './FeatureFlagContext'
 import LoadingScreen from './components/LoadingScreen'
+import TermsAgreementModal from './components/TermsAgreementModal'
 import DPDPPage from './pages/DPDPPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
@@ -57,6 +58,14 @@ function App() {
   const isNewSchema = flags?.new_db_schema === true
 
   const [user, setUser] = useState(null)
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const cached = localStorage.getItem('teno_session');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  })
   const [loadingAuth, setLoadingAuth] = useState(true)
   const [minLoadTimePending, setMinLoadTimePending] = useState(true)
   const [activeTab, setActiveTab] = useState(TAB_INDEX.links)
@@ -89,11 +98,27 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser)
-      setLoadingAuth(false)
-      // Always land on Saved Links tab after login
-      setActiveTab(TAB_INDEX.links)
-
-
+      if (currentUser) {
+        // Fetch user profile from Firestore
+        const unsubProfile = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setUserProfile(data);
+            localStorage.setItem('teno_session', JSON.stringify(data));
+          } else {
+            setUserProfile({ agreed_to_terms: false });
+          }
+        });
+        setLoadingAuth(false)
+        // Always land on Saved Links tab after login
+        setActiveTab(TAB_INDEX.links)
+        return unsubProfile;
+      } else {
+        setUserProfile(null);
+        localStorage.removeItem('teno_session');
+        setLoadingAuth(false)
+        setActiveTab(TAB_INDEX.links)
+      }
     })
 
     return unsubscribe
@@ -353,9 +378,12 @@ function App() {
   // which stays mounted until the theme is ready and the minimum load time passes.
   const isReadyToRender = isThemeReady && !loadingAuth && !minLoadTimePending && !styleModeChanging
 
+  const showTermsModal = user && userProfile && !userProfile.agreed_to_terms && window.location.pathname !== '/login';
+
   return (
     <>
       {!isReadyToRender && <LoadingScreen styleMode={styleMode} />}
+      {showTermsModal && <TermsAgreementModal user={user} onClose={() => {}} />}
       <div className={`app-content ${isReadyToRender ? 'fade-in' : 'hidden'}`}>
         <BrowserRouter>
           <Routes>
