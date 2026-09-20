@@ -26,6 +26,7 @@ export default function DashboardPage({
   deleteReminderByIndex,
   deleteAllReminders,
   recordLinkOpen,
+  dbApi,
   timerApi,
 }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
@@ -34,9 +35,9 @@ export default function DashboardPage({
   const navigate = useNavigate()
 
   const tabs = [
-    { id: 'links', label: 'Links', component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} openFormSignal={linksFormToken} favoritesRowCount={favoritesRowCount} onLinkOpen={recordLinkOpen} /> },
-    { id: 'cart', label: 'Cart', component: <LinkStorer collectionName="cart_items" title="Cart" user={user} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
-    { id: 'reminders', label: 'Reminders', component: <Reminders user={user} /> },
+    { id: 'links', label: 'Links', component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} dbApi={dbApi} openFormSignal={linksFormToken} favoritesRowCount={favoritesRowCount} onLinkOpen={recordLinkOpen} /> },
+    { id: 'cart', label: 'Cart', component: <LinkStorer collectionName="cart_items" title="Cart" user={user} dbApi={dbApi} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
+    { id: 'reminders', label: 'Reminders', component: <Reminders user={user} dbApi={dbApi} /> },
     { id: 'timer', label: 'Timer', component: <Timer {...timerApi} /> },
   ]
 

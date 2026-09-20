@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { collection, query, getDocs, writeBatch, doc, onSnapshot, addDoc, deleteDoc, setDoc, updateDoc, increment } from 'firebase/firestore'
+import { collection, query, getDocs, writeBatch, doc, onSnapshot, setDoc, updateDoc, increment } from 'firebase/firestore'
 import { auth, db } from './firebase'
+import { getDb } from './lib/db'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
@@ -54,6 +55,10 @@ function App() {
   const [cartItems, setCartItems] = useState([])
   const [reminders, setReminders] = useState([])
   const [favoritesRowCount, setFavoritesRowCount] = useState(2)
+  const [flags, setFlags] = useState({})
+
+  const isNewSchema = flags.new_db_schema === true
+  const dbApi = React.useMemo(() => getDb(user?.uid, isNewSchema), [user?.uid, isNewSchema])
 
   const [timerState, setTimerState] = useState('idle')
   const [timerMode, setTimerMode] = useState('stopwatch')
@@ -85,34 +90,47 @@ function App() {
     }
 
     const settingsRef = doc(db, 'users', user.uid, 'settings', 'ui')
+    const flagsRef = doc(db, 'users', user.uid, 'settings', 'flags')
+
     const unsubSettings = onSnapshot(settingsRef, (snapshot) => {
       const nextValue = Number(snapshot.data()?.favoritesRowCount)
       const clampedValue = Number.isFinite(nextValue) ? Math.max(1, Math.min(3, Math.floor(nextValue))) : 2
       setFavoritesRowCount(clampedValue)
     })
 
-    return unsubSettings
+    const unsubFlags = onSnapshot(flagsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFlags(snapshot.data())
+      } else {
+        setFlags({})
+      }
+    })
+
+    return () => {
+      unsubSettings()
+      unsubFlags()
+    }
   }, [user])
 
   useEffect(() => {
-    if (!user) {
+    if (!dbApi) {
       setSavedLinks([])
       setCartItems([])
       setReminders([])
       return undefined
     }
 
-    const unsubLinks = onSnapshot(query(collection(db, 'users', user.uid, 'saved_links')), (snapshot) => {
+    const unsubLinks = dbApi.subscribeLinks((snapshot) => {
       const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
       setSavedLinks(sortLinks(data))
     })
 
-    const unsubCart = onSnapshot(query(collection(db, 'users', user.uid, 'cart_items')), (snapshot) => {
+    const unsubCart = dbApi.subscribeCart((snapshot) => {
       const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
       setCartItems(sortCartItems(data))
     })
 
-    const unsubReminders = onSnapshot(query(collection(db, 'users', user.uid, 'reminders')), (snapshot) => {
+    const unsubReminders = dbApi.subscribeReminders((snapshot) => {
       const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
       setReminders(sortReminders(data))
     })
@@ -122,7 +140,7 @@ function App() {
       unsubCart()
       unsubReminders()
     }
-  }, [user])
+  }, [dbApi])
 
   useEffect(() => {
     const updateTimer = () => {
@@ -198,10 +216,10 @@ function App() {
   const requestOpenCartForm = () => setCartFormToken((value) => value + 1)
 
   const recordLinkOpen = async ({ collectionName, link }) => {
-    if (!user || !collectionName || !link?.id) return
+    if (!dbApi || !link?.id) return
 
     try {
-      await updateDoc(doc(db, 'users', user.uid, collectionName, link.id), {
+      await dbApi.updateLink(link.id, {
         clickCount: increment(1),
         lastClickedAt: new Date().toISOString(),
       })
@@ -214,10 +232,10 @@ function App() {
     const parsedValue = Math.max(1, Math.min(3, Number(nextValue) || 2))
     setFavoritesRowCount(parsedValue)
 
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     try {
-      await setDoc(doc(db, 'users', user.uid, 'settings', 'ui'), { favoritesRowCount: parsedValue }, { merge: true })
+      await dbApi.updateUiSettings({ favoritesRowCount: parsedValue })
       return { ok: true, message: 'settings saved.' }
     } catch (error) {
       console.error('Failed to save settings:', error)
@@ -227,63 +245,58 @@ function App() {
 
   const addReminder = async (text) => {
     const cleanText = text.trim()
-    if (!user || !cleanText) {
+    if (!dbApi || !cleanText) {
       return { ok: false, message: 'reminder text is required.' }
     }
 
-    await addDoc(collection(db, 'users', user.uid, 'reminders'), {
+    await dbApi.addReminder({
       text: cleanText,
-      label: '',
-      createdAt: new Date().toISOString(),
+      label: ''
     })
 
     return { ok: true, message: 'reminder added.' }
   }
 
   const deleteReminderByIndex = async (index) => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     const reminder = reminders[index]
     if (!reminder) {
       return { ok: false, message: `reminder not found at index ${index}.` }
     }
 
-    await deleteDoc(doc(db, 'users', user.uid, 'reminders', reminder.id))
+    await dbApi.deleteReminder(reminder.id)
     return { ok: true, message: `reminder ${index} completed.` }
   }
 
   const deleteAllReminders = async () => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
-    const batch = writeBatch(db)
-    reminders.forEach((reminder) => {
-      batch.delete(doc(db, 'users', user.uid, 'reminders', reminder.id))
-    })
-    await batch.commit()
+    await dbApi.deleteAllReminders(reminders.map(r => r.id))
     return { ok: true, message: '\\o/ BOOM' }
   }
 
   const deleteLinkByNickname = async (nickname) => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     const target = savedLinks.find((item) => normalizeText(item.nickname) === normalizeText(nickname))
     if (!target) {
       return { ok: false, message: `link not found: ${nickname}` }
     }
 
-    await deleteDoc(doc(db, 'users', user.uid, 'saved_links', target.id))
+    await dbApi.deleteLink(target.id)
     return { ok: true, message: `deleted link: ${target.nickname}` }
   }
 
   const deleteCartItemByNickname = async (nickname) => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     const target = cartItems.find((item) => normalizeText(item.title || item.nickname) === normalizeText(nickname))
     if (!target) {
       return { ok: false, message: `cart item not found: ${nickname}` }
     }
 
-    await deleteDoc(doc(db, 'users', user.uid, 'cart_items', target.id))
+    await dbApi.deleteCartItem(target.id)
     return { ok: true, message: `deleted cart item: ${target.title || target.nickname}` }
   }
 
@@ -394,6 +407,7 @@ function App() {
                 deleteReminderByIndex={deleteReminderByIndex}
                 deleteAllReminders={deleteAllReminders}
                 recordLinkOpen={recordLinkOpen}
+                dbApi={dbApi}
                 timerApi={{
                   timerState,
                   timerMode,
@@ -426,6 +440,7 @@ function App() {
                 favoritesRowCount={favoritesRowCount}
                 onFavoritesRowCountChange={updateFavoritesRowCount}
                 onLogout={handleLogout}
+                dbApi={dbApi}
               />
             ) : (
               <Navigate to="/login" replace />
