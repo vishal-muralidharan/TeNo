@@ -1,14 +1,16 @@
-const admin = require('firebase-admin');
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 
 process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
 process.env.FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:9099';
 
-admin.initializeApp({
-  projectId: 'demo-teno'
+initializeApp({
+  projectId: 'demo-no-project'
 });
 
-const db = admin.firestore();
-const auth = admin.auth();
+const db = getFirestore();
+const auth = getAuth();
 
 async function seed() {
   console.log("Seeding emulator data...");
@@ -51,8 +53,8 @@ async function seed() {
     description: 'A useful site',
     label: 'work',
     isFavorite: true,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    favoritedAt: admin.firestore.FieldValue.serverTimestamp()
+    createdAt: FieldValue.serverTimestamp(),
+    favoritedAt: FieldValue.serverTimestamp()
   });
 
   const linkRef2 = db.collection('users').doc(user.uid).collection('saved_links').doc('link_id_2');
@@ -63,7 +65,7 @@ async function seed() {
     description: '',
     label: 'reading',
     isFavorite: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
+    createdAt: FieldValue.serverTimestamp()
   });
 
   // 6. Cart Items
@@ -80,7 +82,7 @@ async function seed() {
   batch.set(remRef1, {
     text: 'Buy groceries',
     label: 'personal',
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
+    createdAt: FieldValue.serverTimestamp()
   });
 
   // 8. Shared Labels
@@ -103,7 +105,7 @@ async function seed() {
     description: 'Project documentation',
     labelId: 'shared_label_1',
     createdBy: user.uid,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
+    createdAt: FieldValue.serverTimestamp()
   });
 
   // 10. System Feature Flags

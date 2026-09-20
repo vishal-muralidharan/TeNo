@@ -1,4 +1,6 @@
-const admin = require('firebase-admin');
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 const fs = require('fs');
 
 const isDryRun = !process.argv.includes('--commit');
@@ -8,12 +10,12 @@ if (process.env.FIRESTORE_EMULATOR_HOST) {
   console.log("Using Emulator...");
 }
 
-admin.initializeApp({
-  projectId: process.env.FIREBASE_PROJECT_ID || 'demo-teno'
+initializeApp({
+  projectId: process.env.FIREBASE_PROJECT_ID || 'demo-no-project'
 });
 
-const db = admin.firestore();
-const auth = admin.auth();
+const db = getFirestore();
+const auth = getAuth();
 
 const BATCH_SIZE = 400;
 
@@ -133,7 +135,7 @@ async function migrate() {
         preferences.favoritesRowCount = uiDoc.data().favoritesRowCount;
     }
     
-    const userCreatedAt = userData.createdAt || admin.firestore.FieldValue.serverTimestamp();
+    const userCreatedAt = userData.createdAt || FieldValue.serverTimestamp();
     
     await bm.set(userDocRef, {
       uid: uid,
@@ -163,7 +165,7 @@ async function migrate() {
         }
       },
       createdAt: userCreatedAt,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     }, true, 'defaultLabels');
 
     // c. Copy existing links
@@ -198,7 +200,7 @@ async function migrate() {
         memberUids: [uid],
         isFavorite: link.isFavorite || false,
         order: i,
-        createdAt: link.createdAt || admin.firestore.FieldValue.serverTimestamp()
+        createdAt: link.createdAt || FieldValue.serverTimestamp()
       };
       
       await bm.set(linkRef, newLink, true, 'links');
@@ -267,7 +269,7 @@ async function migrate() {
                   role: role,
                   name: typeof roleData === 'object' ? roleData.name : (authUser.name || 'User'),
                   email: typeof roleData === 'object' ? roleData.email : (authUser.email || ''),
-                  joinedAt: admin.firestore.FieldValue.serverTimestamp()
+                  joinedAt: FieldValue.serverTimestamp()
               };
           }
       }
@@ -280,8 +282,8 @@ async function migrate() {
           visibility: data.visibility || 'private',
           memberUids: memberUids,
           members: newMembers,
-          createdAt: data.createdAt || admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          createdAt: data.createdAt || FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
       }, true, 'defaultLabels');
   }
 
@@ -309,7 +311,7 @@ async function migrate() {
           memberUids: memberUids,
           isFavorite: false,
           order: 0,
-          createdAt: data.createdAt || admin.firestore.FieldValue.serverTimestamp()
+          createdAt: data.createdAt || FieldValue.serverTimestamp()
       }, true, 'sharedLinks');
   }
 
