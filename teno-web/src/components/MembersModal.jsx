@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { doc, updateDoc, deleteField } from 'firebase/firestore';
-import { Users, X, Shield, ShieldAlert, User as UserIcon } from 'lucide-react';
+import { Users, X, Shield, ShieldAlert, User as UserIcon, ChevronDown } from 'lucide-react';
 
 export default function MembersModal({ label, currentUser, onClose }) {
   const [loadingId, setLoadingId] = useState(null);
+  const [activeRoleMenu, setActiveRoleMenu] = useState(null);
 
   const currentUserRole = typeof label.members[currentUser.uid] === 'string'
     ? label.members[currentUser.uid]
@@ -107,15 +108,22 @@ export default function MembersModal({ label, currentUser, onClose }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {isOwner && role !== 'owner' ? (
-                    <select
-                      value={role}
-                      onChange={(e) => handleRoleChange(uid, e.target.value)}
-                      disabled={loadingId === uid}
-                      style={{ padding: '4px 8px', borderRadius: '4px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
-                    >
-                      <option value="editor">Editor</option>
-                      <option value="viewer">Viewer</option>
-                    </select>
+                    <div className="menu-wrapper" style={{ position: 'relative' }}>
+                      <button 
+                        className="icon-btn" 
+                        onClick={() => setActiveRoleMenu(activeRoleMenu === uid ? null : uid)}
+                        disabled={loadingId === uid}
+                        style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '4px', minWidth: '85px', justifyContent: 'space-between' }}
+                      >
+                        {role} <ChevronDown size={14} />
+                      </button>
+                      {activeRoleMenu === uid && (
+                        <div className="dropdown-menu dropdown-menu-down" style={{ minWidth: '100px', top: 'calc(100% + 4px)', right: 0 }} onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => { handleRoleChange(uid, 'editor'); setActiveRoleMenu(null); }} style={{ padding: '8px 12px' }}>Editor</button>
+                          <button onClick={() => { handleRoleChange(uid, 'viewer'); setActiveRoleMenu(null); }} style={{ padding: '8px 12px' }}>Viewer</button>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <span style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: 'var(--bg-elevated)', opacity: 0.8, textTransform: 'capitalize' }}>
                       {role}
