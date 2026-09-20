@@ -11,7 +11,7 @@
  *   ui.icons.settings // => <Settings /> or null
  *   ui.tabs.links     // => "Links" or "links"
  */
-import { Plus, Settings, LogOut, ArrowLeft } from 'lucide-react'
+import { Plus, Settings, LogOut, ArrowLeft, UserPlus, Users } from 'lucide-react'
 import { t } from './themeTranslations'
 
 export const getUiConfig = (styleMode) => {
@@ -105,6 +105,38 @@ export const getUiConfig = (styleMode) => {
     // ── Placeholders ──────────────────────────────────────────────────────────
     placeholders: {
       search: t('placeholder_search', styleMode),
+    },
+
+    // ── Share / Collaboration ─────────────────────────────────────────────────
+    share: {
+      // Trigger button beside section header
+      btn:         t('share_btn_label',       styleMode),
+      // Status badge shown when isShared === true
+      badge:       t('share_badge',           styleMode),
+      badgeCount:  t('share_badge_count',     styleMode),
+      // Modal copy
+      title:       t('share_modal_title',     styleMode),
+      toggleLabel: t('share_toggle_label',    styleMode),
+      inviteLabel: t('share_invite_link_label', styleMode),
+      copyLink:    t('share_copy_link',       styleMode),
+      copied:      t('share_copied',          styleMode),
+      members:     t('share_members_label',   styleMode),
+      noMembers:   t('share_no_members',      styleMode),
+      closeBtn:    t('share_close_btn',       styleMode),
+      kick:        t('share_kick_member',     styleMode),
+      leave:       t('share_leave_label',     styleMode),
+      // Role labels
+      roles: {
+        owner:  t('role_owner',  styleMode),
+        editor: t('role_editor', styleMode),
+        viewer: t('role_viewer', styleMode),
+      },
+    },
+
+    // ── Share icons (null in minimal) ─────────────────────────────────────────
+    shareIcons: {
+      shareBtn: isModern ? <UserPlus size={14} strokeWidth={2} /> : null,
+      members:  isModern ? <Users    size={14} strokeWidth={2} /> : null,
     },
   }
 }
