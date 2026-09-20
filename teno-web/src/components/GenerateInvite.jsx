@@ -3,7 +3,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Share2, Check, Copy } from 'lucide-react';
 
-export default function GenerateInvite({ labelId, currentToken }) {
+export default function GenerateInvite({ labelId, currentToken, dbApi }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -15,10 +15,11 @@ export default function GenerateInvite({ labelId, currentToken }) {
       // Generate a new token if one doesn't exist
       if (!tokenToCopy) {
         tokenToCopy = crypto.randomUUID().split('-')[0]; // simple short id
-        const labelRef = doc(db, 'shared_labels', labelId);
-        await updateDoc(labelRef, {
-          inviteToken: tokenToCopy
-        });
+        if (dbApi) {
+          await dbApi.updateSharedLabel(labelId, {
+            inviteToken: tokenToCopy
+          });
+        }
       }
 
       const inviteLink = `${window.location.origin}/join/${tokenToCopy}`;

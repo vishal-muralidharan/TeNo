@@ -201,7 +201,7 @@ export default function SharedLabelGroup({ label, user, dbApi }) {
               >
                 <Edit2 size={14} />
               </button>
-              <GenerateInvite labelId={label.id} currentToken={label.inviteToken} />
+              <GenerateInvite labelId={label.id} currentToken={label.inviteToken} dbApi={dbApi} />
               <button className="icon-btn" onClick={deleteLabel} title="Delete Label">
                 <Trash2 size={14} />
               </button>
@@ -479,6 +479,7 @@ export default function SharedLabelGroup({ label, user, dbApi }) {
           label={label}
           currentUser={user}
           onClose={() => setIsMembersModalOpen(false)}
+          dbApi={dbApi}
         />
       )}
     </div>

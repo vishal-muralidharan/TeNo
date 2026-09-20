@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { doc, updateDoc, deleteField } from 'firebase/firestore';
 import { Users, X, Shield, ShieldAlert, User as UserIcon, ChevronDown } from 'lucide-react';
 
-export default function MembersModal({ label, currentUser, onClose }) {
+export default function MembersModal({ label, currentUser, onClose, dbApi }) {
   const [loadingId, setLoadingId] = useState(null);
   const [activeRoleMenu, setActiveRoleMenu] = useState(null);
 
@@ -52,9 +52,9 @@ export default function MembersModal({ label, currentUser, onClose }) {
   }, [label, currentUser.uid]);
 
   const handleVisibilityChange = async (newVisibility) => {
-    if (!isOwner) return;
+    if (!isOwner || !dbApi) return;
     try {
-      await updateDoc(doc(db, 'shared_labels', label.id), {
+      await dbApi.updateSharedLabel(label.id, {
         visibility: newVisibility
       });
     } catch (err) {
@@ -66,13 +66,14 @@ export default function MembersModal({ label, currentUser, onClose }) {
   const handleApproveMember = async (uid, name, email) => {
     setLoadingId(uid);
     try {
-      const docRef = doc(db, 'shared_labels', label.id);
       const safeName = name || 'Unknown User';
       const safeEmail = email || '';
-      await updateDoc(docRef, {
-        [`members.${uid}`]: { role: 'viewer', name: safeName, email: safeEmail },
-        [`pendingMembers.${uid}`]: deleteField()
-      });
+      if (dbApi) {
+        await dbApi.updateSharedLabel(label.id, {
+          [`members.${uid}`]: { role: 'viewer', name: safeName, email: safeEmail },
+          [`pendingMembers.${uid}`]: deleteField()
+        });
+      }
     } catch (err) {
       console.error('Failed to approve member:', err);
       alert('Failed to approve member.');
@@ -83,10 +84,11 @@ export default function MembersModal({ label, currentUser, onClose }) {
   const handleRejectMember = async (uid) => {
     setLoadingId(uid);
     try {
-      const docRef = doc(db, 'shared_labels', label.id);
-      await updateDoc(docRef, {
-        [`pendingMembers.${uid}`]: deleteField()
-      });
+      if (dbApi) {
+        await dbApi.updateSharedLabel(label.id, {
+          [`pendingMembers.${uid}`]: deleteField()
+        });
+      }
     } catch (err) {
       console.error('Failed to reject member:', err);
       alert('Failed to reject member.');
@@ -95,10 +97,10 @@ export default function MembersModal({ label, currentUser, onClose }) {
   };
 
   const handleRoleChange = async (uid, newRole) => {
-    if (!isOwner) return;
+    if (!isOwner || !dbApi) return;
     setLoadingId(uid);
     try {
-      await updateDoc(doc(db, 'shared_labels', label.id), {
+      await dbApi.updateSharedLabel(label.id, {
         [`members.${uid}.role`]: newRole
       });
     } catch (err) {
@@ -116,11 +118,10 @@ export default function MembersModal({ label, currentUser, onClose }) {
   };
 
   const confirmRemoveMember = async () => {
-    if (!pendingRemove) return;
+    if (!pendingRemove || !dbApi) return;
     setLoadingId(pendingRemove);
     try {
-      const docRef = doc(db, 'shared_labels', label.id);
-      await updateDoc(docRef, {
+      await dbApi.updateSharedLabel(label.id, {
         [`members.${pendingRemove}`]: deleteField()
       });
       if (pendingRemove === currentUser.uid) {
