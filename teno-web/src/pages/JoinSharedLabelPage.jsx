@@ -41,7 +41,7 @@ export default function JoinSharedLabelPage() {
         setStatus('Successfully joined! Redirecting...');
         
         setTimeout(() => {
-          navigate(`/dashboard`);
+          navigate('/app', { state: { targetTab: 'shared' } });
         }, 1500);
 
       } catch (err) {
@@ -65,7 +65,7 @@ export default function JoinSharedLabelPage() {
           <div className="mt-4">
             <p className="text-red-500 mb-4">{error}</p>
             <button 
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/app')}
               className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             >
               Go to Dashboard

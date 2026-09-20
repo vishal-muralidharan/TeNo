@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -37,6 +37,7 @@ function isStrongPassword(pass) {
 }
 
 export default function LoginPage({ user, loadingAuth }) {
+  const location = useLocation()
   const { styleMode } = useTheme()
   const ui = getUiConfig(styleMode)
   const [name, setName] = useState('')
@@ -54,7 +55,8 @@ export default function LoginPage({ user, loadingAuth }) {
   }
 
   if (user) {
-    return <Navigate to="/app" replace />
+    const returnTo = location.state?.returnTo || '/app'
+    return <Navigate to={returnTo} replace />
   }
 
   const handlePasswordReset = async (e) => {

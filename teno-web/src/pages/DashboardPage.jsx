@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import LinkStorer from '../components/LinkStorer'
 import Reminders from '../components/Reminders'
 import Timer from '../components/Timer'
@@ -37,6 +37,7 @@ export default function DashboardPage({
   const [terminalHeight, setTerminalHeight] = useState(280)
   const appContainerRef = useRef(null)
   const navigate = useNavigate()
+  const location = useLocation()
   const { styleMode } = useTheme()
   const ui = getUiConfig(styleMode)
   const { isEnabled } = useFeatureFlags()
@@ -53,6 +54,17 @@ export default function DashboardPage({
     if (activeTab === index) return
     setActiveTab(index)
   }
+
+  useEffect(() => {
+    if (location.state?.targetTab) {
+      const targetIndex = tabs.findIndex(t => t.id === location.state.targetTab)
+      if (targetIndex !== -1 && targetIndex !== activeTab) {
+        setActiveTab(targetIndex)
+        // Clear the state so it doesn't re-trigger on refresh
+        navigate(location.pathname, { replace: true, state: {} })
+      }
+    }
+  }, [location.state, tabs, activeTab, setActiveTab, navigate, location.pathname])
 
   useEffect(() => {
     const focusApp = () => {
