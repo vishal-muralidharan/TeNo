@@ -14,6 +14,30 @@ export default function MembersModal({ label, currentUser, onClose }) {
     
   const isOwner = currentUserRole === 'owner';
 
+  const [liveProfiles, setLiveProfiles] = useState({});
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      if (!label || !label.members) return;
+      const uids = Object.keys(label.members).filter(uid => uid !== currentUser.uid);
+      if (uids.length === 0) return;
+      try {
+        const response = await fetch('/api/getUserProfiles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uids })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setLiveProfiles(data.profiles);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user profiles:', err);
+      }
+    };
+    fetchProfiles();
+  }, [label, currentUser.uid]);
+
   const handleRoleChange = async (uid, newRole) => {
     if (!isOwner) return;
     setLoadingId(uid);
