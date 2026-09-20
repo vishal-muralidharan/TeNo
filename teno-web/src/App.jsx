@@ -11,6 +11,10 @@ import { setupTypingCaret } from '../sm/typingCaret'
 import { useTheme } from './ThemeContext'
 import { useFeatureFlags } from './FeatureFlagContext'
 import LoadingScreen from './components/LoadingScreen'
+import DPDPPage from './pages/DPDPPage'
+import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage'
 import { getDb } from './lib/db'
 const TAB_INDEX = {
   links: 0,
@@ -421,6 +425,10 @@ function App() {
               }
             />
             <Route path="/join/:token" element={<JoinSharedLabelPage />} />
+            <Route path="/dpdp" element={user ? <DPDPPage currentUser={user} onSignOut={handleLogout} /> : <Navigate to="/login" replace />} />
+            <Route path="/privacy" element={<PrivacyPage currentUser={user} onSignOut={handleLogout} />} />
+            <Route path="/terms" element={<TermsPage currentUser={user} onSignOut={handleLogout} />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditionsPage currentUser={user} onSignOut={handleLogout} />} />
             <Route path="*" element={<Navigate to={user ? '/app' : '/login'} replace />} />
           </Routes>
         </BrowserRouter>
