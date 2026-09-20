@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
+import { Edit2, ChevronUp, ChevronDown, Copy, UserPlus } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
+import ShareModal from './ShareModal';
 
 export default function Reminders({ user, dbApi }) {
   const { styleMode } = useTheme();
   const ui = getUiConfig(styleMode);
+  const isModern = styleMode === 'modern';
   const [text, setText] = useState('');
   const [label, setLabel] = useState('');
   const [reminders, setReminders] = useState([]);
@@ -15,6 +17,11 @@ export default function Reminders({ user, dbApi }) {
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
   const [editingReminder, setEditingReminder] = useState(null);
+
+  // Share state
+  const [sectionLabels, setSectionLabels] = useState({});
+  const [shareModalTarget, setShareModalTarget] = useState(null);
+  const [creatingLabelFor, setCreatingLabelFor] = useState(null);
 
   useEffect(() => {
     if (!user || !dbApi) return;
@@ -26,14 +33,23 @@ export default function Reminders({ user, dbApi }) {
         const timeB = b.createdAt?.toMillis?.() ?? (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
         return timeA - timeB; 
       });
-      data.sort((a,b) => {
-        const timeA = a.createdAt?.toMillis?.() ?? (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
-        const timeB = b.createdAt?.toMillis?.() ?? (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
-         return timeA - timeB; // changed to Ascending as per original logic
-      });
       setReminders(data);
     });
     return unsub;
+  }, [user, dbApi]);
+
+  // Subscribe to labels for reminders section (for share badge)
+  useEffect(() => {
+    if (!user || !dbApi) return;
+    const unsub = dbApi.subscribeLabelsForSection('reminders', (snapshot) => {
+      const map = {};
+      snapshot.docs.forEach(d => {
+        const data = { id: d.id, ...d.data() };
+        map[(data.name || '').toLowerCase()] = data;
+      });
+      setSectionLabels(map);
+    });
+    return () => unsub();
   }, [user, dbApi]);
 
   const handleSubmit = async (e) => {
@@ -185,7 +201,70 @@ export default function Reminders({ user, dbApi }) {
 
       {reminderSections.map((section) => (
         <section key={section.key} className="section-block">
-          <h3 className="section-title">{section.title}</h3>
+          <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>{section.title}</span>
+
+            {/* Shared badge */}
+            {section.label && sectionLabels[section.label]?.isShared && (
+              <span className="share-badge" style={{
+                fontSize: isModern ? '0.7rem' : '0.75rem',
+                padding: isModern ? '2px 8px' : '0 4px',
+                borderRadius: isModern ? '999px' : '0',
+                background: isModern ? 'rgba(255,255,255,0.1)' : 'transparent',
+                border: isModern ? 'none' : '1px solid var(--border-color)',
+                color: 'var(--text-muted)',
+                whiteSpace: 'nowrap',
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+              }}>
+                {isModern
+                  ? ui.share.badgeCount.replace('{n}', Object.keys(sectionLabels[section.label]?.members || {}).length)
+                  : ui.share.badge}
+              </span>
+            )}
+
+            {/* Share button (only for named sections, not ungrouped) */}
+            {section.label && (
+              <button
+                className="icon-btn share-trigger"
+                title={ui.share.btn}
+                disabled={creatingLabelFor === section.label}
+                style={{
+                  padding: isModern ? '4px' : '0 4px',
+                  fontSize: '0.75rem',
+                  color: sectionLabels[section.label]?.isShared ? 'var(--color-accent)' : 'var(--text-muted)',
+                  opacity: creatingLabelFor === section.label ? 0.5 : 1,
+                  textTransform: 'var(--text-transform)',
+                  transition: 'color 0.2s ease',
+                }}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (sectionLabels[section.label]) {
+                    setShareModalTarget(sectionLabels[section.label]);
+                    return;
+                  }
+                  setCreatingLabelFor(section.label);
+                  try {
+                    const labelId = await dbApi.createOrGetLabel(section.label, 'reminders', {
+                      displayName: user?.displayName,
+                      email: user?.email,
+                    });
+                    const { doc: firestoreDoc, getDoc: firestoreGetDoc } = await import('firebase/firestore');
+                    const { db: firestoreDb } = await import('../firebase');
+                    const snap = await firestoreGetDoc(firestoreDoc(firestoreDb, 'labels', labelId));
+                    if (snap.exists()) {
+                      setShareModalTarget({ id: snap.id, ...snap.data() });
+                    }
+                  } catch (err) {
+                    console.error('Failed to provision label:', err);
+                  } finally {
+                    setCreatingLabelFor(null);
+                  }
+                }}
+              >
+                {isModern ? <UserPlus size={14} /> : ui.share.btn}
+              </button>
+            )}
+          </h3>
           <div className="list-container">
             {section.items.map((r) => {
               const globalIndex = findReminderPosition(r.id);
@@ -285,6 +364,16 @@ export default function Reminders({ user, dbApi }) {
           </div>
         </div>,
         document.body
+      )}
+
+      {/* Share Modal */}
+      {shareModalTarget && user && (
+        <ShareModal
+          label={shareModalTarget}
+          currentUser={user}
+          onClose={() => setShareModalTarget(null)}
+          dbApi={dbApi}
+        />
       )}
     </div>
   );
