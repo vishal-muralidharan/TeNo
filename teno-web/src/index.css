@@ -949,7 +949,7 @@ button.danger:hover {
 
 .dropdown-menu button.danger:hover {
   background-color: transparent;
-  color: var(--color-text-muted);
+  color: var(--color-danger);
 }
 
 /* Modern mode: rounded dropdown + hover */
