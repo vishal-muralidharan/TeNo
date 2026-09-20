@@ -166,7 +166,7 @@ export default function MembersModal({ label, currentUser, onClose }) {
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '500px', overflowY: 'auto', paddingRight: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '500px', overflowY: 'auto', paddingRight: '8px', paddingBottom: '120px' }}>
           
           {isOwner && label.pendingMembers && Object.keys(label.pendingMembers).length > 0 && (
             <div style={{ marginBottom: '16px' }}>
@@ -270,21 +270,21 @@ export default function MembersModal({ label, currentUser, onClose }) {
                     <div className="menu-wrapper" style={{ position: 'relative' }}>
                       <button 
                         className="icon-btn" 
-                        onClick={() => setActiveRoleMenu(activeRoleMenu === uid ? null : uid)}
+                        onClick={(e) => { e.stopPropagation(); setActiveRoleMenu(activeRoleMenu === uid ? null : uid); }}
                         disabled={loadingId === uid}
-                        style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '4px', minWidth: '85px', justifyContent: 'space-between' }}
+                        style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', textTransform: 'lowercase', display: 'flex', alignItems: 'center', gap: '4px', minWidth: '85px', justifyContent: 'space-between' }}
                       >
                         {role} <ChevronDown size={14} />
                       </button>
                       {activeRoleMenu === uid && (
-                        <div className="dropdown-menu dropdown-menu-down" style={{ minWidth: '100px', top: 'calc(100% + 4px)', right: 0 }} onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => { handleRoleChange(uid, 'editor'); setActiveRoleMenu(null); }} style={{ padding: '8px 12px' }}>Editor</button>
-                          <button onClick={() => { handleRoleChange(uid, 'viewer'); setActiveRoleMenu(null); }} style={{ padding: '8px 12px' }}>Viewer</button>
+                        <div className="dropdown-menu dropdown-menu-down" style={{ minWidth: '100px', top: 'calc(100% + 4px)', right: 0, textTransform: 'lowercase' }} onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => { handleRoleChange(uid, 'editor'); setActiveRoleMenu(null); }} style={{ padding: '8px 12px' }}>editor</button>
+                          <button onClick={() => { handleRoleChange(uid, 'viewer'); setActiveRoleMenu(null); }} style={{ padding: '8px 12px' }}>viewer</button>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <span style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: 'var(--bg-elevated)', opacity: 0.8, textTransform: 'capitalize' }}>
+                    <span style={{ fontSize: '0.85rem', padding: '4px 8px', borderRadius: '4px', background: 'var(--bg-elevated)', opacity: 0.8, textTransform: 'lowercase' }}>
                       {role}
                     </span>
                   )}
