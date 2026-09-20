@@ -10,7 +10,7 @@ export default function TermsPage({ currentUser, onSignOut }) {
       <Header user={currentUser} onSignOut={onSignOut} />
       <main className="main-content" style={{ padding: '24px', maxWidth: '800px', margin: '0 auto', overflowY: 'auto' }}>
         <h2 style={{ marginBottom: '8px' }}>Terms of Service</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.9rem' }}>Last Updated: <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 4px' }}>[TODO: Insert Last Updated date]</span></p>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.9rem' }}>Last Updated: September 20, 2026</p>
         
         <section style={{ marginBottom: '24px', lineHeight: '1.6' }}>
           <h3>1. Description of Service</h3>
