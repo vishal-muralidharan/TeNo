@@ -1,14 +1,24 @@
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
-// Use emulator if variables are set
-if (process.env.FIRESTORE_EMULATOR_HOST) {
-  console.log("Using Emulator for Verification...");
+// Load service-account from env if available
+let credential;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const { cert } = require('firebase-admin/app');
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    credential = cert(serviceAccount);
+    console.log('Using FIREBASE_SERVICE_ACCOUNT from env.');
+  } catch (e) {
+    console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT:', e.message);
+  }
 }
 
-initializeApp({
-  projectId: process.env.FIREBASE_PROJECT_ID || 'demo-no-project'
-});
+if (process.env.FIRESTORE_EMULATOR_HOST) {
+  console.log('Using Emulator for Verification...');
+}
+
+initializeApp(credential ? { credential } : { projectId: process.env.FIREBASE_PROJECT_ID || 'demo-no-project' });
 
 const db = getFirestore();
 

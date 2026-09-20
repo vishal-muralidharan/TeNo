@@ -5,14 +5,36 @@ const fs = require('fs');
 
 const isDryRun = !process.argv.includes('--commit');
 
-// Use emulator if variables are set
-if (process.env.FIRESTORE_EMULATOR_HOST) {
-  console.log("Using Emulator...");
+// Load service-account from env if available (for Vercel / local env)
+let credential;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const { cert } = require('firebase-admin/app');
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    credential = cert(serviceAccount);
+    console.log('Using FIREBASE_SERVICE_ACCOUNT from env.');
+  } catch (e) {
+    console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT from env:', e.message);
+  }
 }
 
-initializeApp({
-  projectId: process.env.FIREBASE_PROJECT_ID || 'demo-no-project'
-});
+// Fall back to local key file
+if (!credential) {
+  try {
+    const { cert } = require('firebase-admin/app');
+    const sa = require('./service-account.json');
+    credential = cert(sa);
+    console.log('Using local service-account.json.');
+  } catch (e) {
+    // No local file — will use application default credentials
+  }
+}
+
+if (process.env.FIRESTORE_EMULATOR_HOST) {
+  console.log('Using Emulator...');
+}
+
+initializeApp(credential ? { credential } : { projectId: process.env.FIREBASE_PROJECT_ID || 'demo-no-project' });
 
 const db = getFirestore();
 const auth = getAuth();
