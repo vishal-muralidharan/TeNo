@@ -115,7 +115,7 @@ export default function MembersModal({ label, currentUser, onClose }) {
                       onClick={() => handleRemoveMember(uid)}
                       disabled={loadingId === uid}
                       title={isSelf ? 'Leave label' : 'Remove member'}
-                      style={{ padding: '6px', color: 'var(--color-danger)' }}
+                      style={{ padding: '6px' }}
                     >
                       <X size={14} />
                     </button>

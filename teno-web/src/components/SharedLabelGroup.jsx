@@ -172,7 +172,7 @@ export default function SharedLabelGroup({ label, user }) {
           {isOwner && (
             <>
               <GenerateInvite labelId={label.id} currentToken={label.inviteToken} />
-              <button className="icon-btn" onClick={deleteLabel} title="Delete Label" style={{ color: 'var(--color-danger)' }}>
+              <button className="icon-btn" onClick={deleteLabel} title="Delete Label">
                 <Trash2 size={14} />
               </button>
             </>
