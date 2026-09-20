@@ -52,9 +52,14 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Already a member', labelId });
     }
 
-    // 4. Update the label's members map to add this user as an 'editor'
+    // 4. Update the label's members map to add this user as an 'editor' with their profile info
+    const { name = 'Unknown User', email = '' } = decodedToken;
     await labelsRef.doc(labelId).update({
-      [`members.${uid}`]: 'editor'
+      [`members.${uid}`]: {
+        role: 'editor',
+        name,
+        email
+      }
     });
 
     return res.status(200).json({ message: 'Successfully joined label', labelId });

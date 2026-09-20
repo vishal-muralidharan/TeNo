@@ -45,7 +45,11 @@ export default function SharedLabelsTab({ user, isActive }) {
         inviteToken: crypto.randomUUID().split('-')[0], // pre-generate short invite token
         settings: { inviteAny: true },
         members: {
-          [user.uid]: 'owner' // creator is always the owner
+          [user.uid]: {
+            role: 'owner',
+            name: user.displayName || 'Unknown User',
+            email: user.email || ''
+          }
         },
         createdAt: serverTimestamp()
       });
