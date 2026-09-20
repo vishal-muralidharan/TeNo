@@ -17,44 +17,55 @@ export default function MembersModal({ label, currentUser, onClose }) {
     if (!isOwner) return;
     setLoadingId(uid);
     try {
-      const currentMemberData = label.members[uid];
-      const updatePayload = typeof currentMemberData === 'string'
-        ? newRole
-        : { ...currentMemberData, role: newRole };
-        
       await updateDoc(doc(db, 'shared_labels', label.id), {
-        [`members.${uid}`]: updatePayload
+        [`members.${uid}.role`]: newRole
       });
     } catch (err) {
-      console.error('Failed to update role:', err);
-      alert('Failed to update role.');
+      console.error('Failed to change role:', err);
+      alert('Failed to change role.');
     }
     setLoadingId(null);
   };
 
-  const handleRemoveMember = async (uid) => {
+  const [pendingRemove, setPendingRemove] = useState(null);
+
+  const requestRemoveMember = (uid) => {
     if (!isOwner && uid !== currentUser.uid) return;
-    const action = uid === currentUser.uid ? 'leave' : 'remove this member from';
-    if (!window.confirm(`Are you sure you want to ${action} this label?`)) return;
-    
-    setLoadingId(uid);
+    setPendingRemove(uid);
+  };
+
+  const confirmRemoveMember = async () => {
+    if (!pendingRemove) return;
+    setLoadingId(pendingRemove);
     try {
-      await updateDoc(doc(db, 'shared_labels', label.id), {
-        [`members.${uid}`]: deleteField()
+      const docRef = doc(db, 'shared_labels', label.id);
+      await updateDoc(docRef, {
+        [`members.${pendingRemove}`]: deleteField()
       });
-      if (uid === currentUser.uid) {
-        onClose(); // Close modal if we left the label
+      if (pendingRemove === currentUser.uid) {
+        onClose();
       }
     } catch (err) {
       console.error('Failed to remove member:', err);
       alert('Failed to remove member.');
     }
     setLoadingId(null);
+    setPendingRemove(null);
   };
 
   return createPortal(
     <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="custom-modal" style={{ minWidth: '400px', maxWidth: '500px' }}>
+      <div className="custom-modal" style={{ minWidth: '500px', maxWidth: '600px', position: 'relative' }}>
+        
+        {pendingRemove && (
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--bg-app)', borderRadius: 'var(--border-radius)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: '24px' }}>
+            <p style={{ marginBottom: '16px', fontSize: '1.1rem' }}>Are you sure you want to {pendingRemove === currentUser.uid ? 'leave' : 'remove this member from'} the label?</p>
+            <div className="modal-actions">
+              <button onClick={() => setPendingRemove(null)}>Cancel</button>
+              <button className="danger" onClick={confirmRemoveMember}>{pendingRemove === currentUser.uid ? 'Leave' : 'Remove'}</button>
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
             <Users size={18} /> Members
@@ -64,7 +75,7 @@ export default function MembersModal({ label, currentUser, onClose }) {
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '500px', overflowY: 'auto', paddingRight: '8px' }}>
           {Object.entries(label.members).map(([uid, data]) => {
             const role = typeof data === 'string' ? data : data.role;
             let rawName = typeof data === 'string' ? null : data.name;
@@ -73,22 +84,24 @@ export default function MembersModal({ label, currentUser, onClose }) {
             if (uid === currentUser.uid) {
               rawName = currentUser.displayName || rawName;
               email = currentUser.email || email;
+            } else if (liveProfiles[uid]) {
+              rawName = liveProfiles[uid].name || rawName;
+              email = liveProfiles[uid].email || email;
             }
 
             const name = (rawName && rawName.toLowerCase() !== 'unknown user') ? rawName : (email ? email.split('@')[0] : `User-${uid.substring(0, 4)}`);
             const isSelf = uid === currentUser.uid;
 
             return (
-              <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {role === 'owner' ? <ShieldAlert size={16} color="var(--color-accent)" /> : role === 'editor' ? <Shield size={16} /> : <UserIcon size={16} />}
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {role === 'owner' ? <ShieldAlert size={18} color="var(--color-accent)" /> : role === 'editor' ? <Shield size={18} /> : <UserIcon size={18} />}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
                       {name} {isSelf && <span style={{ fontSize: '10px', background: 'var(--color-accent)', color: '#fff', padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold' }}>YOU</span>}
                     </span>
-                    {email && <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>{email}</span>}
                   </div>
                 </div>
 
@@ -112,7 +125,7 @@ export default function MembersModal({ label, currentUser, onClose }) {
                   {(isOwner && role !== 'owner') || isSelf ? (
                     <button
                       className="icon-btn"
-                      onClick={() => handleRemoveMember(uid)}
+                      onClick={() => requestRemoveMember(uid)}
                       disabled={loadingId === uid}
                       title={isSelf ? 'Leave label' : 'Remove member'}
                       style={{ padding: '6px' }}
