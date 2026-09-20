@@ -211,25 +211,27 @@ export default function SettingsPage({
                   </button>
                 </div>
               </div>
-              <div style={{ width: '100%' }}>
-                <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>{ui.settings.styleModeLabel}</span>
-                <div style={getToggleContainerStyle()}>
-                  <button
-                    type="button"
-                    style={getToggleBtnStyle(styleMode === 'minimal')}
-                    onClick={() => setStyleMode('minimal')}
-                  >
-                    {ui.settings.styleMinimal}
-                  </button>
-                  <button
-                    type="button"
-                    style={getToggleBtnStyle(styleMode === 'modern', true)}
-                    onClick={() => setStyleMode('modern')}
-                  >
-                    {ui.settings.styleModern}
-                  </button>
+              {isEnabled('modernTheme') && (
+                <div style={{ width: '100%' }}>
+                  <span style={{ marginBottom: '8px', display: 'block', color: 'var(--text-muted)' }}>{ui.settings.styleModeLabel}</span>
+                  <div style={getToggleContainerStyle()}>
+                    <button
+                      type="button"
+                      style={getToggleBtnStyle(styleMode === 'minimal')}
+                      onClick={() => setStyleMode('minimal')}
+                    >
+                      {ui.settings.styleMinimal}
+                    </button>
+                    <button
+                      type="button"
+                      style={getToggleBtnStyle(styleMode === 'modern', true)}
+                      onClick={() => setStyleMode('modern')}
+                    >
+                      {ui.settings.styleModern}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </article>
 

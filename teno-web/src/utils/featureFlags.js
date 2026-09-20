@@ -22,6 +22,7 @@ export const DEFAULT_FEATURE_FLAGS = {
 
   /** Structural UI */
   terminal:        true,
+  modernTheme:     true,
 
   /** Settings sub-features */
   settings:        true,
