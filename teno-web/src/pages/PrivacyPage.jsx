@@ -29,7 +29,7 @@ export default function PrivacyPage({ currentUser, onSignOut }) {
 
         <section style={{ marginBottom: '24px', lineHeight: '1.6' }}>
           <h3>4. Data Retention</h3>
-          <p>Your data is retained for <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 4px' }}>[TODO: specify retention period]</span> or until you choose to delete your account.</p>
+          <p>Your data is retained until you choose to delete your account.</p>
         </section>
 
         <section style={{ marginBottom: '24px', lineHeight: '1.6' }}>
