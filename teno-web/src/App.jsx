@@ -378,7 +378,8 @@ function App() {
   // which stays mounted until the theme is ready and the minimum load time passes.
   const isReadyToRender = isThemeReady && !loadingAuth && !minLoadTimePending && !styleModeChanging
 
-  const showTermsModal = user && userProfile && !userProfile.agreed_to_terms && window.location.pathname !== '/login';
+  const excludedPaths = ['/login', '/terms', '/terms-and-conditions', '/privacy', '/dpdp'];
+  const showTermsModal = user && userProfile && !userProfile.agreed_to_terms && !excludedPaths.includes(window.location.pathname);
 
   return (
     <>
