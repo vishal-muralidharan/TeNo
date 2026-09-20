@@ -269,48 +269,6 @@ export default function SettingsPage({
           </article>
 
           <article className="settings-card">
-            <h3>{ui.settings.legalPrivacy}</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-              <Link to="/terms" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms of Service</Link>
-              <Link to="/privacy" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Privacy Policy</Link>
-              <Link to="/terms-and-conditions" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms and Conditions</Link>
-              <Link to="/dpdp" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>{ui.settings.dpdpTitle}</Link>
-            </div>
-          </article>
-
-          <article className="settings-card">
-            <h3>{ui.settings.contact}</h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '12px' }}>
-              Need help? Reach out to us at <a href="mailto:[TODO: verify support email]" style={{ color: 'var(--text-primary)' }}>[TODO: verify support email]</a>.
-            </p>
-          </article>
-
-          <article className="settings-card" style={{ border: '1px solid var(--color-danger)' }}>
-            <h3 style={{ color: 'var(--color-danger)' }}>{ui.settings.dangerZone}</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-              Deleting your account is irreversible. All your data will be permanently removed.
-            </p>
-            <input 
-              type="text" 
-              placeholder="Type DELETE to confirm" 
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              style={{ width: '100%', padding: '8px', marginBottom: '16px', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
-            />
-            <button 
-              type="button" 
-              className="btn-primary" 
-              disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-              onClick={handleDeleteAccount}
-              style={{ width: '100%', background: 'var(--color-danger)', color: 'white', opacity: (deleteConfirmText !== 'DELETE' || isDeleting) ? 0.5 : 1, cursor: (deleteConfirmText !== 'DELETE' || isDeleting) ? 'not-allowed' : 'pointer' }}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete Account'}
-            </button>
-          </article>
-
-
-
-          <article className="settings-card">
             <h3>{ui.settings.summary}</h3>
             {isEnabled('links') && <div className="settings-kv"><span>saved links</span><strong>{savedLinks.length}</strong></div>}
             {isEnabled('cart') && <div className="settings-kv"><span>cart links</span><strong>{cartItems.length}</strong></div>}
@@ -381,6 +339,48 @@ export default function SettingsPage({
           </div>
         </section>
       )}
+
+        <section className="settings-grid" style={{ marginTop: '24px' }}>
+          <article className="settings-card">
+            <h3>{ui.settings.contact}</h3>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '12px' }}>
+              Need help? Reach out to us at <a href="mailto:[TODO: verify support email]" style={{ color: 'var(--text-primary)' }}>[TODO: verify support email]</a>.
+            </p>
+          </article>
+
+          <article className="settings-card">
+            <h3>{ui.settings.legalPrivacy}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+              <Link to="/terms" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms of Service</Link>
+              <Link to="/privacy" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Privacy Policy</Link>
+              <Link to="/terms-and-conditions" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms and Conditions</Link>
+              <Link to="/dpdp" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>{ui.settings.dpdpTitle}</Link>
+            </div>
+          </article>
+
+          <article className="settings-card" style={{ border: '1px solid var(--color-danger)' }}>
+            <h3 style={{ color: 'var(--color-danger)' }}>{ui.settings.dangerZone}</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Deleting your account is irreversible. All your data will be permanently removed.
+            </p>
+            <input 
+              type="text" 
+              placeholder="Type DELETE to confirm" 
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              style={{ width: '100%', padding: '8px', marginBottom: '16px', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+            />
+            <button 
+              type="button" 
+              className="btn-primary" 
+              disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+              onClick={handleDeleteAccount}
+              style={{ width: '100%', background: 'var(--color-danger)', color: 'white', opacity: (deleteConfirmText !== 'DELETE' || isDeleting) ? 0.5 : 1, cursor: (deleteConfirmText !== 'DELETE' || isDeleting) ? 'not-allowed' : 'pointer' }}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Account'}
+            </button>
+          </article>
+        </section>
         </div>
       </main>
 
