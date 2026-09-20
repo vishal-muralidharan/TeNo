@@ -31,6 +31,7 @@ export default function DashboardPage({
   deleteReminderByIndex,
   deleteAllReminders,
   recordLinkOpen,
+  dbApi,
   timerApi,
 }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
@@ -43,11 +44,11 @@ export default function DashboardPage({
   const { isEnabled } = useFeatureFlags()
 
   const tabs = [
-    isEnabled('links')     && { id: 'links',     label: ui.tabs.links,     component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} openFormSignal={linksFormToken} onLinkOpen={recordLinkOpen} /> },
-    isEnabled('cart')      && { id: 'cart',      label: ui.tabs.cart,      component: <LinkStorer collectionName="cart_items" title="Cart" user={user} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
-    isEnabled('reminders') && { id: 'reminders', label: ui.tabs.reminders, component: <Reminders user={user} /> },
+    isEnabled('links')     && { id: 'links',     label: ui.tabs.links,     component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} dbApi={dbApi} openFormSignal={linksFormToken} onLinkOpen={recordLinkOpen} /> },
+    isEnabled('cart')      && { id: 'cart',      label: ui.tabs.cart,      component: <LinkStorer collectionName="cart_items" title="Cart" user={user} dbApi={dbApi} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
+    isEnabled('reminders') && { id: 'reminders', label: ui.tabs.reminders, component: <Reminders user={user} dbApi={dbApi} /> },
     isEnabled('timer')     && { id: 'timer',     label: ui.tabs.timer,     component: <Timer {...timerApi} /> },
-    isEnabled('shared')    && { id: 'shared',    label: 'Shared Labels',   component: <SharedLabelsTab /> },
+    isEnabled('shared')    && { id: 'shared',    label: 'Shared Labels',   component: <SharedLabelsTab user={user} dbApi={dbApi} /> },
   ].filter(Boolean)
 
   const handleTabSwitch = (index) => {
