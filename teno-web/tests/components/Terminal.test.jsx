@@ -19,13 +19,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import Terminal from './Terminal'
+import Terminal from '../../src/components/Terminal'
 
 // ── Mock FeatureFlagContext ────────────────────────────────────────────────────
-vi.mock('../FeatureFlagContext', () => ({
+vi.mock('../../src/FeatureFlagContext', () => ({
   useFeatureFlags: vi.fn(),
 }))
-import { useFeatureFlags } from '../FeatureFlagContext'
+import { useFeatureFlags } from '../../src/FeatureFlagContext'
 
 // Default: all features enabled
 function mockAllEnabled() {

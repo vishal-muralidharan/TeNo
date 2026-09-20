@@ -41,7 +41,7 @@ vi.mock('dotenv', () => ({
 process.env.FIREBASE_SERVICE_ACCOUNT = JSON.stringify({ project_id: 'test' })
 import { getAuth } from 'firebase-admin/auth'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
-import handler from './joinLabel'
+import handler from '../../api/joinLabel'
 
 // ── 2. Helper to build mock HTTP req/res ─────────────────────────────────────
 function buildHttpMocks(options = {}) {

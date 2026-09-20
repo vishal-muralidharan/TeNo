@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { DEFAULT_FEATURE_FLAGS, isEnabled } from './featureFlags'
+import { DEFAULT_FEATURE_FLAGS, isEnabled } from '../../src/utils/featureFlags'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. DEFAULT_FEATURE_FLAGS — registry integrity

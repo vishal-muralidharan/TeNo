@@ -14,6 +14,7 @@ export default defineConfig({
     // This file configures @testing-library/jest-dom matchers, localStorage
     // stubs, window.matchMedia stubs, and Firebase mocks.
     setupFiles: ['./tests/setup.js'],
+    include: ['tests/**/*.{test,spec}.{js,jsx}'],
 
     // Expose vi, describe, it, expect, etc. globally (no explicit import needed).
     globals: true,

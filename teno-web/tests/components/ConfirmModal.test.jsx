@@ -13,16 +13,16 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import ConfirmModal from './ConfirmModal'
+import ConfirmModal from '../../src/components/ConfirmModal'
 
 // ── Mock ThemeContext so ConfirmModal gets a controlled styleMode ─────────────
 // ConfirmModal calls useTheme() which reads from ThemeContext.
 // We provide a minimal context value via a thin wrapper.
 
-vi.mock('../ThemeContext', () => ({
+vi.mock('../../src/ThemeContext', () => ({
   useTheme: vi.fn(),
 }))
-import { useTheme } from '../ThemeContext'
+import { useTheme } from '../../src/ThemeContext'
 
 function renderModal(props = {}, styleMode = 'minimal') {
   vi.mocked(useTheme).mockReturnValue({ styleMode })

@@ -16,8 +16,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { themeTranslations, t } from './themeTranslations'
-import { getUiConfig } from './uiConfig'
+import { themeTranslations, t } from '../../src/utils/themeTranslations'
+import { getUiConfig } from '../../src/utils/uiConfig'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers

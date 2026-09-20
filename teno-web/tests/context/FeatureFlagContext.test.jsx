@@ -18,8 +18,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, act, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { FeatureFlagProvider, useFeatureFlags } from './FeatureFlagContext'
-import { DEFAULT_FEATURE_FLAGS } from './utils/featureFlags'
+import { FeatureFlagProvider, useFeatureFlags } from '../../src/FeatureFlagContext'
+import { DEFAULT_FEATURE_FLAGS } from '../../src/utils/featureFlags'
 import { onSnapshot, setDoc, doc } from 'firebase/firestore'
 
 // ── Test consumer ─────────────────────────────────────────────────────────────

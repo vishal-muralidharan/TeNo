@@ -21,7 +21,7 @@ import {
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore'
-import { TeNoDatabase, getDb } from './db'
+import { TeNoDatabase, getDb } from '../../src/lib/db'
 
 // ── Mock data ────────────────────────────────────────────────────────────────
 const UID = 'user-123'

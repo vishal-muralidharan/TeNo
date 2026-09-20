@@ -32,7 +32,7 @@ async function renderTheme(preloadLS = {}) {
   }
 
   // Dynamic import so module-level code re-runs with fresh localStorage
-  const { ThemeProvider, useTheme } = await import('./ThemeContext')
+  const { ThemeProvider, useTheme } = await import('../../src/ThemeContext')
 
   function Consumer() {
     const ctx = useTheme()
