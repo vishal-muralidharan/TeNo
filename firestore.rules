@@ -16,8 +16,8 @@ service cloud.firestore {
     // the members map (old schema) for backwards compatibility.
     function isMember(data) {
       return isSignedIn() && (
-        (data.get('memberUids', [])).hasAny([request.auth.uid]) ||
-        (data.get('members', {}).get(request.auth.uid, null) != null)
+        request.auth.uid in data.get('memberUids', []) ||
+        request.auth.uid in data.get('members', {})
       );
     }
 
@@ -25,7 +25,7 @@ service cloud.firestore {
     // in the given data's members map.
     function canWrite(data) {
       return isSignedIn() && isMember(data) && (
-        data.get('members', {}).get(request.auth.uid, {}).get('role', '') in ['owner', 'editor'] ||
+        data.get('members', {}).get(request.auth.uid, {}).role in ['owner', 'editor'] ||
         data.get('members', {}).get(request.auth.uid, '') in ['owner', 'editor']
       );
     }
@@ -63,8 +63,8 @@ service cloud.firestore {
     //         server-side in the joinLabel API function; Firestore rules keep it simple.
     // Delete: owner only.
     match /labels/{labelId} {
-      allow read: if isMember(resource.data);
-      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+      allow read: if isMember(resource.data) || isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
       allow update: if isMember(resource.data);
       allow delete: if isOwner(resource.data.ownerId);
     }
