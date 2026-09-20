@@ -32,7 +32,9 @@ export default function SharedLabelGroup({ label, user }) {
   const copiedTimerRef = useRef(null);
   const copiedFadeRef = useRef(null);
 
-  const role = label.members[user.uid];
+  const rawRole = label.members[user.uid];
+  const role = typeof rawRole === 'string' ? rawRole : (rawRole?.role || 'viewer');
+  
   const isOwner = role === 'owner';
   const canEdit = isOwner || role === 'editor';
 

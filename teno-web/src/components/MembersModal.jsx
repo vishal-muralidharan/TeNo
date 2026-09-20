@@ -67,8 +67,10 @@ export default function MembersModal({ label, currentUser, onClose }) {
     setLoadingId(uid);
     try {
       const docRef = doc(db, 'shared_labels', label.id);
+      const safeName = name || 'Unknown User';
+      const safeEmail = email || '';
       await updateDoc(docRef, {
-        [`members.${uid}`]: { role: 'viewer', name, email },
+        [`members.${uid}`]: { role: 'viewer', name: safeName, email: safeEmail },
         [`pendingMembers.${uid}`]: deleteField()
       });
     } catch (err) {
