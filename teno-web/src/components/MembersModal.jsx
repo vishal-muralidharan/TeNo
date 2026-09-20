@@ -64,12 +64,12 @@ export default function MembersModal({ label, currentUser, onClose }) {
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
           {Object.entries(label.members).map(([uid, data]) => {
             const role = typeof data === 'string' ? data : data.role;
             const rawName = typeof data === 'string' ? null : data.name;
             const email = typeof data === 'string' ? '' : data.email;
-            const name = (rawName && rawName.toLowerCase() !== 'unknown user') ? rawName : (email ? email.split('@')[0] : 'Unknown User');
+            const name = (rawName && rawName.toLowerCase() !== 'unknown user') ? rawName : (email ? email.split('@')[0] : `User-${uid.substring(0, 4)}`);
             const isSelf = uid === currentUser.uid;
 
             return (
@@ -86,7 +86,7 @@ export default function MembersModal({ label, currentUser, onClose }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {isOwner && role !== 'owner' ? (
                     <select
                       value={role}
@@ -105,11 +105,11 @@ export default function MembersModal({ label, currentUser, onClose }) {
                   
                   {(isOwner && role !== 'owner') || isSelf ? (
                     <button
-                      className="icon-btn danger"
+                      className="icon-btn"
                       onClick={() => handleRemoveMember(uid)}
                       disabled={loadingId === uid}
                       title={isSelf ? 'Leave label' : 'Remove member'}
-                      style={{ padding: '6px' }}
+                      style={{ padding: '6px', color: 'var(--color-danger)' }}
                     >
                       <X size={14} />
                     </button>
