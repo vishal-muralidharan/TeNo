@@ -1,10 +1,12 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function PrivacyPage({ currentUser, onSignOut }) {
   return (
     <div className="app-layout">
+      <SEO title="Privacy Policy" description="Privacy policy and data collection practices." />
       <Header user={currentUser} onSignOut={onSignOut} />
       <main className="main-content" style={{ padding: '24px', maxWidth: '800px', margin: '0 auto', overflowY: 'auto' }}>
         <h2 style={{ marginBottom: '8px' }}>Privacy Policy</h2>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import Footer from '../components/Footer';
 import { exportUserData } from '../api/user';
 import { useTheme } from '../ThemeContext';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 export default function DPDPPage({ currentUser, onSignOut }) {
   const { styleMode } = useTheme();
@@ -34,6 +34,7 @@ export default function DPDPPage({ currentUser, onSignOut }) {
 
   return (
     <div className="app-layout">
+      <SEO title="Manage Data (DPDP)" description="Manage your data and privacy rights according to the DPDP Act." />
       <Header user={currentUser} onSignOut={onSignOut} />
       <main className="main-content" style={{ padding: '24px', maxWidth: '800px', margin: '0 auto', overflowY: 'auto' }}>
         <Link to="/settings" style={{ display: 'inline-block', marginBottom: '24px', color: 'var(--text-muted)' }}>← Back to Settings</Link>

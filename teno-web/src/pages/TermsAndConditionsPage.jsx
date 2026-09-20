@@ -1,10 +1,12 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function TermsAndConditionsPage({ currentUser, onSignOut }) {
   return (
     <div className="app-layout">
+      <SEO title="Terms and Conditions" description="Terms and conditions for using the service." />
       <Header user={currentUser} onSignOut={onSignOut} />
       <main className="main-content" style={{ padding: '24px', maxWidth: '800px', margin: '0 auto', overflowY: 'auto' }}>
         <h2 style={{ marginBottom: '8px' }}>Terms and Conditions</h2>

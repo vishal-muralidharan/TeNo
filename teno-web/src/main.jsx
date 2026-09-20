@@ -4,13 +4,16 @@ import App from './App.jsx'
 import './index.css'
 import { ThemeProvider } from './ThemeContext.jsx'
 import { FeatureFlagProvider } from './FeatureFlagContext.jsx'
+import { HelmetProvider } from 'react-helmet-async'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <FeatureFlagProvider>
-        <App />
-      </FeatureFlagProvider>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider>
+        <FeatureFlagProvider>
+          <App />
+        </FeatureFlagProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   </React.StrictMode>,
 )
