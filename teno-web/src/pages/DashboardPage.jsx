@@ -4,7 +4,6 @@ import LinkStorer from '../components/LinkStorer'
 import Reminders from '../components/Reminders'
 import Timer from '../components/Timer'
 import Terminal from '../components/Terminal'
-import SharedLabelsTab from '../components/SharedLabelsTab'
 import { useTheme } from '../ThemeContext'
 import { getUiConfig } from '../utils/uiConfig'
 import ConfirmModal from '../components/ConfirmModal'
@@ -48,7 +47,7 @@ export default function DashboardPage({
     isEnabled('cart')      && { id: 'cart',      label: ui.tabs.cart,      component: <LinkStorer collectionName="cart_items" title="Cart" user={user} dbApi={dbApi} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
     isEnabled('reminders') && { id: 'reminders', label: ui.tabs.reminders, component: <Reminders user={user} dbApi={dbApi} /> },
     isEnabled('timer')     && { id: 'timer',     label: ui.tabs.timer,     component: <Timer {...timerApi} /> },
-    isEnabled('shared')    && { id: 'shared',    label: 'Shared Labels',   component: <SharedLabelsTab user={user} dbApi={dbApi} /> },
+
   ].filter(Boolean)
 
   const handleTabSwitch = (index) => {
