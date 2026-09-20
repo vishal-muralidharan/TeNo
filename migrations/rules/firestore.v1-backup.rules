@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // --- HELPER FUNCTIONS ---
+    // --- NEW HELPER FUNCTIONS ---
     function isSignedIn() {
       return request.auth != null;
     }
@@ -28,23 +28,53 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/labels/$(labelId)).data;
     }
 
-    // --- SYSTEM PATHS ---
+    // --- OLD PATHS (kept for transition) ---
+    function isOldMemberOfLabel(labelId) {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/shared_labels/$(labelId)) &&
+             request.auth.uid in get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members;
+    }
+    
+    function getOldRole(labelId) {
+      let rawRole = get(/databases/$(database)/documents/shared_labels/$(labelId)).data.members[request.auth.uid];
+      return (rawRole is string) ? rawRole : rawRole.role;
+    }
+    
+    function hasOldEditAccess(labelId) {
+      return isOldMemberOfLabel(labelId) && (getOldRole(labelId) == 'owner' || getOldRole(labelId) == 'editor');
+    }
+
+    match /shared_labels/{labelId} {
+      allow read: if isOldMemberOfLabel(labelId) || 
+                  (isSignedIn() && request.auth.uid in resource.data.members);
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && 
+                            (
+                              (resource.data.members[request.auth.uid] is string && resource.data.members[request.auth.uid] == 'owner') ||
+                              (resource.data.members[request.auth.uid] is map && resource.data.members[request.auth.uid].role == 'owner')
+                            );
+    }
+    match /shared_links/{linkId} {
+      allow read: if isOldMemberOfLabel(resource.data.labelId);
+      allow create: if hasOldEditAccess(request.resource.data.labelId);
+      allow update, delete: if hasOldEditAccess(resource.data.labelId);
+    }
+
+    // --- NEW PATHS ---
     match /system_config/flags {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // --- USER PROFILE ---
     match /users/{userId} {
       allow read, write: if isOwner(userId);
       
-      // Kept old subcollections for transition/backup (e.g. saved_links)
+      // Kept old subcollections for transition (if any existed before the move)
       match /{document=**} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // --- UNIFIED SCHEMA: LABELS ---
     match /labels/{labelId} {
       allow read: if resource.data.visibility == 'public' || isMember(resource.data);
       
@@ -60,7 +90,6 @@ service cloud.firestore {
       allow delete: if isMember(resource.data) && getRole(resource.data) == 'owner';
     }
 
-    // --- UNIFIED SCHEMA: LINKS ---
     match /links/{linkId} {
       allow read: if isMember(resource.data) || getLabel(resource.data.labelId).visibility == 'public';
       
