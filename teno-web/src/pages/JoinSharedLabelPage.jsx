@@ -61,29 +61,63 @@ export default function JoinSharedLabelPage() {
   }, [token, navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-md w-full text-center">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Join Shared Label</h2>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      background: 'var(--bg-app)',
+      padding: '20px',
+      fontFamily: 'var(--font-family)',
+      color: 'var(--text-primary)'
+    }}>
+      <div style={{
+        padding: '32px',
+        background: 'var(--bg-surface)',
+        borderRadius: 'var(--border-radius)',
+        boxShadow: 'var(--shadow-card)',
+        border: '1px var(--border-style) var(--border-color)',
+        maxWidth: '400px',
+        width: '100%',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '600', margin: '0' }}>Shared Label</h2>
         
-        {status && <p className="text-blue-600 dark:text-blue-400">{status}</p>}
+        {status && (
+          <p style={{ 
+            color: status.includes('requested') ? 'var(--color-warning)' : (status.includes('Successfully') ? 'var(--color-success)' : 'var(--text-secondary)'),
+            fontSize: '1rem',
+            lineHeight: '1.5'
+          }}>
+            {status}
+          </p>
+        )}
         
         {status === 'Access requested. Waiting for owner approval.' && (
-          <div className="mt-4">
+          <div style={{ marginTop: '8px' }}>
             <button 
               onClick={() => navigate('/app')}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="btn-primary"
+              style={{ width: '100%', padding: '10px 16px' }}
             >
-              Go to Dashboard
+              Return to Dashboard
             </button>
           </div>
         )}
 
         {error && (
-          <div className="mt-4">
-            <p className="text-red-500 mb-4">{error}</p>
+          <div style={{ marginTop: '8px' }}>
+            <p style={{ color: 'var(--color-danger)', marginBottom: '16px', fontSize: '0.9rem', padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--border-radius)', border: '1px solid var(--color-danger)' }}>
+              {error}
+            </p>
             <button 
               onClick={() => navigate('/app')}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="btn-primary"
+              style={{ width: '100%', padding: '10px 16px' }}
             >
               Go to Dashboard
             </button>
