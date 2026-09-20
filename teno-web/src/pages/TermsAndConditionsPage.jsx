@@ -14,7 +14,7 @@ export default function TermsAndConditionsPage({ currentUser, onSignOut }) {
 
         <section style={{ marginBottom: '24px', lineHeight: '1.6' }}>
           <h3>1. Eligibility</h3>
-          <p>You must be at least <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 4px' }}>[TODO: confirm minimum age, e.g., 18]</span> years old to use this service.</p>
+          <p>You must be at least 12 years old to use this service.</p>
         </section>
 
         <section style={{ marginBottom: '24px', lineHeight: '1.6' }}>
