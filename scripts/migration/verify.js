@@ -10,7 +10,19 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     credential = cert(serviceAccount);
     console.log('Using FIREBASE_SERVICE_ACCOUNT from env.');
   } catch (e) {
-    console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT:', e.message);
+    console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT from env:', e.message);
+  }
+}
+
+// Fall back to local key file
+if (!credential) {
+  try {
+    const { cert } = require('firebase-admin/app');
+    const sa = require('./service-account.json');
+    credential = cert(sa);
+    console.log('Using local service-account.json.');
+  } catch (e) {
+    // No local file — will use application default credentials
   }
 }
 

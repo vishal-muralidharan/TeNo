@@ -288,9 +288,9 @@ async function migrate() {
               if (role === 'owner' && !ownerId) ownerId = uid;
               
               newMembers[uid] = {
-                  role: role,
-                  name: typeof roleData === 'object' ? roleData.name : (authUser.name || 'User'),
-                  email: typeof roleData === 'object' ? roleData.email : (authUser.email || ''),
+                  role: role || 'viewer',
+                  name: (typeof roleData === 'object' ? roleData.name : null) || authUser.name || 'User',
+                  email: (typeof roleData === 'object' ? roleData.email : null) || authUser.email || '',
                   joinedAt: FieldValue.serverTimestamp()
               };
           }
