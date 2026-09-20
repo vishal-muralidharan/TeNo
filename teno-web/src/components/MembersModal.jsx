@@ -146,21 +146,9 @@ export default function MembersModal({ label, currentUser, onClose }) {
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-              <Users size={18} /> Members
-            </h3>
-            {isOwner && (
-              <select
-                value={label.visibility || 'public'}
-                onChange={(e) => handleVisibilityChange(e.target.value)}
-                style={{ padding: '4px 8px', borderRadius: 'var(--border-radius)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontSize: '0.85rem' }}
-              >
-                <option value="public">Public</option>
-                <option value="private">Private</option>
-              </select>
-            )}
-          </div>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+            <Users size={18} /> Members
+          </h3>
           <button className="icon-btn" onClick={onClose} style={{ padding: '4px' }}>
             <X size={16} />
           </button>

@@ -25,6 +25,9 @@ export default function SharedLabelGroup({ label, user }) {
   const [editingItem, setEditingItem] = useState(null);
   const [pendingDeleteLink, setPendingDeleteLink] = useState(null);
   const [pendingDeleteLabel, setPendingDeleteLabel] = useState(false);
+  const [isEditingLabelModalOpen, setIsEditingLabelModalOpen] = useState(false);
+  const [editedLabelName, setEditedLabelName] = useState('');
+  const [editedVisibility, setEditedVisibility] = useState('public');
   const copiedTimerRef = useRef(null);
   const copiedFadeRef = useRef(null);
 
@@ -127,6 +130,21 @@ export default function SharedLabelGroup({ label, user }) {
     setPendingDeleteLabel(true);
   };
 
+  const saveEditedLabel = async (e) => {
+    e.preventDefault();
+    if (!editedLabelName.trim() || !isOwner) return;
+    try {
+      await updateDoc(doc(db, 'shared_labels', label.id), {
+        name: editedLabelName.trim(),
+        visibility: editedVisibility
+      });
+      setIsEditingLabelModalOpen(false);
+    } catch (err) {
+      console.error('Failed to update label:', err);
+      alert('Failed to update label.');
+    }
+  };
+
   const confirmDeleteLabel = async () => {
     try {
       const batch = writeBatch(db);
@@ -171,6 +189,17 @@ export default function SharedLabelGroup({ label, user }) {
           )}
           {isOwner && (
             <>
+              <button 
+                className="icon-btn" 
+                onClick={() => {
+                  setEditedLabelName(label.name);
+                  setEditedVisibility(label.visibility || 'public');
+                  setIsEditingLabelModalOpen(true);
+                }} 
+                title="Edit Label"
+              >
+                <Edit2 size={14} />
+              </button>
               <GenerateInvite labelId={label.id} currentToken={label.inviteToken} />
               <button className="icon-btn" onClick={deleteLabel} title="Delete Label">
                 <Trash2 size={14} />
@@ -387,6 +416,45 @@ export default function SharedLabelGroup({ label, user }) {
               <button onClick={() => setPendingDeleteLabel(false)}>Cancel</button>
               <button className="danger" onClick={confirmDeleteLabel}>Delete Label</button>
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {isEditingLabelModalOpen && createPortal(
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setIsEditingLabelModalOpen(false); }}>
+          <div className="custom-modal">
+            <h3 style={{ marginBottom: '16px', fontSize: '1.2rem', fontWeight: '500' }}>Edit Shared Label</h3>
+            <form onSubmit={saveEditedLabel} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Label Name</label>
+                <div className="typing-caret-field" data-empty={!editedLabelName}>
+                  <input
+                    type="text"
+                    name={`edit-label-name-${label.id}`}
+                    value={editedLabelName}
+                    onChange={(e) => setEditedLabelName(e.target.value)}
+                    placeholder="Label Name"
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Visibility</label>
+                <select
+                  value={editedVisibility}
+                  onChange={(e) => setEditedVisibility(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontSize: '1rem', outline: 'none' }}
+                >
+                  <option value="public">Public (Anyone with link can join instantly)</option>
+                  <option value="private">Private (Requires your approval to join)</option>
+                </select>
+              </div>
+              <div className="modal-actions" style={{ marginTop: '8px' }}>
+                <button type="button" onClick={() => setIsEditingLabelModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" disabled={!editedLabelName.trim()}>Save Changes</button>
+              </div>
+            </form>
           </div>
         </div>,
         document.body
