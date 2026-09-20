@@ -132,7 +132,7 @@ export class TeNoDatabase {
   subscribeSharedLabels(callback) {
     if (this.isNewSchema) {
       // In new schema, shared labels are just labels where you are a member
-      const q = query(collection(db, 'labels'), where(`members.${this.uid}`, '!=', null));
+      const q = query(collection(db, 'labels'), where('memberUids', 'array-contains', this.uid));
       return onSnapshot(q, callback);
     } else {
       const q = query(collection(db, 'shared_labels'), where(`members.${this.uid}`, '!=', null));
@@ -169,9 +169,13 @@ export class TeNoDatabase {
 
   // --- Shared Links ---
   subscribeSharedLinks(labelId, callback) {
-    const col = this.isNewSchema ? 'links' : 'shared_links';
-    const q = query(collection(db, col), where('labelId', '==', labelId));
-    return onSnapshot(q, callback);
+    if (this.isNewSchema) {
+      const q = query(collection(db, 'links'), where('labelId', '==', labelId), where('memberUids', 'array-contains', this.uid));
+      return onSnapshot(q, callback);
+    } else {
+      const q = query(collection(db, 'shared_links'), where('labelId', '==', labelId), where(`members.${this.uid}`, '!=', null));
+      return onSnapshot(q, callback);
+    }
   }
 
   async addSharedLink(data) {

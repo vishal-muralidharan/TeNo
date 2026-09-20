@@ -12,7 +12,12 @@ service cloud.firestore {
     }
     
     function isMember(data) {
-      return isSignedIn() && (request.auth.uid in data.memberUids);
+      // Support both new schema array (memberUids) and old schema map (members)
+      return isSignedIn() && (
+        (data.get('memberUids', [])).hasAny([request.auth.uid]) ||
+        (data.get('members', {}).get(request.auth.uid, null) != null) ||
+        (request.auth.uid in data.get('memberUids', []))
+      );
     }
     
     function getRole(labelData) {
@@ -41,7 +46,7 @@ service cloud.firestore {
                     && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription', 'isAdmin', 'words_left', 'words_used', 'max_words']));
       allow delete: if false;
       
-      // Kept old subcollections for transition/backup (e.g. saved_links)
+      // Kept old subcollections for transition/backup (e.g. saved_links, cart_items, reminders, settings)
       match /{document=**} {
         allow read, write: if isOwner(userId);
       }
@@ -55,6 +60,17 @@ service cloud.firestore {
 
     // --- UNIFIED SCHEMA: LINKS ---
     match /links/{linkId} {
+      allow read, update, delete: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+    }
+
+    // --- OLD SCHEMA: SHARED LABELS & LINKS ---
+    match /shared_labels/{labelId} {
+      allow read, update, delete: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+    }
+
+    match /shared_links/{linkId} {
       allow read, update, delete: if isMember(resource.data);
       allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
     }
