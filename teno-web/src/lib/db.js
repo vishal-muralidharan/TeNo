@@ -1,0 +1,131 @@
+import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+
+export class TeNoDatabase {
+  constructor(uid, isNewSchema) {
+    this.uid = uid;
+    this.isNewSchema = isNewSchema;
+    this.defaultLabelId = `default_${uid}`;
+  }
+
+  // --- Links ---
+  subscribeLinks(callback) {
+    if (this.isNewSchema) {
+      const q = query(
+        collection(db, 'links'),
+        where('memberUids', 'array-contains', this.uid)
+      );
+      return onSnapshot(q, callback);
+    } else {
+      const q = query(collection(db, 'users', this.uid, 'saved_links'));
+      return onSnapshot(q, callback);
+    }
+  }
+
+  async addLink(linkData) {
+    if (this.isNewSchema) {
+      const labelId = linkData.labelId || this.defaultLabelId;
+      const memberUids = linkData.memberUids || [this.uid];
+      
+      const { labelId: _, memberUids: __, ...rest } = linkData;
+      
+      return addDoc(collection(db, 'links'), {
+        ...rest,
+        ownerId: this.uid,
+        labelId: labelId,
+        memberUids: memberUids,
+        createdAt: serverTimestamp()
+      });
+    } else {
+      const { labelId, memberUids, ownerId, ...rest } = linkData;
+      return addDoc(collection(db, 'users', this.uid, 'saved_links'), {
+        ...rest,
+        createdAt: serverTimestamp()
+      });
+    }
+  }
+
+  async updateLink(linkId, data) {
+    if (this.isNewSchema) {
+      return updateDoc(doc(db, 'links', linkId), data);
+    } else {
+      return updateDoc(doc(db, 'users', this.uid, 'saved_links', linkId), data);
+    }
+  }
+
+  async deleteLink(linkId) {
+    if (this.isNewSchema) {
+      return deleteDoc(doc(db, 'links', linkId));
+    } else {
+      return deleteDoc(doc(db, 'users', this.uid, 'saved_links', linkId));
+    }
+  }
+
+  // --- Cart ---
+  subscribeCart(callback) {
+    const q = query(collection(db, 'users', this.uid, 'cart_items'));
+    return onSnapshot(q, callback);
+  }
+
+  async addCartItem(data) {
+    return addDoc(collection(db, 'users', this.uid, 'cart_items'), {
+      ...data,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  async updateCartItem(id, data) {
+    return updateDoc(doc(db, 'users', this.uid, 'cart_items', id), data);
+  }
+
+  async deleteCartItem(id) {
+    return deleteDoc(doc(db, 'users', this.uid, 'cart_items', id));
+  }
+
+  // --- Reminders ---
+  subscribeReminders(callback) {
+    const q = query(collection(db, 'users', this.uid, 'reminders'));
+    return onSnapshot(q, callback);
+  }
+
+  async addReminder(data) {
+    return addDoc(collection(db, 'users', this.uid, 'reminders'), {
+      ...data,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  async deleteReminder(id) {
+    return deleteDoc(doc(db, 'users', this.uid, 'reminders', id));
+  }
+  
+  async deleteAllReminders(ids) {
+    const batch = writeBatch(db);
+    ids.forEach(id => {
+      batch.delete(doc(db, 'users', this.uid, 'reminders', id));
+    });
+    return batch.commit();
+  }
+
+  // --- Settings ---
+  subscribeUiSettings(callback) {
+    return onSnapshot(doc(db, 'users', this.uid, 'settings', 'ui'), callback);
+  }
+
+  async updateUiSettings(data) {
+    return setDoc(doc(db, 'users', this.uid, 'settings', 'ui'), data, { merge: true });
+  }
+  
+  subscribeLabelOrder(collectionName, callback) {
+     return onSnapshot(doc(db, 'users', this.uid, 'settings', `labels_${collectionName}`), callback);
+  }
+  
+  async updateLabelOrder(collectionName, order) {
+     return setDoc(doc(db, 'users', this.uid, 'settings', `labels_${collectionName}`), { order }, { merge: true });
+  }
+}
+
+export function getDb(uid, isNewSchema) {
+  if (!uid) return null;
+  return new TeNoDatabase(uid, isNewSchema);
+}
