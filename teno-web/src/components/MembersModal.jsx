@@ -15,12 +15,19 @@ export default function MembersModal({ label, currentUser, onClose }) {
   const isOwner = currentUserRole === 'owner';
 
   const [liveProfiles, setLiveProfiles] = useState({});
+  const [isFetchingProfiles, setIsFetchingProfiles] = useState(true);
 
   useEffect(() => {
     const fetchProfiles = async () => {
-      if (!label || !label.members) return;
+      if (!label || !label.members) {
+        setIsFetchingProfiles(false);
+        return;
+      }
       const uids = Object.keys(label.members).filter(uid => uid !== currentUser.uid);
-      if (uids.length === 0) return;
+      if (uids.length === 0) {
+        setIsFetchingProfiles(false);
+        return;
+      }
       try {
         const response = await fetch('/api/getUserProfiles', {
           method: 'POST',
@@ -33,6 +40,8 @@ export default function MembersModal({ label, currentUser, onClose }) {
         }
       } catch (err) {
         console.error('Failed to fetch user profiles:', err);
+      } finally {
+        setIsFetchingProfiles(false);
       }
     };
     fetchProfiles();
@@ -123,8 +132,10 @@ export default function MembersModal({ label, currentUser, onClose }) {
               email = liveProfiles[uid].email || email;
             }
 
-            const name = (rawName && rawName.toLowerCase() !== 'unknown user') ? rawName : (email ? email.split('@')[0] : `User-${uid.substring(0, 4)}`);
             const isSelf = uid === currentUser.uid;
+            const name = (rawName && rawName.toLowerCase() !== 'unknown user') 
+              ? rawName 
+              : (email ? email.split('@')[0] : (isFetchingProfiles && !isSelf ? 'Loading...' : `User-${uid.substring(0, 4)}`));
 
             return (
               <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-surface)', borderRadius: 'var(--border-radius)', border: '1px var(--border-style) var(--border-color)', boxShadow: 'var(--shadow-card)' }}>
