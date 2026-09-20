@@ -949,7 +949,7 @@ button.danger:hover {
 
 .dropdown-menu button.danger:hover {
   background-color: transparent;
-  color: var(--color-danger);
+  color: var(--text-primary);
 }
 
 /* Modern mode: rounded dropdown + hover */
@@ -971,7 +971,7 @@ button.danger:hover {
 
 [data-style="modern"] .dropdown-menu button.danger:hover {
   background-color: var(--bg-surface-hover);
-  color: var(--color-danger);
+  color: var(--text-primary);
 }
 
 /* Global Terminal */
