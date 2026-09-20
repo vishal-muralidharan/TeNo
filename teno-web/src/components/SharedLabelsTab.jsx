@@ -20,7 +20,7 @@ export default function SharedLabelsTab({ user, isActive }) {
     // Securely query labels where the user is a member
     const q = query(
       collection(db, 'shared_labels'),
-      where(`members.${user.uid}`, 'in', ['owner', 'editor', 'viewer'])
+      where(`members.${user.uid}`, '!=', null)
     );
 
     const unsub = onSnapshot(q, (snapshot) => {

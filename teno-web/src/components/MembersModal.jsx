@@ -206,11 +206,12 @@ export default function MembersModal({ label, currentUser, onClose }) {
                   );
                 })}
               </div>
+              <hr style={{ border: 'none', borderBottom: '1px solid var(--border-color)', margin: '24px 0 8px 0' }} />
             </div>
           )}
 
           {isOwner && label.pendingMembers && Object.keys(label.pendingMembers).length > 0 && (
-            <h4 style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '4px', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Members</h4>
+            <h4 style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '4px', marginTop: '0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Members</h4>
           )}
 
           {Object.entries(label.members)
