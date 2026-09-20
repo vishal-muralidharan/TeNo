@@ -264,29 +264,29 @@ export default function SettingsPage({
               <button type="button" className="settings-password-trigger" onClick={openPasswordModal}>{ui.settings.changePassword}</button>
             )}
             <button type="button" className="btn-primary" style={{ marginTop: '16px', width: '100%' }} onClick={() => setShowSignOutConfirm(true)}>
-              Sign Out
+              {ui.settings.signOutBtn}
             </button>
           </article>
 
           <article className="settings-card">
-            <h3>Legal & Privacy</h3>
+            <h3>{ui.settings.legalPrivacy}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
               <Link to="/terms" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms of Service</Link>
               <Link to="/privacy" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Privacy Policy</Link>
               <Link to="/terms-and-conditions" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms and Conditions</Link>
-              <Link to="/dpdp" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Manage My Data / DPDP</Link>
+              <Link to="/dpdp" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>{ui.settings.dpdpTitle}</Link>
             </div>
           </article>
 
           <article className="settings-card">
-            <h3>Contact</h3>
+            <h3>{ui.settings.contact}</h3>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '12px' }}>
               Need help? Reach out to us at <a href="mailto:[TODO: verify support email]" style={{ color: 'var(--text-primary)' }}>[TODO: verify support email]</a>.
             </p>
           </article>
 
           <article className="settings-card" style={{ border: '1px solid var(--color-danger)' }}>
-            <h3 style={{ color: 'var(--color-danger)' }}>Danger Zone</h3>
+            <h3 style={{ color: 'var(--color-danger)' }}>{ui.settings.dangerZone}</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
               Deleting your account is irreversible. All your data will be permanently removed.
             </p>

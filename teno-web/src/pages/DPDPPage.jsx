@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import { exportUserData } from '../api/user';
 import { useTheme } from '../ThemeContext';
+import { getUiConfig } from '../utils/uiConfig';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 
 export default function DPDPPage({ currentUser, onSignOut }) {
   const { styleMode } = useTheme();
+  const ui = getUiConfig(styleMode);
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
@@ -37,8 +39,8 @@ export default function DPDPPage({ currentUser, onSignOut }) {
       <SEO title="Manage Data (DPDP)" description="Manage your data and privacy rights according to the DPDP Act." />
       <Header user={currentUser} onSignOut={onSignOut} />
       <main className="main-content" style={{ padding: '24px', maxWidth: '800px', margin: '0 auto', overflowY: 'auto' }}>
-        <Link to="/settings" style={{ display: 'inline-block', marginBottom: '24px', color: 'var(--text-muted)' }}>← Back to Settings</Link>
-        <h2 style={{ marginBottom: '24px' }}>Manage My Data (DPDP Act)</h2>
+        <Link to="/settings" style={{ display: 'inline-block', marginBottom: '24px', color: 'var(--text-muted)' }}>← {ui.nav.back}</Link>
+        <h2 style={{ marginBottom: '24px' }}>{ui.settings.dpdpTitle}</h2>
         
         <section style={{ marginBottom: '32px' }}>
           <h3>Data We Process</h3>

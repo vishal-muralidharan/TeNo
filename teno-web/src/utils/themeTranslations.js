@@ -161,6 +161,26 @@ export const themeTranslations = {
     minimal: 'modern',
     modern: 'Modern',
   },
+  settings_danger_zone: {
+    minimal: 'danger zone',
+    modern: 'Danger Zone',
+  },
+  settings_legal_privacy: {
+    minimal: 'legal & privacy',
+    modern: 'Legal & Privacy',
+  },
+  settings_contact: {
+    minimal: 'contact',
+    modern: 'Contact',
+  },
+  settings_dpdp_title: {
+    minimal: 'manage my data (dpdp act)',
+    modern: 'Manage My Data (DPDP Act)',
+  },
+  settings_sign_out_btn: {
+    minimal: 'sign out',
+    modern: 'Sign Out',
+  },
 
   // ── Form placeholders ─────────────────────────────────────────────────────
   placeholder_search: {

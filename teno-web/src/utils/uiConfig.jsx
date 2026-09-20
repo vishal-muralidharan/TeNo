@@ -95,6 +95,11 @@ export const getUiConfig = (styleMode) => {
       styleModeLabel: t('settings_style_mode_label',   styleMode),
       styleMinimal: t('settings_style_minimal',        styleMode),
       styleModern:  t('settings_style_modern',         styleMode),
+      dangerZone:   t('settings_danger_zone',          styleMode),
+      legalPrivacy: t('settings_legal_privacy',        styleMode),
+      contact:      t('settings_contact',              styleMode),
+      dpdpTitle:    t('settings_dpdp_title',           styleMode),
+      signOutBtn:   t('settings_sign_out_btn',         styleMode),
     },
 
     // ── Placeholders ──────────────────────────────────────────────────────────
