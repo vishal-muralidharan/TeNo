@@ -67,8 +67,9 @@ export default function MembersModal({ label, currentUser, onClose }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto' }}>
           {Object.entries(label.members).map(([uid, data]) => {
             const role = typeof data === 'string' ? data : data.role;
-            const name = typeof data === 'string' ? 'Unknown User' : data.name;
+            const rawName = typeof data === 'string' ? null : data.name;
             const email = typeof data === 'string' ? '' : data.email;
+            const name = (rawName && rawName.toLowerCase() !== 'unknown user') ? rawName : (email ? email.split('@')[0] : 'Unknown User');
             const isSelf = uid === currentUser.uid;
 
             return (

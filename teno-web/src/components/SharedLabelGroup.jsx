@@ -23,6 +23,8 @@ export default function SharedLabelGroup({ label, user }) {
   const [copiedId, setCopiedId] = useState(null);
   const [copiedFading, setCopiedFading] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [pendingDeleteLink, setPendingDeleteLink] = useState(null);
+  const [pendingDeleteLabel, setPendingDeleteLabel] = useState(false);
   const copiedTimerRef = useRef(null);
   const copiedFadeRef = useRef(null);
 
@@ -108,27 +110,36 @@ export default function SharedLabelGroup({ label, user }) {
     setEditingItem(null);
   };
 
-  const requestDeleteLink = async (id) => {
+  const requestDeleteLink = (id) => {
     if (!canEdit) return;
-    await deleteDoc(doc(db, 'shared_links', id));
+    setPendingDeleteLink(id);
     setActiveMenu(null);
   };
 
-  const deleteLabel = async () => {
+  const confirmDeleteLink = async () => {
+    if (!pendingDeleteLink) return;
+    await deleteDoc(doc(db, 'shared_links', pendingDeleteLink));
+    setPendingDeleteLink(null);
+  };
+
+  const deleteLabel = () => {
     if (!isOwner) return;
-    if (window.confirm('Are you sure you want to delete this shared label? This will delete all links inside it for everyone.')) {
-      try {
-        const batch = writeBatch(db);
-        links.forEach(link => {
-          batch.delete(doc(db, 'shared_links', link.id));
-        });
-        batch.delete(doc(db, 'shared_labels', label.id));
-        await batch.commit();
-      } catch (e) {
-        console.error('Error deleting label:', e);
-        alert('Failed to delete label.');
-      }
+    setPendingDeleteLabel(true);
+  };
+
+  const confirmDeleteLabel = async () => {
+    try {
+      const batch = writeBatch(db);
+      links.forEach(link => {
+        batch.delete(doc(db, 'shared_links', link.id));
+      });
+      batch.delete(doc(db, 'shared_labels', label.id));
+      await batch.commit();
+    } catch (e) {
+      console.error('Error deleting label:', e);
+      alert('Failed to delete label.');
     }
+    setPendingDeleteLabel(false);
   };
 
   const handleOpen = (e, link) => {
@@ -338,6 +349,33 @@ export default function SharedLabelGroup({ label, user }) {
           copiedFadeRef.current = setTimeout(() => { setCopiedId(null); setCopiedFading(false); }, 300);
         }}>
           <span className="copied-overlay-text">link copied!</span>
+        </div>,
+        document.body
+      )}
+
+      {pendingDeleteLink && createPortal(
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPendingDeleteLink(null); }}>
+          <div className="custom-modal">
+            <p>Delete completely?</p>
+            <div className="modal-actions">
+              <button onClick={() => setPendingDeleteLink(null)}>Cancel</button>
+              <button className="danger" onClick={confirmDeleteLink}>Delete</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {pendingDeleteLabel && createPortal(
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPendingDeleteLabel(false); }}>
+          <div className="custom-modal">
+            <p style={{ color: 'var(--color-danger)', fontWeight: '500' }}>Delete Shared Label?</p>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: '1.4' }}>This will permanently delete the label and all its links for everyone. This cannot be undone.</p>
+            <div className="modal-actions" style={{ marginTop: '16px' }}>
+              <button onClick={() => setPendingDeleteLabel(false)}>Cancel</button>
+              <button className="danger" onClick={confirmDeleteLabel}>Delete Label</button>
+            </div>
+          </div>
         </div>,
         document.body
       )}
