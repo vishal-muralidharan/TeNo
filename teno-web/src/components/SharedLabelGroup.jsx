@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, writeBatch } from 'firebase/firestore';
-import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical } from 'lucide-react';
+import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical, Users } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 import GenerateInvite from './GenerateInvite';
+import MembersModal from './MembersModal';
 
 export default function SharedLabelGroup({ label, user }) {
   const { styleMode } = useTheme();
@@ -17,6 +18,7 @@ export default function SharedLabelGroup({ label, user }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
 
@@ -142,6 +144,9 @@ export default function SharedLabelGroup({ label, user }) {
           <span className="label-chip" style={{ opacity: 0.8, fontSize: '0.75rem', textTransform: 'uppercase' }}>
             {role}
           </span>
+          <button className="icon-btn" onClick={() => setIsMembersModalOpen(true)} title="Manage Members" style={{ padding: '4px', marginLeft: '8px' }}>
+            <Users size={16} />
+          </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {isOwner && (
@@ -303,6 +308,13 @@ export default function SharedLabelGroup({ label, user }) {
             </React.Fragment>
           ))}
         </div>
+      )}
+      {isMembersModalOpen && (
+        <MembersModal
+          label={label}
+          currentUser={user}
+          onClose={() => setIsMembersModalOpen(false)}
+        />
       )}
     </div>
   );
