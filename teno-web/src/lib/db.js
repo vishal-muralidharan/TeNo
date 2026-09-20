@@ -123,6 +123,27 @@ export class TeNoDatabase {
   async updateLabelOrder(collectionName, order) {
      return setDoc(doc(db, 'users', this.uid, 'settings', `labels_${collectionName}`), { order }, { merge: true });
   }
+
+  // --- Generic Helpers for LinkStorer ---
+  subscribeEntries(collectionName, callback) {
+    if (collectionName === 'saved_links' || collectionName === 'links') return this.subscribeLinks(callback);
+    if (collectionName === 'cart_items') return this.subscribeCart(callback);
+  }
+
+  async addEntry(collectionName, data) {
+    if (collectionName === 'saved_links' || collectionName === 'links') return this.addLink(data);
+    if (collectionName === 'cart_items') return this.addCartItem(data);
+  }
+
+  async updateEntry(collectionName, id, data) {
+    if (collectionName === 'saved_links' || collectionName === 'links') return this.updateLink(id, data);
+    if (collectionName === 'cart_items') return this.updateCartItem(id, data);
+  }
+
+  async deleteEntry(collectionName, id) {
+    if (collectionName === 'saved_links' || collectionName === 'links') return this.deleteLink(id);
+    if (collectionName === 'cart_items') return this.deleteCartItem(id);
+  }
 }
 
 export function getDb(uid, isNewSchema) {

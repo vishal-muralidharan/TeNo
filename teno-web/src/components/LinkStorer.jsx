@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy, GripVertical, Plus } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 
-export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user, openFormSignal, terminalVisible = false, terminalHeight = 0, onLinkOpen }) {
+export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user, dbApi, openFormSignal, terminalVisible = false, terminalHeight = 0, onLinkOpen }) {
   const { styleMode } = useTheme();
   const ui = getUiConfig(styleMode);
   const [url, setUrl] = useState('');
@@ -70,8 +68,9 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     try {
       // Optimistically update local state so UI updates instantly
       setLabelOrder(newLabels);
-      const settingsDocRef = doc(db, 'users', user.uid, 'settings', `labels_${collectionName}`);
-      await setDoc(settingsDocRef, { order: newLabels }, { merge: true });
+      if (dbApi) {
+        await dbApi.updateLabelOrder(collectionName, newLabels);
+      }
     } catch (err) {
       console.error("Error updating label order:", err);
       // Revert optimism if needed (won't bother for visual feedback alert test)
@@ -80,10 +79,9 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !dbApi) return;
 
-    const settingsDocRef = doc(db, 'users', user.uid, 'settings', `labels_${collectionName}`);
-    const unsubSettings = onSnapshot(settingsDocRef, (docSnap) => {
+    const unsubSettings = dbApi.subscribeLabelOrder(collectionName, (docSnap) => {
       if (docSnap.exists()) {
         setLabelOrder(docSnap.data().order || []);
       } else {
@@ -91,10 +89,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       }
     });
 
-    const q = query(
-      collection(db, 'users', user.uid, collectionName)
-    );
-    const unsub = onSnapshot(q, (snapshot) => {
+    const unsub = dbApi.subscribeEntries(collectionName, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
       // Sort: favorites first (by favoritedAt asc — starred in order), then regular (by createdAt asc)
@@ -151,7 +146,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         chrome.storage.onChanged.removeListener(storageListener);
       }
     };
-  }, [collectionName, user]);
+  }, [collectionName, user, dbApi]);
 
   useEffect(() => {
     if (openFormSignal === undefined) return;
@@ -199,15 +194,18 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
     setIsSubmitting(true);
     const cleanLabel = label.trim().toLowerCase();
-    await addDoc(collection(db, 'users', user.uid, collectionName), {
-      url: cleanUrl,
-      nickname: nickname.trim(),
-      description: description.trim(),
-      label: cleanLabel,
-      domain: domain,
-      isFavorite: false,
-      createdAt: serverTimestamp()
-    });
+    
+    if (dbApi) {
+      await dbApi.addEntry(collectionName, {
+        url: cleanUrl,
+        nickname: nickname.trim(),
+        description: description.trim(),
+        label: cleanLabel,
+        domain: domain,
+        isFavorite: false,
+      });
+    }
+    
     setUrl('');
     setNickname('');
     setDescription('');
@@ -242,19 +240,20 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   };
 
   const toggleFavorite = async (id, currentFav) => {
+    if (!dbApi) return;
     const isNowFavorite = !currentFav;
 
     if (isNowFavorite) {
       // Starring: stamp favoritedAt = now → item goes to END of favorites
       // (favorites sorted by favoritedAt asc, so newest star = last)
-      await updateDoc(doc(db, 'users', user.uid, collectionName, id), {
+      await dbApi.updateEntry(collectionName, id, {
         isFavorite: true,
         favoritedAt: new Date().toISOString(),
       });
     } else {
       // Unstarring: push createdAt to epoch so item floats to TOP of its label group
       // (regular links sorted by createdAt asc, lowest = earliest = first)
-      await updateDoc(doc(db, 'users', user.uid, collectionName, id), {
+      await dbApi.updateEntry(collectionName, id, {
         isFavorite: false,
         favoritedAt: null,
         createdAt: new Date(0).toISOString(), // epoch → top of regular list
@@ -268,8 +267,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   }
 
   const confirmDelete = async () => {
-    if (pendingDelete) {
-      await deleteDoc(doc(db, 'users', user.uid, collectionName, pendingDelete));
+    if (pendingDelete && dbApi) {
+      await dbApi.deleteEntry(collectionName, pendingDelete);
       setPendingDelete(null);
     }
   };
@@ -304,39 +303,41 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
     const cleanLabel = editingItem.label.trim().toLowerCase();
     
-    await updateDoc(doc(db, 'users', user.uid, collectionName, editingItem.id), {
-       nickname: editingItem.nickname.trim(),
-       url: cleanUrl,
-       domain,
-       description: editingItem.description.trim(),
-       label: cleanLabel,
-    });
+    if (dbApi) {
+      await dbApi.updateEntry(collectionName, editingItem.id, {
+         nickname: editingItem.nickname.trim(),
+         url: cleanUrl,
+         domain,
+         description: editingItem.description.trim(),
+         label: cleanLabel,
+      });
+    }
     setEditingItem(null);
   };
 
   const handleMoveUp = async (e, index) => {
     e.stopPropagation();
-    if (index <= 0) return;
+    if (index <= 0 || !dbApi) return;
     const current = links[index];
     const prev = links[index - 1];
     if (current.isFavorite !== prev.isFavorite) return;
     
     if (current.createdAt && prev.createdAt) {
-      await updateDoc(doc(db, 'users', user.uid, collectionName, current.id), { createdAt: prev.createdAt });
-      await updateDoc(doc(db, 'users', user.uid, collectionName, prev.id), { createdAt: current.createdAt });
+      await dbApi.updateEntry(collectionName, current.id, { createdAt: prev.createdAt });
+      await dbApi.updateEntry(collectionName, prev.id, { createdAt: current.createdAt });
     }
   };
 
   const handleMoveDown = async (e, index) => {
     e.stopPropagation();
-    if (index >= links.length - 1) return;
+    if (index >= links.length - 1 || !dbApi) return;
     const current = links[index];
     const next = links[index + 1];
     if (current.isFavorite !== next.isFavorite) return;
     
     if (current.createdAt && next.createdAt) {
-      await updateDoc(doc(db, 'users', user.uid, collectionName, current.id), { createdAt: next.createdAt });
-      await updateDoc(doc(db, 'users', user.uid, collectionName, next.id), { createdAt: current.createdAt });
+      await dbApi.updateEntry(collectionName, current.id, { createdAt: next.createdAt });
+      await dbApi.updateEntry(collectionName, next.id, { createdAt: current.createdAt });
     }
   };
 
@@ -360,6 +361,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
    * @param {string[]} newIds - item IDs in the desired new order
    */
   const performSectionReorder = async (secKey, newIds) => {
+    if (!dbApi) return;
     const base = Date.now();
     // Space items 1 s apart so there is clear gap for future insertions
     // newIds[0] gets the oldest timestamp, newIds[last] gets the newest
@@ -369,7 +371,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }));
     await Promise.all(
       updates.map(({ id, createdAt }) =>
-        updateDoc(doc(db, 'users', user.uid, collectionName, id), { createdAt })
+        dbApi.updateEntry(collectionName, id, { createdAt })
       )
     );
   };
