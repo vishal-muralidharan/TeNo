@@ -150,21 +150,21 @@ export default function LoginPage({ user, loadingAuth }) {
       </header>
 
       <div className="auth-main">
-      <div className="auth-container" style={{ padding: '2rem', width: '500px', height: '500px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', position: 'relative' }}>
+      <div className="auth-container" style={{ padding: '2rem', width: '500px', height: '500px', background: 'var(--bg-surface)', border: '1px var(--border-style) var(--border-color)', borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-card)', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '2rem', left: '2rem', right: '2rem', height: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.7rem', marginBottom: '0.4rem', textAlign: 'center', margin: '0' }}>Welcome to TeNo</h2>
+          <h2 style={{ fontSize: '1.7rem', marginBottom: '0.4rem', textAlign: 'center', margin: '0', color: 'var(--text-primary)' }}>Welcome to TeNo</h2>
         </div>
 
         {isResettingPassword ? (
           <form onSubmit={handlePasswordReset} style={{ position: 'absolute', top: '100px', bottom: '2rem', left: '2rem', right: '2rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', justifyContent: 'center', flex: 1, paddingBottom: '90px' }}>
               {authError && (
-                <div style={{ background: '#3b1d1d', border: '1px solid #8b3a3a', color: '#ffd7d7', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-danger)', color: 'var(--color-danger)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
                   {authError}
                 </div>
               )}
               {authStatus && !authError && (
-                <div style={{ background: '#1c2f22', border: '1px solid #2c7a4b', color: '#d8ffe7', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-success)', color: 'var(--color-success)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
                   {authStatus}
                 </div>
               )}
@@ -175,17 +175,17 @@ export default function LoginPage({ user, loadingAuth }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  style={{ padding: '0.75rem', borderRadius: '4px', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
+                  style={{ padding: '0.75rem', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontFamily: 'inherit', fontSize: '1rem' }}
                 />
               </div>
             </div>
             <div style={{ position: 'absolute', bottom: '0', left: '0', right: '0', height: '80px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-              <button type="submit" style={{ width: '100%', padding: '0.75rem', background: '#4285F4', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem', fontFamily: 'inherit', fontWeight: '500' }}>
+              <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', fontFamily: 'inherit', fontWeight: '500' }}>
                 Send Reset Email
               </button>
               <p
                 onClick={() => { setIsResettingPassword(false); setAuthError(''); setAuthStatus('') }}
-                style={{ textAlign: 'center', fontSize: '0.95rem', color: '#aaa', cursor: 'pointer', marginTop: '1rem', textDecoration: 'underline', marginBottom: '0' }}
+                style={{ textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '1rem', textDecoration: 'underline', marginBottom: '0' }}
               >
                 Back to log in
               </p>
@@ -195,12 +195,12 @@ export default function LoginPage({ user, loadingAuth }) {
           <form onSubmit={handleEmailAuth} style={{ position: 'absolute', top: '100px', bottom: '2rem', left: '2rem', right: '2rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', justifyContent: 'center', flex: 1, paddingBottom: '90px' }}>
               {authError && (
-                <div style={{ background: '#3b1d1d', border: '1px solid #8b3a3a', color: '#ffd7d7', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-danger)', color: 'var(--color-danger)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
                   {authError}
                 </div>
               )}
               {authStatus && !authError && (
-                <div style={{ background: '#1c2f22', border: '1px solid #2c7a4b', color: '#d8ffe7', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-success)', color: 'var(--color-success)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.5rem' }}>
                   {authStatus}
                 </div>
               )}
@@ -212,7 +212,7 @@ export default function LoginPage({ user, loadingAuth }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required={isRegistering}
-                    style={{ padding: '0.75rem', borderRadius: '4px', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
+                    style={{ padding: '0.75rem', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontFamily: 'inherit', fontSize: '1rem' }}
                   />
                 </div>
               )}
@@ -223,7 +223,7 @@ export default function LoginPage({ user, loadingAuth }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  style={{ padding: '0.75rem', borderRadius: '4px', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
+                  style={{ padding: '0.75rem', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontFamily: 'inherit', fontSize: '1rem' }}
                 />
               </div>
               <div className="typing-caret-field" data-empty={!password}>
@@ -233,7 +233,7 @@ export default function LoginPage({ user, loadingAuth }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  style={{ padding: '0.75rem', borderRadius: '4px', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
+                  style={{ padding: '0.75rem', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontFamily: 'inherit', fontSize: '1rem' }}
                 />
               </div>
               {isRegistering && (
@@ -244,14 +244,14 @@ export default function LoginPage({ user, loadingAuth }) {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required={isRegistering}
-                    style={{ padding: '0.75rem', borderRadius: '4px', background: '#222', color: 'white', fontFamily: 'inherit', fontSize: '1rem' }}
+                    style={{ padding: '0.75rem', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontFamily: 'inherit', fontSize: '1rem' }}
                   />
                 </div>
               )}
               {!isRegistering && (
                 <p
                   onClick={() => { setIsResettingPassword(true); setAuthError(''); setAuthStatus('') }}
-                  style={{ textAlign: 'right', fontSize: '0.85rem', color: '#aaa', cursor: 'pointer', marginTop: '0', textDecoration: 'underline' }}
+                  style={{ textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '0', textDecoration: 'underline' }}
                 >
                   Forgot password?
                 </p>
@@ -259,7 +259,7 @@ export default function LoginPage({ user, loadingAuth }) {
             </div>
 
             <div style={{ position: 'absolute', bottom: '0', left: '0', right: '0', height: '80px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-              <button type="submit" style={{ width: '100%', padding: '0.75rem', background: '#2ba84a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem', fontFamily: 'inherit', fontWeight: '500' }}>
+              <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', fontFamily: 'inherit', fontWeight: '500' }}>
                 {isRegistering ? 'Create Account' : 'Log in'}
               </button>
               <p
@@ -270,7 +270,7 @@ export default function LoginPage({ user, loadingAuth }) {
                   setPassword('')
                   setConfirmPassword('')
                 }}
-                style={{ textAlign: 'center', fontSize: '0.95rem', color: '#aaa', cursor: 'pointer', marginTop: '1rem', textDecoration: 'underline', marginBottom: '0' }}
+                style={{ textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '1rem', textDecoration: 'underline', marginBottom: '0' }}
               >
                 {isRegistering ? 'Already have an account? Log in' : 'Need an account? Register'}
               </p>
