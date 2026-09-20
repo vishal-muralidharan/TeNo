@@ -11,8 +11,26 @@ export const useTheme = () => useContext(ThemeContext);
 // Read localStorage immediately (before any React render) so the correct
 // data-theme / data-style attributes are stamped on <html> from frame 0.
 // This prevents ANY flash of the wrong loader or wrong theme.
-const _bootstrapTheme = localStorage.getItem('theme') || 'dark';
-const _bootstrapStyle = localStorage.getItem('styleMode') || 'minimal';
+let _bootstrapTheme = 'dark';
+let _bootstrapStyle = 'minimal';
+
+try {
+  const sessionData = localStorage.getItem('teno_session');
+  if (sessionData) {
+    const session = JSON.parse(sessionData);
+    if (session.preferences) {
+      _bootstrapTheme = session.preferences.theme || 'dark';
+      _bootstrapStyle = session.preferences.styleMode || 'minimal';
+    }
+  } else {
+    _bootstrapTheme = localStorage.getItem('theme') || 'dark';
+    _bootstrapStyle = localStorage.getItem('styleMode') || 'minimal';
+  }
+} catch (e) {
+  _bootstrapTheme = localStorage.getItem('theme') || 'dark';
+  _bootstrapStyle = localStorage.getItem('styleMode') || 'minimal';
+}
+
 document.documentElement.setAttribute('data-theme', _bootstrapTheme);
 document.documentElement.setAttribute('data-style', _bootstrapStyle);
 // ────────────────────────────────────────────────────────────────────────────
@@ -38,6 +56,11 @@ export const ThemeProvider = ({ children }) => {
   const setTheme = async (newTheme) => {
     setThemeState(newTheme);
     localStorage.setItem('theme', newTheme);
+    try {
+      const session = JSON.parse(localStorage.getItem('teno_session') || '{}');
+      session.preferences = { ...session.preferences, theme: newTheme, styleMode };
+      localStorage.setItem('teno_session', JSON.stringify(session));
+    } catch(e) {}
     applyTheme(newTheme, styleMode);
 
     if (currentUser) {
@@ -58,6 +81,11 @@ export const ThemeProvider = ({ children }) => {
 
     setStyleModeState(newStyleMode);
     localStorage.setItem('styleMode', newStyleMode);
+    try {
+      const session = JSON.parse(localStorage.getItem('teno_session') || '{}');
+      session.preferences = { ...session.preferences, theme, styleMode: newStyleMode };
+      localStorage.setItem('teno_session', JSON.stringify(session));
+    } catch(e) {}
     applyTheme(theme, newStyleMode);
 
     if (currentUser) {
@@ -95,7 +123,16 @@ export const ThemeProvider = ({ children }) => {
         }
       }
 
-      // 2. Fallback to LocalStorage
+      // 2. Fallback to LocalStorage (teno_session or old keys)
+      if (!initialTheme || !initialStyleMode) {
+        try {
+          const session = JSON.parse(localStorage.getItem('teno_session'));
+          if (session && session.preferences) {
+            if (!initialTheme) initialTheme = session.preferences.theme;
+            if (!initialStyleMode) initialStyleMode = session.preferences.styleMode;
+          }
+        } catch(e) {}
+      }
       if (!initialTheme) initialTheme = localStorage.getItem('theme');
       if (!initialStyleMode) initialStyleMode = localStorage.getItem('styleMode');
 
