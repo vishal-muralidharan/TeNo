@@ -29,8 +29,8 @@ service cloud.firestore {
     }
 
     // --- SYSTEM PATHS ---
-    match /system_config/flags {
-      allow read: if isSignedIn();
+    match /system_config/feature_flags {
+      allow read: if true;
       allow write: if isAdmin();
     }
 

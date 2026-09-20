@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useTheme } from '../ThemeContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Link } from 'react-router-dom';
 
 export default function TermsAgreementModal({ user, onClose }) {
   const { styleMode } = useTheme();
@@ -36,9 +35,9 @@ export default function TermsAgreementModal({ user, onClose }) {
           Please review the following documents:
         </p>
         <ul style={{ paddingLeft: '20px', marginBottom: '20px', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <li><Link to="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</Link></li>
-          <li><Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</Link></li>
-          <li><Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link></li>
+          <li><a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a></li>
+          <li><a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</a></li>
+          <li><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
         </ul>
         
         <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '24px', cursor: 'pointer', fontSize: '0.9rem' }}>
