@@ -58,9 +58,9 @@ export default async function handler(req, res) {
     
     await labelsRef.doc(labelId).update({
       [`members.${uid}`]: {
-        role: 'editor',
-        name,
-        email
+        role: 'viewer',
+        name: name,
+        email: email
       }
     });
 
