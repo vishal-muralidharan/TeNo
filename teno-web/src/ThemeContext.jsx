@@ -11,8 +11,7 @@ export const useTheme = () => useContext(ThemeContext);
 // Read localStorage immediately (before any React render) so the correct
 // data-theme / data-style attributes are stamped on <html> from frame 0.
 // This prevents ANY flash of the wrong loader or wrong theme.
-const _bootstrapTheme = localStorage.getItem('theme') ||
-  (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+const _bootstrapTheme = localStorage.getItem('theme') || 'dark';
 const _bootstrapStyle = localStorage.getItem('styleMode') || 'minimal';
 document.documentElement.setAttribute('data-theme', _bootstrapTheme);
 document.documentElement.setAttribute('data-style', _bootstrapStyle);
