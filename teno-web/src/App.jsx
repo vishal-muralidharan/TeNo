@@ -11,7 +11,7 @@ import { setupTypingCaret } from '../sm/typingCaret'
 import { useTheme } from './ThemeContext'
 import { useFeatureFlags } from './FeatureFlagContext'
 import LoadingScreen from './components/LoadingScreen'
-
+import { getDb } from './lib/db'
 const TAB_INDEX = {
   links: 0,
   cart: 1,
@@ -49,7 +49,9 @@ const formatTimerMs = (ms) => {
 
 function App() {
   const { isThemeReady, styleModeChanging, styleMode } = useTheme()
-  const { isEnabled } = useFeatureFlags()
+  const { flags, isEnabled } = useFeatureFlags()
+  const isNewSchema = flags?.new_db_schema === true
+
   const [user, setUser] = useState(null)
   const [loadingAuth, setLoadingAuth] = useState(true)
   const [minLoadTimePending, setMinLoadTimePending] = useState(true)
@@ -69,6 +71,8 @@ function App() {
   const [timerTargetDuration, setTimerTargetDuration] = useState(0)
   const [timerInputMinutes, setTimerInputMinutes] = useState(0)
   const [timerDisplayMs, setTimerDisplayMs] = useState(0)
+
+  const dbApi = React.useMemo(() => getDb(user?.uid, isNewSchema), [user?.uid, isNewSchema]);
 
   useEffect(() => {
     // Ensure loading screen stays for at least 2 seconds
@@ -94,40 +98,37 @@ function App() {
   useEffect(() => setupTypingCaret(), [])
 
   useEffect(() => {
-    if (!user) {
+    if (!dbApi) {
       setFavoritesRowCount(2)
       return undefined
     }
 
-    const settingsRef = doc(db, 'users', user.uid, 'settings', 'ui')
-    const unsubSettings = onSnapshot(settingsRef, (snapshot) => {
+    return dbApi.subscribeUiSettings((snapshot) => {
       const nextValue = Number(snapshot.data()?.favoritesRowCount)
       const clampedValue = Number.isFinite(nextValue) ? Math.max(1, Math.min(3, Math.floor(nextValue))) : 2
       setFavoritesRowCount(clampedValue)
     })
-
-    return unsubSettings
-  }, [user])
+  }, [dbApi])
 
   useEffect(() => {
-    if (!user) {
+    if (!dbApi) {
       setSavedLinks([])
       setCartItems([])
       setReminders([])
       return undefined
     }
 
-    const unsubLinks = isEnabled('links') ? onSnapshot(query(collection(db, 'users', user.uid, 'saved_links')), (snapshot) => {
+    const unsubLinks = isEnabled('links') ? dbApi.subscribeLinks((snapshot) => {
       const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
       setSavedLinks(sortLinks(data))
     }) : null
 
-    const unsubCart = isEnabled('cart') ? onSnapshot(query(collection(db, 'users', user.uid, 'cart_items')), (snapshot) => {
+    const unsubCart = isEnabled('cart') ? dbApi.subscribeCart((snapshot) => {
       const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
       setCartItems(sortCartItems(data))
     }) : null
 
-    const unsubReminders = isEnabled('reminders') ? onSnapshot(query(collection(db, 'users', user.uid, 'reminders')), (snapshot) => {
+    const unsubReminders = isEnabled('reminders') ? dbApi.subscribeReminders((snapshot) => {
       const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
       setReminders(sortReminders(data))
     }) : null
@@ -137,7 +138,7 @@ function App() {
       if (unsubCart) unsubCart()
       if (unsubReminders) unsubReminders()
     }
-  }, [user, isEnabled])
+  }, [dbApi, isEnabled])
 
   useEffect(() => {
     if (!isEnabled('timer')) return
@@ -187,10 +188,10 @@ function App() {
   const requestOpenCartForm = () => setCartFormToken((value) => value + 1)
 
   const recordLinkOpen = async ({ collectionName, link }) => {
-    if (!user || !collectionName || !link?.id) return
+    if (!dbApi || !link?.id) return
 
     try {
-      await updateDoc(doc(db, 'users', user.uid, collectionName, link.id), {
+      await dbApi.updateLink(link.id, {
         clickCount: increment(1),
         lastClickedAt: new Date().toISOString(),
       })
@@ -203,10 +204,10 @@ function App() {
     const parsedValue = Math.max(1, Math.min(3, Number(nextValue) || 2))
     setFavoritesRowCount(parsedValue)
 
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     try {
-      await setDoc(doc(db, 'users', user.uid, 'settings', 'ui'), { favoritesRowCount: parsedValue }, { merge: true })
+      await dbApi.updateUiSettings({ favoritesRowCount: parsedValue })
       return { ok: true, message: 'settings saved.' }
     } catch (error) {
       console.error('Failed to save settings:', error)
@@ -216,63 +217,58 @@ function App() {
 
   const addReminder = async (text) => {
     const cleanText = text.trim()
-    if (!user || !cleanText) {
+    if (!dbApi || !cleanText) {
       return { ok: false, message: 'reminder text is required.' }
     }
 
-    await addDoc(collection(db, 'users', user.uid, 'reminders'), {
+    await dbApi.addReminder({
       text: cleanText,
-      label: '',
-      createdAt: new Date().toISOString(),
+      label: ''
     })
 
     return { ok: true, message: 'reminder added.' }
   }
 
   const deleteReminderByIndex = async (index) => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     const reminder = reminders[index]
     if (!reminder) {
       return { ok: false, message: `reminder not found at index ${index}.` }
     }
 
-    await deleteDoc(doc(db, 'users', user.uid, 'reminders', reminder.id))
+    await dbApi.deleteReminder(reminder.id)
     return { ok: true, message: `reminder ${index} completed.` }
   }
 
   const deleteAllReminders = async () => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
-    const batch = writeBatch(db)
-    reminders.forEach((reminder) => {
-      batch.delete(doc(db, 'users', user.uid, 'reminders', reminder.id))
-    })
-    await batch.commit()
+    await dbApi.deleteAllReminders(reminders.map(r => r.id))
     return { ok: true, message: '\\o/ BOOM' }
   }
 
   const deleteLinkByNickname = async (nickname) => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     const target = savedLinks.find((item) => normalizeText(item.nickname) === normalizeText(nickname))
     if (!target) {
       return { ok: false, message: `link not found: ${nickname}` }
     }
 
-    await deleteDoc(doc(db, 'users', user.uid, 'saved_links', target.id))
+    await dbApi.deleteLink(target.id)
     return { ok: true, message: `deleted link: ${target.nickname}` }
   }
 
   const deleteCartItemByNickname = async (nickname) => {
-    if (!user) return { ok: false, message: 'no active user.' }
+    if (!dbApi) return { ok: false, message: 'no active user.' }
 
     const target = cartItems.find((item) => normalizeText(item.title || item.nickname) === normalizeText(nickname))
     if (!target) {
       return { ok: false, message: `cart item not found: ${nickname}` }
     }
 
-    await deleteDoc(doc(db, 'users', user.uid, 'cart_items', target.id))
+    await dbApi.deleteCartItem(target.id)
     return { ok: true, message: `deleted cart item: ${target.title || target.nickname}` }
   }
 
@@ -386,6 +382,7 @@ function App() {
                     deleteReminderByIndex={deleteReminderByIndex}
                     deleteAllReminders={deleteAllReminders}
                     recordLinkOpen={recordLinkOpen}
+                    dbApi={dbApi}
                     timerApi={{
                       timerState,
                       timerMode,
@@ -415,6 +412,7 @@ function App() {
                     savedLinks={savedLinks}
                     cartItems={cartItems}
                     reminders={reminders}
+                    dbApi={dbApi}
                     onLogout={handleLogout}
                   />
                 ) : (
