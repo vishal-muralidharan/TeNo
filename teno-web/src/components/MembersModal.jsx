@@ -93,14 +93,14 @@ export default function MembersModal({ label, currentUser, onClose }) {
             const isSelf = uid === currentUser.uid;
 
             return (
-              <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-surface)', borderRadius: 'var(--border-radius)', border: '1px var(--border-style) var(--border-color)', boxShadow: 'var(--shadow-card)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {role === 'owner' ? <ShieldAlert size={18} color="var(--color-accent)" /> : role === 'editor' ? <Shield size={18} /> : <UserIcon size={18} />}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
-                      {name} {isSelf && <span style={{ fontSize: '10px', background: 'var(--color-accent)', color: '#fff', padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold' }}>YOU</span>}
+                    <span style={{ fontWeight: '500', display: 'flex', alignItems: 'center', fontSize: '1.05rem' }}>
+                      {name} {isSelf && <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 'normal', marginLeft: '6px' }}>(You)</span>}
                     </span>
                   </div>
                 </div>
