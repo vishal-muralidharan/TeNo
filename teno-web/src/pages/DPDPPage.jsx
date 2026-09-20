@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { exportUserData } from '../api/user';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
