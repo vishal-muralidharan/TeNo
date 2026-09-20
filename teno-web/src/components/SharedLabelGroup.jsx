@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, writeBatch } from 'firebase/firestore';
-import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical, Users, Plus } from 'lucide-react';
+import { Trash2, Copy, Edit2, Check, ExternalLink, MoreVertical, Users, Plus, ChevronDown } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
 import GenerateInvite from './GenerateInvite';
@@ -28,6 +28,7 @@ export default function SharedLabelGroup({ label, user }) {
   const [isEditingLabelModalOpen, setIsEditingLabelModalOpen] = useState(false);
   const [editedLabelName, setEditedLabelName] = useState('');
   const [editedVisibility, setEditedVisibility] = useState('public');
+  const [isVisibilityDropdownOpen, setIsVisibilityDropdownOpen] = useState(false);
   const copiedTimerRef = useRef(null);
   const copiedFadeRef = useRef(null);
 
@@ -439,16 +440,30 @@ export default function SharedLabelGroup({ label, user }) {
                   />
                 </div>
               </div>
-              <div>
+              <div style={{ position: 'relative' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Visibility</label>
-                <select
-                  value={editedVisibility}
-                  onChange={(e) => setEditedVisibility(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontSize: '1rem', outline: 'none' }}
-                >
-                  <option value="public">Public (Anyone with link can join instantly)</option>
-                  <option value="private">Private (Requires your approval to join)</option>
-                </select>
+                <div className="menu-wrapper" style={{ width: '100%', position: 'relative' }}>
+                  <button 
+                    type="button"
+                    className="icon-btn" 
+                    onClick={(e) => { e.stopPropagation(); setIsVisibilityDropdownOpen(!isVisibilityDropdownOpen); }}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--border-radius)', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px var(--border-style) var(--border-color)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textTransform: 'capitalize' }}
+                  >
+                    {editedVisibility} <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
+                  </button>
+                  {isVisibilityDropdownOpen && (
+                    <div className="dropdown-menu dropdown-menu-down" style={{ width: '100%', top: 'calc(100% + 4px)', left: 0, right: 'auto', textTransform: 'none' }} onClick={(e) => e.stopPropagation()}>
+                      <button type="button" onClick={() => { setEditedVisibility('public'); setIsVisibilityDropdownOpen(false); }} style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                        <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>Public</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Anyone with link can join instantly</span>
+                      </button>
+                      <button type="button" onClick={() => { setEditedVisibility('private'); setIsVisibilityDropdownOpen(false); }} style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                        <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>Private</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Requires your approval to join</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="modal-actions" style={{ marginTop: '8px' }}>
                 <button type="button" onClick={() => setIsEditingLabelModalOpen(false)}>Cancel</button>
