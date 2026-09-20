@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy, GripVertical, Plus } from 'lucide-react';
+import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy, GripVertical, Plus, UserPlus } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
+import ShareModal from './ShareModal';
 
 export default function LinkStorer({ collectionName = 'saved_links', title = 'Saved Links', isActive = true, user, dbApi, openFormSignal, terminalVisible = false, terminalHeight = 0, onLinkOpen }) {
   const { styleMode } = useTheme();
@@ -28,6 +29,12 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [labelOrder, setLabelOrder] = useState([]);
   const lastOpenSignal = useRef(openFormSignal);
   const nicknameInputRef = useRef(null);
+
+  // Shared labels state — maps label name (lowercase) to label doc
+  const [sectionLabels, setSectionLabels] = useState({});
+  // Which label doc is currently open in ShareModal
+  const [shareModalTarget, setShareModalTarget] = useState(null);
+  const [creatingLabelFor, setCreatingLabelFor] = useState(null); // label name being provisioned
 
   // Drag & drop state (modern mode only)
   const [dragOverId, setDragOverId] = useState(null);   // id of item being hovered — drives visual indicator
@@ -146,6 +153,25 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         chrome.storage.onChanged.removeListener(storageListener);
       }
     };
+  }, [collectionName, user, dbApi]);
+
+  // Subscribe to labels for this section type so we can show share status
+  useEffect(() => {
+    if (!user || !dbApi) return;
+    // Map collectionName to label type
+    const typeMap = { saved_links: 'links', links: 'links', cart_items: 'cart', reminders: 'reminders' };
+    const sectionType = typeMap[collectionName];
+    if (!sectionType) return;
+
+    const unsub = dbApi.subscribeLabelsForSection(sectionType, (snapshot) => {
+      const map = {};
+      snapshot.docs.forEach(d => {
+        const data = { id: d.id, ...d.data() };
+        map[(data.name || '').toLowerCase()] = data;
+      });
+      setSectionLabels(map);
+    });
+    return () => unsub();
   }, [collectionName, user, dbApi]);
 
   useEffect(() => {
@@ -859,8 +885,27 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           return (
             <section key={section.key} className="section-block label-group-card">
               <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
                   <span>{section.title}</span>
+
+                  {/* Shared badge */}
+                  {sectionLabels[section.label]?.isShared && (
+                    <span className="share-badge" style={{
+                      fontSize: isModern ? '0.7rem' : '0.75rem',
+                      padding: isModern ? '2px 8px' : '0 4px',
+                      borderRadius: isModern ? '999px' : '0',
+                      background: isModern ? 'rgba(255,255,255,0.1)' : 'transparent',
+                      border: isModern ? 'none' : '1px solid var(--border-color)',
+                      color: 'var(--text-muted)',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-flex', alignItems: 'center', gap: '4px',
+                    }}>
+                      {isModern
+                        ? ui.share.badgeCount.replace('{n}', Object.keys(sectionLabels[section.label]?.members || {}).length)
+                        : ui.share.badge}
+                    </span>
+                  )}
+
                   <div className="order-controls" style={{ display: 'flex', flexDirection: 'column', padding: '0 2px', gap: '0px' }}>
                     <button 
                       type="button"
@@ -883,6 +928,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                       <ChevronDown size={12} opacity={canSectionMoveDown ? 0.8 : 0.3} />
                     </button>
                   </div>
+
+                  {/* Add item button */}
                   <button 
                     className="icon-btn" 
                     onClick={() => { setLabel(section.label); setIsFormOpen(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
@@ -890,6 +937,52 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     style={{ padding: '4px' }}
                   >
                     <Plus size={16} />
+                  </button>
+
+                  {/* Share button */}
+                  <button
+                    className="icon-btn share-trigger"
+                    title={ui.share.btn}
+                    disabled={creatingLabelFor === section.label}
+                    style={{
+                      padding: isModern ? '4px' : '0 4px',
+                      fontSize: '0.75rem',
+                      color: sectionLabels[section.label]?.isShared ? 'var(--color-accent)' : 'var(--text-muted)',
+                      opacity: creatingLabelFor === section.label ? 0.5 : 1,
+                      textTransform: 'var(--text-transform)',
+                      transition: 'color 0.2s ease',
+                    }}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      // If a label doc already exists for this section, open it directly
+                      if (sectionLabels[section.label]) {
+                        setShareModalTarget(sectionLabels[section.label]);
+                        return;
+                      }
+                      // Otherwise, provision the label doc on first share click
+                      setCreatingLabelFor(section.label);
+                      try {
+                        const typeMap = { saved_links: 'links', links: 'links', cart_items: 'cart', reminders: 'reminders' };
+                        const sectionType = typeMap[collectionName] || 'links';
+                        const labelId = await dbApi.createOrGetLabel(section.label, sectionType, {
+                          displayName: user?.displayName,
+                          email: user?.email,
+                        });
+                        // The subscription will update sectionLabels; but we also fetch directly
+                        const { doc: firestoreDoc, getDoc: firestoreGetDoc } = await import('firebase/firestore');
+                        const { db: firestoreDb } = await import('../firebase');
+                        const snap = await firestoreGetDoc(firestoreDoc(firestoreDb, 'labels', labelId));
+                        if (snap.exists()) {
+                          setShareModalTarget({ id: snap.id, ...snap.data() });
+                        }
+                      } catch (err) {
+                        console.error('Failed to provision label:', err);
+                      } finally {
+                        setCreatingLabelFor(null);
+                      }
+                    }}
+                  >
+                    {isModern ? <UserPlus size={14} /> : ui.share.btn}
                   </button>
                 </div>
               </h3>
@@ -980,6 +1073,16 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
           <span className="copied-overlay-text">link copied!</span>
         </div>,
         document.body
+      )}
+
+      {/* Share Modal — mounts when user clicks share on a section header */}
+      {shareModalTarget && user && (
+        <ShareModal
+          label={shareModalTarget}
+          currentUser={user}
+          onClose={() => setShareModalTarget(null)}
+          dbApi={dbApi}
+        />
       )}
     </div>
   );
