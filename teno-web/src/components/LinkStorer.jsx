@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy, GripVertical, Plus, UserPlus } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
@@ -188,16 +188,18 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
   }, [openFormSignal]);
 
-  useEffect(() => {
-    if (!isFormOpen) return;
-
+  const focusAndScrollToForm = useCallback(() => {
     const focusTimer = setTimeout(() => {
       nicknameInputRef.current?.focus();
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 0);
-
+    }, 50);
     return () => clearTimeout(focusTimer);
-  }, [isFormOpen]);
+  }, []);
+
+  useEffect(() => {
+    if (!isFormOpen) return;
+    return focusAndScrollToForm();
+  }, [isFormOpen, focusAndScrollToForm]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -1066,7 +1068,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                   {/* Add item button */}
                   <button 
                     className="icon-btn" 
-                    onClick={() => { setLabel(section.label); setIsFormOpen(true); }}
+                    onClick={() => { setLabel(section.label); setIsFormOpen(true); focusAndScrollToForm(); }}
                     title={`Add to ${section.title}`}
                     style={{ padding: '4px' }}
                   >
