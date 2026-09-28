@@ -281,61 +281,70 @@ export default function SettingsPage({
       {isEnabled('clickStats') && (
         <section className="settings-card settings-wide-card" style={{ marginTop: '24px' }}>
           <h3>{ui.settings.clickStats}</h3>
-          <div className="settings-stats-grid">
-            <div className="settings-stat-box">
-              <span>max clicked link:</span>{' '}
-              <strong>{topClickedLinkCount > 0 ? `${getDisplayName(topClickedLink)} (${topClickedLinkCount})` : 'none'}</strong>
-            </div>
-            <div className="settings-stat-box">
-              <span>max clicked label:</span>{' '}
-              <strong>{topClickedLabelCount > 0 ? `${topClickedLabel.label} (${topClickedLabelCount})` : 'none'}</strong>
-            </div>
+
+          {/* Compact top-line stats */}
+          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginBottom: '4px' }}>
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              top link:{' '}
+              <strong style={{ color: 'var(--text-primary)' }}>
+                {topClickedLinkCount > 0 ? `${getDisplayName(topClickedLink)} (${topClickedLinkCount})` : '—'}
+              </strong>
+            </span>
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              top label:{' '}
+              <strong style={{ color: 'var(--text-primary)' }}>
+                {topClickedLabelCount > 0 ? `${topClickedLabel.label} (${topClickedLabelCount})` : '—'}
+              </strong>
+            </span>
           </div>
 
-          {isEnabled('links') && (
-            <div className="settings-list-group">
-              <h4>saved links</h4>
-              {sortedSavedLinks.length === 0 ? (
-                <p className="settings-empty">no saved links yet.</p>
-              ) : (
-                sortedSavedLinks.map((item) => (
-                  <div key={item.id} className="settings-list-row">
-                    <span>{`${getDisplayName(item)}${item.label ? ` (${item.label})` : ''}`}</span>
-                    <strong>{getItemClickCount(item)}</strong>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {isEnabled('cart') && (
-            <div className="settings-list-group">
-              <h4>cart items</h4>
-              {cartItems.length === 0 ? (
-                <p className="settings-empty">no cart items yet.</p>
-              ) : (
-                cartItems.map((item) => (
-                  <div key={item.id} className="settings-list-row">
-                    <span>{getDisplayName(item)}</span>
-                    <strong>{getItemClickCount(item)}</strong>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          <div className="settings-list-group">
-            <h4>label totals</h4>
-            {labelStatList.length === 0 ? (
-              <p className="settings-empty">no label clicks yet.</p>
-            ) : (
-              labelStatList.map((item) => (
-                <div key={item.label} className="settings-list-row">
-                  <span>{item.label}</span>
-                  <strong>{item.clickCount}</strong>
-                </div>
-              ))
+          {/* 3-column dense lists */}
+          <div className="settings-stats-cols">
+            {isEnabled('links') && (
+              <div className="settings-stats-col">
+                <p className="settings-stats-col-title">saved links</p>
+                {sortedSavedLinks.length === 0 ? (
+                  <p className="settings-empty">none yet.</p>
+                ) : (
+                  sortedSavedLinks.map((item) => (
+                    <div key={item.id} className="settings-dense-row">
+                      <span>{`${getDisplayName(item)}${item.label ? ` · ${item.label}` : ''}`}</span>
+                      <strong>{getItemClickCount(item)}</strong>
+                    </div>
+                  ))
+                )}
+              </div>
             )}
+
+            {isEnabled('cart') && (
+              <div className="settings-stats-col">
+                <p className="settings-stats-col-title">cart</p>
+                {cartItems.length === 0 ? (
+                  <p className="settings-empty">none yet.</p>
+                ) : (
+                  cartItems.map((item) => (
+                    <div key={item.id} className="settings-dense-row">
+                      <span>{getDisplayName(item)}</span>
+                      <strong>{getItemClickCount(item)}</strong>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            <div className="settings-stats-col">
+              <p className="settings-stats-col-title">labels</p>
+              {labelStatList.length === 0 ? (
+                <p className="settings-empty">none yet.</p>
+              ) : (
+                labelStatList.map((item) => (
+                  <div key={item.label} className="settings-dense-row">
+                    <span>{item.label}</span>
+                    <strong>{item.clickCount}</strong>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </section>
       )}
