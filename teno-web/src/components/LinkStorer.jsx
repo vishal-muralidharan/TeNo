@@ -33,6 +33,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const lastOpenSignal = useRef(openFormSignal);
   const nicknameInputRef = useRef(null);
   const formRef = useRef(null);
+  const toggleBtnRef = useRef(null);
 
   // Shared labels state — maps label name (lowercase) to label doc
   const [sectionLabels, setSectionLabels] = useState({});
@@ -198,13 +199,21 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   }, [isFormOpen]);
 
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (e) => {
       setActiveMenu(null);
       setActiveMenuDirection('down');
+      // Close the add-link form if the click is outside it and outside the toggle button
+      if (
+        isFormOpen &&
+        formRef.current && !formRef.current.contains(e.target) &&
+        toggleBtnRef.current && !toggleBtnRef.current.contains(e.target)
+      ) {
+        setIsFormOpen(false);
+      }
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+  }, [isFormOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -866,6 +875,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     <div className="tab-pane">
       <button 
         type="button"
+        ref={toggleBtnRef}
         className="toggle-form-btn" 
         onClick={() => setIsFormOpen(!isFormOpen)}
       >

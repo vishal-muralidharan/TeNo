@@ -24,6 +24,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [labelOrder, setLabelOrder] = useState([]);
   const lastOpenSignal = useRef(openFormSignal);
   const nicknameInputRef = useRef(null);
+  const formRef = useRef(null);
+  const toggleBtnRef = useRef(null);
 
   const handleMoveSection = async (e, sectionLabel, direction) => {
     e.preventDefault();
@@ -150,13 +152,21 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   }, [isFormOpen]);
 
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (e) => {
       setActiveMenu(null);
       setActiveMenuDirection('down');
+      // Close the add-link form if the click is outside it and outside the toggle button
+      if (
+        isFormOpen &&
+        formRef.current && !formRef.current.contains(e.target) &&
+        toggleBtnRef.current && !toggleBtnRef.current.contains(e.target)
+      ) {
+        setIsFormOpen(false);
+      }
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+  }, [isFormOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -594,13 +604,14 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     <div className="tab-pane">
       <button 
         type="button"
+        ref={toggleBtnRef}
         className="toggle-form-btn" 
         onClick={() => setIsFormOpen(!isFormOpen)}
       >
         &gt; [ {isFormOpen ? '- close' : '+ add_new'} ]
       </button>
 
-      <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`}>
+      <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`} ref={formRef}>
         <form className="input-group" onSubmit={handleSubmit}>
         <div className="typing-caret-field" data-empty={!nickname}>
           <input
