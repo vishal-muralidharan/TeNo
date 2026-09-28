@@ -30,6 +30,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [labelOrder, setLabelOrder] = useState([]);
   const lastOpenSignal = useRef(openFormSignal);
   const nicknameInputRef = useRef(null);
+  const formRef = useRef(null);
 
   // Shared labels state — maps label name (lowercase) to label doc
   const [sectionLabels, setSectionLabels] = useState({});
@@ -188,6 +189,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
     const focusTimer = setTimeout(() => {
       nicknameInputRef.current?.focus();
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 0);
 
     return () => clearTimeout(focusTimer);
@@ -842,7 +844,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         {isFormOpen ? ui.toggleForm.close : ui.toggleForm.open}
       </button>
 
-      <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`}>
+      <div className={`collapsible-form ${isFormOpen ? 'open' : ''}`} ref={formRef}>
         <form className="input-group" onSubmit={handleSubmit}>
         <div className="typing-caret-field" data-empty={!nickname}>
           <input
@@ -950,7 +952,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                   {/* Add item button */}
                   <button 
                     className="icon-btn" 
-                    onClick={() => { setLabel(section.label); setIsFormOpen(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onClick={() => { setLabel(section.label); setIsFormOpen(true); }}
                     title={`Add to ${section.title}`}
                     style={{ padding: '4px' }}
                   >
