@@ -786,7 +786,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                   {/* Favicon group: primary + optional alt */}
                   <div className="favicon-group" onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '3px', flexShrink: 0 }}>
                     <img
-                      src={`https://icons.duckduckgo.com/ip3/${link.domain}.ico`}
+                      src={`https://icon.horse/icon/${link.domain}`}
                       onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                       alt="favicon"
                       className="favicon"
@@ -799,7 +799,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     </div>
                     {link.altUrl && (
                       <img
-                        src={`https://icons.duckduckgo.com/ip3/${link.altDomain}.ico`}
+                        src={`https://icon.horse/icon/${link.altDomain}`}
                         onError={(e) => { e.target.style.opacity = '0.4'; }}
                         alt="alt favicon"
                         className="favicon"

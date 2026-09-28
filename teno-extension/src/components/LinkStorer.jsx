@@ -531,7 +531,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                 <div className="item-content" onClick={(e) => handleOpen(e, link)}>
                   <div className="favicon-group" onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '3px', flexShrink: 0 }}>
                     <img
-                      src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.domain}&sz=64`}
+                      src={`https://icon.horse/icon/${link.domain}`}
                       onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                       alt="favicon"
                       className="favicon"
@@ -544,7 +544,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     </div>
                     {link.altUrl && (
                       <img
-                        src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.altDomain}&sz=64`}
+                        src={`https://icon.horse/icon/${link.altDomain}`}
                         onError={(e) => { e.target.style.opacity = '0.4'; }}
                         alt="alt favicon"
                         className="favicon"
