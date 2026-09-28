@@ -302,8 +302,14 @@ body {
   scrollbar-color: #d9d9d9 #000;
 }
 
-.terminal-open .slide-pane {
-  padding-bottom: 14px;
+/* When terminal is open, slide-pane must scroll past the fixed terminal shell */
+.terminal-enabled.terminal-open .slide-pane {
+  padding-bottom: calc(var(--terminal-active-height, var(--terminal-height)) + 16px);
+}
+
+/* When terminal feature is enabled but closed, the 28px reopen bar sits fixed at the bottom */
+.terminal-enabled:not(.terminal-open) .slide-pane {
+  padding-bottom: calc(28px + 14px);
 }
 
 .terminal-spacer {

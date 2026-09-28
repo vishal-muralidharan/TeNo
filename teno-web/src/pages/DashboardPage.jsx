@@ -116,7 +116,7 @@ export default function DashboardPage({
 
   return (
     <div
-      className={`app-layout ${terminalVisible ? 'terminal-open' : ''}`}
+      className={`app-layout ${terminalVisible ? 'terminal-open' : ''} ${isEnabled('terminal') ? 'terminal-enabled' : ''}`}
       ref={appContainerRef}
       tabIndex={-1}
       style={{ outline: 'none', '--terminal-active-height': `${terminalHeight}px` }}
