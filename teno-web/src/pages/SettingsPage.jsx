@@ -295,13 +295,13 @@ export default function SettingsPage({
             </span>
           </div>
 
-          {/* 3-column dense lists */}
+          {/* Dense Masonry Lists */}
           <div className="settings-stats-cols">
             {isEnabled('links') && (
-              <div className="settings-stats-col">
+              <>
                 <p className="settings-stats-col-title">saved links</p>
                 {sortedSavedLinks.length === 0 ? (
-                  <p className="settings-empty">none yet.</p>
+                  <p className="settings-empty" style={{ breakInside: 'avoid' }}>none yet.</p>
                 ) : (
                   sortedSavedLinks.map((item) => (
                     <div key={item.id} className="settings-dense-row">
@@ -310,14 +310,14 @@ export default function SettingsPage({
                     </div>
                   ))
                 )}
-              </div>
+              </>
             )}
 
             {isEnabled('cart') && (
-              <div className="settings-stats-col">
+              <>
                 <p className="settings-stats-col-title">cart</p>
                 {cartItems.length === 0 ? (
-                  <p className="settings-empty">none yet.</p>
+                  <p className="settings-empty" style={{ breakInside: 'avoid' }}>none yet.</p>
                 ) : (
                   cartItems.map((item) => (
                     <div key={item.id} className="settings-dense-row">
@@ -326,13 +326,13 @@ export default function SettingsPage({
                     </div>
                   ))
                 )}
-              </div>
+              </>
             )}
 
-            <div className="settings-stats-col">
+            <>
               <p className="settings-stats-col-title">labels</p>
               {labelStatList.length === 0 ? (
-                <p className="settings-empty">none yet.</p>
+                <p className="settings-empty" style={{ breakInside: 'avoid' }}>none yet.</p>
               ) : (
                 labelStatList.map((item) => (
                   <div key={item.label} className="settings-dense-row">
@@ -341,7 +341,7 @@ export default function SettingsPage({
                   </div>
                 ))
               )}
-            </div>
+            </>
           </div>
         </section>
       )}

@@ -1522,22 +1522,13 @@ button.danger:hover {
   padding: 12px;
 }
 
-/* Compact 3-col click-stats layout */
+/* Compact 3-col click-stats layout via column-count */
 .settings-stats-cols {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
+  column-count: 3;
+  column-gap: 24px;
+  column-rule: 1px solid var(--color-border);
   border: 1px solid var(--color-border);
-}
-
-.settings-stats-col {
-  padding: 10px 12px;
-  border-right: 1px solid var(--color-border);
-  min-width: 0;
-}
-
-.settings-stats-col:last-child {
-  border-right: none;
+  padding: 12px;
 }
 
 .settings-stats-col-title {
@@ -1546,8 +1537,14 @@ button.danger:hover {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   margin-bottom: 6px;
+  margin-top: 12px;
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 5px;
+  break-after: avoid;
+}
+
+.settings-stats-col-title:first-child {
+  margin-top: 0;
 }
 
 .settings-dense-row {
@@ -1557,6 +1554,7 @@ button.danger:hover {
   gap: 8px;
   padding: 3px 0;
   font-size: 0.8rem;
+  break-inside: avoid;
 }
 
 .settings-dense-row span {
@@ -1574,14 +1572,7 @@ button.danger:hover {
 
 @media (max-width: 600px) {
   .settings-stats-cols {
-    grid-template-columns: 1fr;
-  }
-  .settings-stats-col {
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
-  }
-  .settings-stats-col:last-child {
-    border-bottom: none;
+    column-count: 1;
   }
 }
 
