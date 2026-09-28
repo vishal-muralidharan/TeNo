@@ -9,6 +9,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const { styleMode } = useTheme();
   const ui = getUiConfig(styleMode);
   const [url, setUrl] = useState('');
+  const [altUrl, setAltUrl] = useState('');
   const [nickname, setNickname] = useState('');
   const [description, setDescription] = useState('');
   const [label, setLabel] = useState('');
@@ -232,12 +233,21 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       domain = cleanUrl;
     }
 
+    let altDomain = '';
+    const cleanAltUrl = altUrl.trim();
+    if (cleanAltUrl) {
+      let normalAlt = cleanAltUrl;
+      if (!normalAlt.startsWith('http://') && !normalAlt.startsWith('https://')) normalAlt = 'https://' + normalAlt;
+      try { altDomain = new URL(normalAlt).hostname; } catch { altDomain = normalAlt; }
+    }
+
     setIsSubmitting(true);
     const cleanLabel = label.trim().toLowerCase();
     
     if (dbApi) {
       await dbApi.addEntry(collectionName, {
         url: cleanUrl,
+        ...(cleanAltUrl ? { altUrl: cleanAltUrl.startsWith('http') ? cleanAltUrl : 'https://' + cleanAltUrl, altDomain } : {}),
         nickname: nickname.trim(),
         description: description.trim(),
         label: cleanLabel,
@@ -247,6 +257,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
     
     setUrl('');
+    setAltUrl('');
     setNickname('');
     setDescription('');
     setLabel('');
@@ -361,6 +372,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       id: link.id,
       nickname: link.nickname,
       url: link.url,
+      altUrl: link.altUrl || '',
       description: link.description || '',
       label: link.label || '',
     });
@@ -385,12 +397,20 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
 
     const cleanLabel = editingItem.label.trim().toLowerCase();
+    let altDomain = '';
+    const cleanAltUrl = (editingItem.altUrl || '').trim();
+    if (cleanAltUrl) {
+      let normalAlt = cleanAltUrl;
+      if (!normalAlt.startsWith('http://') && !normalAlt.startsWith('https://')) normalAlt = 'https://' + normalAlt;
+      try { altDomain = new URL(normalAlt).hostname; } catch { altDomain = normalAlt; }
+    }
     
     if (dbApi) {
       await dbApi.updateEntry(collectionName, editingItem.id, {
          nickname: editingItem.nickname.trim(),
          url: cleanUrl,
          domain,
+         ...(cleanAltUrl ? { altUrl: cleanAltUrl.startsWith('http') ? cleanAltUrl : 'https://' + cleanAltUrl, altDomain } : { altUrl: '', altDomain: '' }),
          description: editingItem.description.trim(),
          label: cleanLabel,
       });
@@ -757,14 +777,31 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                   </span>
                 )}
                 <div className="item-content">
-                  <img
-                    src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.domain}&sz=64`}
-                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                    alt="favicon"
-                    className="favicon"
-                  />
-                  <div className="fallback-icon" style={{ display: 'none', width: '24px', height: '24px', alignItems: 'center', justifyContent: 'center', backgroundColor: '#333', color: '#fff', fontSize: '14px', fontWeight: '700', flexShrink: 0, textTransform: 'uppercase' }}>
-                    {link.nickname ? link.nickname.charAt(0) : '?'}
+                  {/* Favicon group: primary + optional alt */}
+                  <div className="favicon-group" onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '3px', flexShrink: 0 }}>
+                    <img
+                      src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.domain}&sz=64`}
+                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                      alt="favicon"
+                      className="favicon"
+                      onClick={(e) => handleOpen(e, link)}
+                      style={{ cursor: 'pointer' }}
+                      title={link.domain}
+                    />
+                    <div className="fallback-icon" style={{ display: 'none', width: '24px', height: '24px', alignItems: 'center', justifyContent: 'center', backgroundColor: '#333', color: '#fff', fontSize: '14px', fontWeight: '700', flexShrink: 0, textTransform: 'uppercase', cursor: 'pointer' }} onClick={(e) => handleOpen(e, link)}>
+                      {link.nickname ? link.nickname.charAt(0) : '?'}
+                    </div>
+                    {link.altUrl && (
+                      <img
+                        src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.altDomain}&sz=64`}
+                        onError={(e) => { e.target.style.opacity = '0.4'; }}
+                        alt="alt favicon"
+                        className="favicon"
+                        onClick={(e) => { e.stopPropagation(); handleOpen(e, { ...link, url: link.altUrl }); }}
+                        style={{ cursor: 'pointer', opacity: 0.75 }}
+                        title={`Alt: ${link.altDomain}`}
+                      />
+                    )}
                   </div>
 
                   <div className="item-text-stack">
@@ -899,6 +936,14 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             placeholder="Enter URL"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+          />
+        </div>
+        <div className="typing-caret-field" data-empty={!altUrl}>
+          <input
+            type="text"
+            placeholder="Alt URL (optional)"
+            value={altUrl}
+            onChange={(e) => setAltUrl(e.target.value)}
           />
         </div>
         <div className="typing-caret-field" data-empty={!label}>
@@ -1150,6 +1195,14 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                    value={editingItem.url} 
                    onChange={e => setEditingItem({...editingItem, url: e.target.value})}
                    placeholder="URL"
+                 />
+               </div>
+               <div className="typing-caret-field" data-empty={!editingItem.altUrl}>
+                 <input 
+                   type="text" 
+                   value={editingItem.altUrl || ''} 
+                   onChange={e => setEditingItem({...editingItem, altUrl: e.target.value})}
+                   placeholder="Alt URL (optional)"
                  />
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.label}>
