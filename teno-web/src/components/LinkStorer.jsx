@@ -20,6 +20,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingDeleteLabel, setPendingDeleteLabel] = useState(null); // sectionKey of label to delete
   const [editingItem, setEditingItem] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [copiedFading, setCopiedFading] = useState(false);
@@ -291,6 +292,23 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     setPendingDelete(id);
     setActiveMenu(null);
   }
+
+  const requestDeleteLabel = (sectionKey) => {
+    setPendingDeleteLabel(sectionKey);
+  };
+
+  const confirmDeleteLabel = async () => {
+    if (!pendingDeleteLabel || !dbApi) return;
+    const section = displaySections.find(s => s.key === pendingDeleteLabel);
+    if (!section) { setPendingDeleteLabel(null); return; }
+    // Clear the label field on all items in this section
+    await Promise.all(
+      section.items.map(item =>
+        dbApi.updateEntry(collectionName, item.id, { label: '' })
+      )
+    );
+    setPendingDeleteLabel(null);
+  };
 
   const confirmDelete = async () => {
     if (pendingDelete && dbApi) {
@@ -939,6 +957,16 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                     <Plus size={16} />
                   </button>
 
+                  {/* Delete label button */}
+                  <button
+                    className="icon-btn"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); requestDeleteLabel(section.key); }}
+                    title={`Delete label "${section.title}"`}
+                    style={{ padding: '4px', color: 'var(--text-muted)' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+
                   {/* Share button */}
                   <button
                     className="icon-btn share-trigger"
@@ -1010,6 +1038,22 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             <div className="modal-actions">
               <button onClick={() => setPendingDelete(null)}>Cancel</button>
               <button className="danger" onClick={confirmDelete}>Delete</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {pendingDeleteLabel && createPortal(
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPendingDeleteLabel(null); }}>
+          <div className="custom-modal">
+            <p style={{ color: 'var(--color-danger)', fontWeight: '500' }}>Delete label "{pendingDeleteLabel}"?</p>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', lineHeight: '1.4' }}>
+              This removes the label from all items in this group. The items themselves won't be deleted.
+            </p>
+            <div className="modal-actions" style={{ marginTop: '16px' }}>
+              <button onClick={() => setPendingDeleteLabel(null)}>Cancel</button>
+              <button className="danger" onClick={confirmDeleteLabel}>Delete Label</button>
             </div>
           </div>
         </div>,
