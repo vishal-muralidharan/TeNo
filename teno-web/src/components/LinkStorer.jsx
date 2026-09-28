@@ -20,6 +20,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [editingLabelKey, setEditingLabelKey] = useState(null); // sectionKey being renamed
+  const [editingLabelValue, setEditingLabelValue] = useState('');
   const [pendingDeleteLabel, setPendingDeleteLabel] = useState(null); // sectionKey of label to delete
   const [editingItem, setEditingItem] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
@@ -310,6 +312,32 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       )
     );
     setPendingDeleteLabel(null);
+  };
+
+  const startEditLabel = (sectionKey, currentTitle) => {
+    setEditingLabelKey(sectionKey);
+    setEditingLabelValue(currentTitle);
+  };
+
+  const cancelEditLabel = () => {
+    setEditingLabelKey(null);
+    setEditingLabelValue('');
+  };
+
+  const saveEditLabel = async (sectionKey) => {
+    const newName = editingLabelValue.trim().toLowerCase();
+    if (!newName || newName === sectionKey || !dbApi) {
+      cancelEditLabel();
+      return;
+    }
+    const section = displaySections.find(s => s.key === sectionKey);
+    if (!section) { cancelEditLabel(); return; }
+    await Promise.all(
+      section.items.map(item =>
+        dbApi.updateEntry(collectionName, item.id, { label: newName })
+      )
+    );
+    cancelEditLabel();
   };
 
   const confirmDelete = async () => {
@@ -906,7 +934,38 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             <section key={section.key} className="section-block label-group-card">
               <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
-                  <span>{section.title}</span>
+                  {editingLabelKey === section.key ? (
+                    <input
+                      autoFocus
+                      value={editingLabelValue}
+                      onChange={e => setEditingLabelValue(e.target.value)}
+                      onBlur={() => saveEditLabel(section.key)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') { e.preventDefault(); saveEditLabel(section.key); }
+                        if (e.key === 'Escape') { e.preventDefault(); cancelEditLabel(); }
+                      }}
+                      onClick={e => e.stopPropagation()}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid var(--text-muted)',
+                        color: 'inherit',
+                        font: 'inherit',
+                        fontSize: 'inherit',
+                        fontWeight: 'inherit',
+                        outline: 'none',
+                        padding: '0',
+                        width: `${Math.max(editingLabelValue.length, 4)}ch`,
+                        maxWidth: '160px',
+                      }}
+                    />
+                  ) : (
+                    <span
+                      title="Click to rename"
+                      style={{ cursor: 'text' }}
+                      onClick={e => { e.stopPropagation(); startEditLabel(section.key, section.title); }}
+                    >{section.title}</span>
+                  )}
 
                   {/* Shared badge */}
                   {sectionLabels[section.label]?.isShared && (
