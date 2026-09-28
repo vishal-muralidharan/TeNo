@@ -14,6 +14,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [activeMenu, setActiveMenu] = useState(null);
   const [activeMenuDirection, setActiveMenuDirection] = useState('down');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [scrollTrigger, setScrollTrigger] = useState(0);
 
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -144,13 +145,20 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
   useEffect(() => {
     if (!isFormOpen) return;
-
     const focusTimer = setTimeout(() => {
       nicknameInputRef.current?.focus();
-    }, 0);
-
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Fallback: forcefully scroll the extension window/body to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const pane = formRef.current.closest('.slide-pane');
+        if (pane) {
+          pane.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    }, 150);
     return () => clearTimeout(focusTimer);
-  }, [isFormOpen]);
+  }, [isFormOpen, scrollTrigger]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -642,7 +650,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         type="button"
         ref={toggleBtnRef}
         className="toggle-form-btn" 
-        onClick={() => setIsFormOpen(!isFormOpen)}
+        onClick={() => { setIsFormOpen(!isFormOpen); if (!isFormOpen) setScrollTrigger(s => s + 1); }}
       >
         &gt; [ {isFormOpen ? '- close' : '+ add_new'} ]
       </button>
