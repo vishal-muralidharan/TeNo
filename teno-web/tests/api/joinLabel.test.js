@@ -97,14 +97,17 @@ function setupFirestoreMock({
     }),
   }
 
+  const emptyQuery = {
+    get: vi.fn().mockResolvedValue({
+      empty: true,
+      docs: [],
+    }),
+  }
+
   const collectionMock = vi.fn((path) => {
-    if (path === 'labels') {
-      return { where: vi.fn().mockReturnValue(labelsQuery) }
-    }
-    if (path === 'links') {
-      return { where: vi.fn().mockReturnValue(linksQuery) }
-    }
-    return {}
+    if (path === 'labels') return { where: vi.fn().mockReturnValue(labelsQuery) }
+    if (path === 'links') return { where: vi.fn().mockReturnValue(linksQuery) }
+    return { where: vi.fn().mockReturnValue(emptyQuery) }
   })
 
   const mockDb = {
@@ -181,9 +184,12 @@ describe('api/joinLabel', () => {
 
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.json).toHaveBeenCalledWith({
-      status: 'joined',
+      status: 'already_member',
+      success: true,
       message: 'Already a member',
       labelId: 'label-123',
+      labelName: '',
+      type: 'links'
     })
   })
 
@@ -215,6 +221,7 @@ describe('api/joinLabel', () => {
     // 1. Label update
     expect(mockBatch.update).toHaveBeenCalledWith(labelDoc.ref, {
       memberUids: `arrayUnion(new-user-uid)`,
+      updatedAt: 'serverTimestamp()',
       'members.new-user-uid': {
         role: 'editor',
         name: 'Req Name',
@@ -237,8 +244,11 @@ describe('api/joinLabel', () => {
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.json).toHaveBeenCalledWith({
       status: 'joined',
+      success: true,
       message: 'Successfully joined label',
       labelId: 'label-123',
+      labelName: '',
+      type: 'links'
     })
   })
 

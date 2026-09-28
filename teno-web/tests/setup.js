@@ -59,6 +59,8 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
+window.HTMLElement.prototype.scrollIntoView = vi.fn()
+
 // ── 3. requestAnimationFrame / cancelAnimationFrame stubs ────────────────────
 // ThemeContext calls requestAnimationFrame to defer the isThemeReady flip.
 // jsdom does not implement rAF, so we provide a synchronous shim.
