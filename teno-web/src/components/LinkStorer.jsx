@@ -193,7 +193,14 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     if (!isFormOpen) return;
     const focusTimer = setTimeout(() => {
       nicknameInputRef.current?.focus();
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Fallback: forcefully scroll the parent container to top
+        const pane = formRef.current.closest('.slide-pane');
+        if (pane) {
+          pane.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
     }, 150);
     return () => clearTimeout(focusTimer);
   }, [isFormOpen, scrollTrigger]);
