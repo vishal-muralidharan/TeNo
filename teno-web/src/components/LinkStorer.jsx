@@ -929,6 +929,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         <form className="input-group" onSubmit={handleSubmit}>
         <div className="typing-caret-field" data-empty={!nickname}>
           <input
+            id="add-nickname"
+            name="add-nickname"
             ref={nicknameInputRef}
             type="text"
             placeholder="Add Nickname"
@@ -938,6 +940,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!url}>
           <input
+            id="add-url"
+            name="add-url"
             type="text"
             placeholder="Enter URL"
             value={url}
@@ -946,6 +950,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!altUrl}>
           <input
+            id="add-altUrl"
+            name="add-altUrl"
             type="text"
             placeholder="Alt URL (optional)"
             value={altUrl}
@@ -954,6 +960,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!label}>
           <input
+            id="add-label"
+            name="add-label"
             type="text"
             placeholder="Label"
             value={label}
@@ -962,6 +970,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!description}>
           <textarea
+            id="add-description"
+            name="add-description"
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -1186,6 +1196,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             <form onSubmit={handleEditSave} className="input-group">
                <div className="typing-caret-field" data-empty={!editingItem.nickname}>
                  <input 
+                   id="edit-nickname"
+                   name="edit-nickname"
                    type="text" 
                    value={editingItem.nickname} 
                    onChange={e => setEditingItem({...editingItem, nickname: e.target.value})}
@@ -1194,6 +1206,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.url}>
                  <input 
+                   id="edit-url"
+                   name="edit-url"
                    type="text" 
                    value={editingItem.url} 
                    onChange={e => setEditingItem({...editingItem, url: e.target.value})}
@@ -1202,6 +1216,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.altUrl}>
                  <input 
+                   id="edit-altUrl"
+                   name="edit-altUrl"
                    type="text" 
                    value={editingItem.altUrl || ''} 
                    onChange={e => setEditingItem({...editingItem, altUrl: e.target.value})}
@@ -1210,6 +1226,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.label}>
                  <input 
+                   id="edit-label"
+                   name="edit-label"
                    type="text" 
                    value={editingItem.label} 
                    onChange={e => setEditingItem({...editingItem, label: e.target.value})}
@@ -1218,6 +1236,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.description}>
                  <textarea 
+                   id="edit-description"
+                   name="edit-description"
                    value={editingItem.description}
                    onChange={e => setEditingItem({...editingItem, description: e.target.value})}
                    rows={2}

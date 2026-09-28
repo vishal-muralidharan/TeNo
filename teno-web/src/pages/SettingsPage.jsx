@@ -376,6 +376,8 @@ export default function SettingsPage({
               Deleting your account is irreversible. All your data will be permanently removed.
             </p>
             <input 
+              id="delete-confirm"
+              name="delete-confirm"
               type="text" 
               placeholder="Type DELETE to confirm" 
               value={deleteConfirmText}
@@ -533,6 +535,8 @@ export default function SettingsPage({
             <p style={{ marginBottom: '16px' }}>change password</p>
             <form onSubmit={handlePasswordChange} className="input-group">
               <input
+                id="current-password"
+                name="current-password"
                 type="password"
                 placeholder="current password"
                 value={currentPassword}
@@ -540,6 +544,8 @@ export default function SettingsPage({
                 autoComplete="current-password"
               />
               <input
+                id="new-password"
+                name="new-password"
                 type="password"
                 placeholder="new password"
                 value={newPassword}
@@ -547,6 +553,8 @@ export default function SettingsPage({
                 autoComplete="new-password"
               />
               <input
+                id="confirm-new-password"
+                name="confirm-new-password"
                 type="password"
                 placeholder="confirm new password"
                 value={confirmNewPassword}

@@ -651,6 +651,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         <form className="input-group" onSubmit={handleSubmit}>
         <div className="typing-caret-field" data-empty={!nickname}>
           <input
+            id="ext-add-nickname"
+            name="ext-add-nickname"
             ref={nicknameInputRef}
             type="text"
             placeholder="Add Nickname"
@@ -660,6 +662,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!url}>
           <input
+            id="ext-add-url"
+            name="ext-add-url"
             type="text"
             placeholder="Enter URL"
             value={url}
@@ -668,6 +672,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!altUrl}>
           <input
+            id="ext-add-altUrl"
+            name="ext-add-altUrl"
             type="text"
             placeholder="Alt URL (optional)"
             value={altUrl}
@@ -676,6 +682,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!label}>
           <input
+            id="ext-add-label"
+            name="ext-add-label"
             type="text"
             placeholder="Label"
             value={label}
@@ -684,6 +692,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
         </div>
         <div className="typing-caret-field" data-empty={!description}>
           <textarea
+            id="ext-add-description"
+            name="ext-add-description"
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -832,6 +842,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             <form onSubmit={handleEditSave} className="input-group">
                <div className="typing-caret-field" data-empty={!editingItem.nickname}>
                  <input 
+                   id="ext-edit-nickname"
+                   name="ext-edit-nickname"
                    type="text" 
                    value={editingItem.nickname} 
                    onChange={e => setEditingItem({...editingItem, nickname: e.target.value})}
@@ -840,6 +852,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.url}>
                  <input 
+                   id="ext-edit-url"
+                   name="ext-edit-url"
                    type="text" 
                    value={editingItem.url} 
                    onChange={e => setEditingItem({...editingItem, url: e.target.value})}
@@ -848,6 +862,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.altUrl}>
                  <input 
+                   id="ext-edit-altUrl"
+                   name="ext-edit-altUrl"
                    type="text" 
                    value={editingItem.altUrl || ''} 
                    onChange={e => setEditingItem({...editingItem, altUrl: e.target.value})}
@@ -856,6 +872,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.label}>
                  <input 
+                   id="ext-edit-label"
+                   name="ext-edit-label"
                    type="text" 
                    value={editingItem.label} 
                    onChange={e => setEditingItem({...editingItem, label: e.target.value})}
@@ -864,6 +882,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                </div>
                <div className="typing-caret-field" data-empty={!editingItem.description}>
                  <textarea 
+                   id="ext-edit-description"
+                   name="ext-edit-description"
                    value={editingItem.description}
                    onChange={e => setEditingItem({...editingItem, description: e.target.value})}
                    rows={2}
