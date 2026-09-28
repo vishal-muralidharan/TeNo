@@ -263,9 +263,6 @@ export default function SettingsPage({
             {isEnabled('changePassword') && (
               <button type="button" className="settings-password-trigger" onClick={openPasswordModal}>{ui.settings.changePassword}</button>
             )}
-            <button type="button" className="btn-primary" style={{ marginTop: '16px', width: '100%' }} onClick={() => setShowSignOutConfirm(true)}>
-              {ui.settings.signOutBtn}
-            </button>
           </article>
 
           <article className="settings-card">
@@ -350,6 +347,12 @@ export default function SettingsPage({
       )}
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
+          <article className="settings-card">
+            <button type="button" className="btn-primary" style={{ width: '100%' }} onClick={() => setShowSignOutConfirm(true)}>
+              {ui.settings.signOutBtn}
+            </button>
+          </article>
+
           <article className="settings-card">
             <h3>{ui.settings.contact}</h3>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '12px' }}>
