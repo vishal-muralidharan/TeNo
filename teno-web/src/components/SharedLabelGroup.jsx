@@ -269,7 +269,7 @@ export default function SharedLabelGroup({ label, user, dbApi }) {
               >
                 <div className="item-content">
                   <img
-                    src={`https://s2.googleusercontent.com/s2/favicons?domain=${link.domain}&sz=64`}
+                    src={`https://icons.duckduckgo.com/ip3/${link.domain}.ico`}
                     onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                     alt="favicon"
                     className="favicon"
