@@ -1010,7 +1010,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                       }
                     }}
                   >
-                    {isModern ? <UserPlus size={14} /> : ui.share.btn}
+                    <UserPlus size={14} />
                   </button>
                 </div>
               </h3>
