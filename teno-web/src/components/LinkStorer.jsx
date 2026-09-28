@@ -18,6 +18,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
   const [activeMenu, setActiveMenu] = useState(null);
   const [activeMenuDirection, setActiveMenuDirection] = useState('down');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [scrollTrigger, setScrollTrigger] = useState(0);
 
   // Custom Modal State
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -188,18 +189,14 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     }
   }, [openFormSignal]);
 
-  const focusAndScrollToForm = useCallback(() => {
+  useEffect(() => {
+    if (!isFormOpen) return;
     const focusTimer = setTimeout(() => {
       nicknameInputRef.current?.focus();
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
+    }, 150);
     return () => clearTimeout(focusTimer);
-  }, []);
-
-  useEffect(() => {
-    if (!isFormOpen) return;
-    return focusAndScrollToForm();
-  }, [isFormOpen, focusAndScrollToForm]);
+  }, [isFormOpen, scrollTrigger]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -1068,7 +1065,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                   {/* Add item button */}
                   <button 
                     className="icon-btn" 
-                    onClick={() => { setLabel(section.label); setIsFormOpen(true); focusAndScrollToForm(); }}
+                    onClick={() => { setLabel(section.label); setIsFormOpen(true); setScrollTrigger(s => s + 1); }}
                     title={`Add to ${section.title}`}
                     style={{ padding: '4px' }}
                   >
@@ -1165,11 +1162,8 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       {pendingDeleteLabel && createPortal(
         <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPendingDeleteLabel(null); }}>
           <div className="custom-modal">
-            <p style={{ color: 'var(--color-danger)', fontWeight: '500' }}>Delete label "{pendingDeleteLabel}"?</p>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', lineHeight: '1.4' }}>
-              This removes the label from all items in this group. The items themselves won't be deleted.
-            </p>
-            <div className="modal-actions" style={{ marginTop: '16px' }}>
+            <p>Delete label "{pendingDeleteLabel}"?</p>
+            <div className="modal-actions">
               <button onClick={() => setPendingDeleteLabel(null)}>Cancel</button>
               <button className="danger" onClick={confirmDeleteLabel}>Delete Label</button>
             </div>
