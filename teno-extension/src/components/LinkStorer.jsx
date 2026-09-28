@@ -678,16 +678,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
             onChange={(e) => setUrl(e.target.value)}
           />
         </div>
-        <div className="typing-caret-field" data-empty={!altUrl}>
-          <input
-            id="ext-add-altUrl"
-            name="ext-add-altUrl"
-            type="text"
-            placeholder="Alt URL (optional)"
-            value={altUrl}
-            onChange={(e) => setAltUrl(e.target.value)}
-          />
-        </div>
+
         <div className="typing-caret-field" data-empty={!label}>
           <input
             id="ext-add-label"
