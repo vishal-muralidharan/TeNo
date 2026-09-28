@@ -1073,7 +1073,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
                   {/* Add item button */}
                   <button 
                     className="icon-btn" 
-                    onClick={() => { setLabel(section.label); setIsFormOpen(true); setScrollTrigger(s => s + 1); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLabel(section.label); setIsFormOpen(true); setScrollTrigger(s => s + 1); }}
                     title={`Add to ${section.title}`}
                     style={{ padding: '4px' }}
                   >
