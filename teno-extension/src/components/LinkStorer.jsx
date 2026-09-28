@@ -268,15 +268,22 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     setPendingDeleteLabel(sectionKey);
   };
 
-  const confirmDeleteLabel = async () => {
+  const confirmDeleteLabel = async (deleteItems = false) => {
     if (!pendingDeleteLabel || !dbApi) return;
     const section = displaySections.find(s => s.key === pendingDeleteLabel);
     if (!section) { setPendingDeleteLabel(null); return; }
-    await Promise.all(
-      section.items.map(item =>
-        dbApi.updateEntry(collectionName, item.id, { label: '' })
-      )
-    );
+    
+    if (deleteItems) {
+      await Promise.all(
+        section.items.map(item => dbApi.deleteEntry(collectionName, item.id))
+      );
+    } else {
+      await Promise.all(
+        section.items.map(item =>
+          dbApi.updateEntry(collectionName, item.id, { label: '' })
+        )
+      );
+    }
     setPendingDeleteLabel(null);
   };
 
@@ -819,15 +826,13 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       )}
 
       {pendingDeleteLabel && (
-        <div className="custom-modal-overlay">
+        <div className="custom-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPendingDeleteLabel(null); }}>
           <div className="custom-modal">
-            <p style={{ color: 'var(--color-danger)', fontWeight: '500' }}>Delete label "{pendingDeleteLabel}"?</p>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', lineHeight: '1.4' }}>
-              This removes the label from all items in this group. The items themselves won't be deleted.
-            </p>
-            <div className="modal-actions" style={{ marginTop: '16px' }}>
-              <button onClick={() => setPendingDeleteLabel(null)}>Cancel</button>
-              <button className="danger" onClick={confirmDeleteLabel}>Delete Label</button>
+            <p style={{ color: 'var(--color-danger)', fontWeight: '500', marginBottom: '8px' }}>Delete label "{displaySections.find(s => s.key === pendingDeleteLabel)?.title || pendingDeleteLabel}"?</p>
+            <div className="modal-actions" style={{ flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+              <button className="danger" onClick={() => confirmDeleteLabel(true)} style={{ width: '100%', whiteSpace: 'normal', height: 'auto', padding: '8px' }}>Delete Label & All Items In It</button>
+              <button onClick={() => confirmDeleteLabel(false)} style={{ width: '100%', background: 'var(--bg-secondary)', color: 'var(--text-color)', whiteSpace: 'normal', height: 'auto', padding: '8px' }}>Just Delete Label (Ungroup Items)</button>
+              <button onClick={() => setPendingDeleteLabel(null)} style={{ width: '100%', marginTop: '4px' }}>Cancel</button>
             </div>
           </div>
         </div>
