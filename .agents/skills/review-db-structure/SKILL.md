@@ -3,18 +3,19 @@ name: review-db-structure
 description: >-
   Use this skill whenever reading, writing, modifying, or refactoring database collections,
   documents, fields, or Firestore security rules in TeNo. Ensures strict alignment with the canonical
-  schema, prevents undefined field errors, enforces security rules constraints, and maintains memberUids denormalization.
+  schema across both teno-web and teno-extension, prevents undefined field errors, enforces security rules constraints,
+  and maintains memberUids denormalization.
 ---
 
-# Review Database Structure
+# Review Database Structure (Web & Extension)
 
-This skill defines the canonical database architecture, document schemas, security constraints, and modification checklist for the **TeNo** repository. Use it whenever implementing or updating any feature that touches Firestore, serverless endpoints, or mock storage.
+This skill defines the canonical database architecture, document schemas, security constraints, and modification checklist across both the **Web (`teno-web`)** and **Extension (`teno-extension`)** versions of TeNo.
 
 ---
 
 ## 1. Canonical Database Architecture
 
-TeNo uses Google Cloud Firestore in Datastore / Native mode with a unified label architecture supporting both private data and shared multi-user collaboration.
+TeNo uses Google Cloud Firestore in Datastore / Native mode with a unified label architecture supporting both private data and shared multi-user collaboration. Both `teno-web` and `teno-extension` share the identical database and collections:
 
 ```text
 Firestore Root
@@ -115,10 +116,29 @@ Stores reminders for shared labels. Private reminders reside in `/users/{userId}
 
 ---
 
-## 3. Strict DB Implementation Guardrails
+## 3. Web & Extension Database Consumption
+
+### A. Shared Database Abstraction (`TeNoDatabase`)
+Both `teno-web` and `teno-extension` consume Firestore through `TeNoDatabase` in `src/lib/db.js`:
+- `teno-web`: Direct import from `./lib/db.js`
+- `teno-extension`: Imports via symlink `teno-extension/src/lib/db.js -> ../../teno-web/src/lib/db.js`
+- Any new database method added for `teno-web` is automatically available in `teno-extension`.
+
+### B. Extension-Specific Database Constraints
+1. **Popup Lifecycle & Subscription Cleanup:**
+   - In `teno-extension`, popups can be opened and dismissed within seconds.
+   - All `onSnapshot` listeners created by `dbApi.subscribe*` must return their unsubscribe functions and be cleanly detached inside `useEffect` cleanup returns to prevent detached memory leaks or orphaned network connections.
+2. **Offline & Intermittent Auth in Extension:**
+   - The browser extension may open when the browser is starting up or network state is re-establishing. Always handle loading and unauthenticated states gracefully (`dbApi` returns `null` when `!uid`).
+3. **Serverless Operations from Extension:**
+   - The extension does not host serverless functions directly. When accepting a label invite or deleting an account, the extension must make an authenticated HTTP request to the web API endpoint (e.g. `https://<teno-domain>/api/joinLabel`) passing the Firebase Auth `idToken`.
+
+---
+
+## 4. Strict DB Implementation Guardrails
 
 1. **Never pass `undefined` to Firestore:**
-   Firestore's Web SDK throws `Unsupported field value: undefined` when any field in an object or array passed to `setDoc`, `addDoc`, or `updateDoc` is `undefined`. Always sanitize payload objects with `null` or explicit defaults:
+   Firestore's Web SDK throws `Unsupported field value: undefined` when any field in an object or array passed to `setDoc`, `addDoc`, or `updateDoc` is `undefined`. Always sanitize payload objects with `null` or explicit defaults in both web and extension:
    ```javascript
    altUrl: altUrl || null,
    description: description || null,
@@ -131,7 +151,7 @@ Stores reminders for shared labels. Private reminders reside in `/users/{userId}
    - When a new member joins via `api/joinLabel.js`, the serverless function executes an atomic batch write to append `uid` to the label doc AND all items in `links`, `cart_items`, and `reminders` sharing that `labelId`.
 
 3. **Use the `TeNoDatabase` Wrapper Class:**
-   All client database interactions in `teno-web` must use the `TeNoDatabase` helper (`src/lib/db.js`) rather than writing ad-hoc Firestore calls in React components. This centralizes schema versioning, subscription cleanup, and fallback handling.
+   All client database interactions in both `teno-web` and `teno-extension` must use the `TeNoDatabase` helper (`src/lib/db.js`) rather than writing ad-hoc Firestore calls in React components. This centralizes schema versioning, subscription cleanup, and fallback handling.
 
 4. **Label Deletion Handling:**
    When deleting a label, provide clear handling options:
@@ -143,11 +163,12 @@ Stores reminders for shared labels. Private reminders reside in `/users/{userId}
 
 ---
 
-## 4. DB Change Checklist
+## 5. DB Change Checklist
 
 Before committing any DB-related change, verify:
 - [ ] No `undefined` values in Firestore payloads (sanitize with `null` or default fallbacks).
 - [ ] Denormalized `memberUids` updated across related collections if membership changes.
 - [ ] Security rules in `firestore.rules` accommodate the query/mutation patterns.
 - [ ] Changes mediated through `TeNoDatabase` in `teno-web/src/lib/db.js`.
+- [ ] Listener unsubscribe cleanup tested in both `teno-web` and `teno-extension`.
 - [ ] Targeted tests in `teno-web/tests/lib/db.test.js` or `teno-web/tests/api/` pass cleanly.
