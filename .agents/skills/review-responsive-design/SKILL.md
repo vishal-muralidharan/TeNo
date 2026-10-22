@@ -2,25 +2,38 @@
 name: review-responsive-design
 description: >-
   Use this skill whenever building, modifying, or auditing UI components, pages, modals,
-  and stylesheets in TeNo. Ensures interfaces support both Minimalist and Modern dual themes,
-  remain fully responsive across mobile, tablet, and desktop viewports, respect dynamic viewport heights (dvh),
+  and stylesheets across teno-web and teno-extension. Ensures interfaces support both Minimalist
+  and Modern dual themes on web, adhere to extension popup viewport bounds, respect dynamic viewport heights (dvh),
   handle virtual keyboards, apply safe area insets, prevent iOS auto-zoom, and maintain accessible touch targets in Pure CSS.
 ---
 
-# Review Responsive Design & Dual-Theme System
+# Review Responsive Design & Styling (Web & Extension)
 
-This skill defines the mandatory responsive design architecture, mobile viewport standards, and dual-theme guidelines for the **TeNo** repository. Use it whenever creating or updating any UI component, page, modal, or stylesheet.
+This skill defines the mandatory responsive design architecture, viewport standards, and styling guidelines across both the **Web (`teno-web`)** and **Extension (`teno-extension`)** versions of TeNo.
 
 ---
 
-## 1. Dual-Theme Architectural Foundation
+## 1. Web vs. Extension Viewport Foundations
 
-TeNo utilizes a custom **Pure CSS Dual-Theme Engine** without utility frameworks like Tailwind CSS. All styling is governed by root variables and theme selectors dynamically applied to the `<html>` root by `ThemeContext.jsx`:
+TeNo presents two distinct interaction surfaces with vastly different layout and viewport constraints:
 
+| Aspect | `teno-web` (Full Web Dashboard) | `teno-extension` (Browser Popup) |
+| :--- | :--- | :--- |
+| **Viewport Size** | Variable: 320px mobile to 2560px ultra-wide | Fixed / Constrained: ~380px–450px width, max 600px height |
+| **Styling Engine** | Pure CSS Dual-Theme (`minimal` vs `modern`) | Pure CSS compact console/hacker aesthetic |
+| **Outer Scrollbar** | Browser window / document level | **Prohibited:** Outer popup must not double-scroll; `overflow: hidden` on body |
+| **Inner Scrollbar** | Responsive sections & cards | Dedicated `.tab-pane` / content scroll with `overflow-y: auto` |
+| **Modals & Overlays** | Viewport-centered modals (`ConfirmModal`, `ShareModal`) | Compact inline or portal modals bounded by popup window |
+| **Input Typography** | Dynamic tokens, 16px font on mobile | 16.5px monospace typography, lowercase transformation |
+
+---
+
+## 2. Web Responsive Design & Dual-Theme Engine (`teno-web`)
+
+### A. Dual-Theme Architectural System
+All web styling is governed by root variables and theme selectors dynamically applied to the `<html>` root by `ThemeContext.jsx`:
 * `data-theme`: `"dark"` | `"light"`
 * `data-style`: `"minimal"` | `"modern"`
-
-### A. The Two Aesthetic Personalities
 
 | Aspect | Minimalist Theme (`[data-style="minimal"]`) | Modern Theme (`[data-style="modern"]`) |
 | :--- | :--- | :--- |
@@ -31,8 +44,8 @@ TeNo utilizes a custom **Pure CSS Dual-Theme Engine** without utility frameworks
 | **UI Labels & Chrome** | Monospaced text brackets (e.g. `[ delete ]`, `> [ + add_new ]`) | Lucide icons, tactile buttons, soft transitions |
 | **Text Transform** | `lowercase` | `none` |
 
-### B. The Translation Dictionary (`uiConfig.jsx`)
-Never hardcode style-specific strings or icons directly in components. Consume the translation dictionary:
+### B. Consuming the Translation Dictionary (`uiConfig.jsx`)
+Never hardcode style-specific strings or icons directly in web components:
 ```jsx
 import { useTheme } from '../ThemeContext';
 import { getUiConfig } from '../utils/uiConfig';
@@ -50,117 +63,74 @@ export default function MyComponent() {
 }
 ```
 
----
-
-## 2. Responsive Breakpoint Standards in Pure CSS
-
-TeNo layouts adapt across screen sizes using standard media queries in `teno-web/src/index.css`:
-
+### C. Web Media Query Breakpoints
 ```css
-/* Standard Breakpoints */
 @media (max-width: 1199px) { /* Laptops / Small Desktops */ }
 @media (max-width: 899px)  { /* Tablets / Horizontal Phones */ }
 @media (max-width: 599px)  { /* Mobile Devices (Portrait) */ }
 @media (max-width: 360px)  { /* Small Mobile Screens */ }
 ```
 
-### Mobile Layout Behaviors (`max-width: 599px`):
-1. **Grid to Stack:** Multi-column grids (like `.label-sections-grid` or bookmark card groups) must collapse into a clean single column.
-2. **Form Layouts:** Input fields and action buttons in add/edit bars stack vertically to avoid horizontal compression.
-3. **Typography & Spacing:** Container padding steps down from `24px` to `12px` or `16px`.
+### D. Web Viewport & Modal Safety
+- **Dynamic Viewport Height:** Modals must use `max-height: 85dvh` with `overflow-y: auto`.
+- **iOS Safari 16px Font Rule:** Form inputs must enforce at least `16px` font size on mobile screens (`max-width: 599px`) to prevent browser auto-zooming.
+- **Body Scroll Locking:** When a modal is open, lock `document.body.style.overflow = 'hidden'`.
 
 ---
 
-## 3. Viewport & Modal Safety
+## 3. Extension Popup Viewport Architecture (`teno-extension`)
 
-### Dynamic Viewport Heights (`dvh` vs `vh`)
-Classic `100vh` causes mobile browser navigation bars to push bottom buttons off-screen.
-- Always use `dvh` (Dynamic Viewport Height) or bounded `clamp()` for full-screen containers, overlays, and modals:
+Browser extensions run in a strictly sandboxed popup window managed by Chrome/Firefox/Edge.
+
+### A. Fixed Popup Dimensions & Containment
+- The extension popup window is hard-capped by browser limits (maximum 800x600px, standard 400x550px).
+- **Rule:** Never allow horizontal scroll in the extension popup. Container width must be 100%.
+- The body container must enforce strict bounds:
   ```css
-  max-height: 90dvh;
-  max-height: calc(100dvh - 32px);
-  ```
-
-### Modal Container Structure (`ConfirmModal`, `ShareModal`, `MembersModal`)
-Every modal overlay and card must adhere to these container safety principles:
-```css
-/* Overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-/* Modal Window */
-.modal-window {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  border: 1px var(--border-style) var(--border-color);
-  border-radius: var(--border-radius);
-  max-width: 520px;
-  width: 100%;
-  max-height: 85dvh;
-  overflow-y: auto;
-  padding: 24px;
-}
-```
-
-### Background Scroll Locking
-When a modal is open, prevent background scroll chaining:
-```jsx
-useEffect(() => {
-  if (!isOpen) return;
-  const original = document.body.style.overflow;
-  document.body.style.overflow = 'hidden';
-  return () => {
-    document.body.style.overflow = original;
-  };
-}, [isOpen]);
-```
-
----
-
-## 4. Mobile Form Ergonomics & iOS Safari Rules
-
-### The 16px Font Rule (Preventing iOS Safari Auto-Zoom)
-On iOS Safari, focusing an input (`<input>`, `<select>`, `<textarea>`) with `font-size < 16px` triggers automatic browser zooming that breaks layouts and clips action buttons.
-- **Rule:** Form inputs must enforce at least `16px` font size on mobile screens:
-  ```css
-  @media (max-width: 599px) {
-    input, textarea, select {
-      font-size: 16px !important;
-    }
+  body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    border: none;
+    font-size: 16.5px;
+  }
+  
+  .app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
   }
   ```
 
-### Touch Targets (Minimum 44x44px)
-- Every clickable button, icon button (`.icon-btn`), and tab must provide a touch target of at least **44x44px** (or use generous padding around small SVGs).
-- Use `touch-action: manipulation` to disable the 300ms double-tap zoom delay on mobile devices:
-  ```css
-  button, .icon-btn {
-    touch-action: manipulation;
-  }
-  ```
+### B. Extension Modal & Form Ergonomics
+1. **No External Dialogs:** Never trigger native browser `window.confirm()` or `window.alert()` in the extension popup. On some browsers, opening a native prompt closes the extension popup immediately, causing data loss.
+2. **Compact Modal Overlays:** Custom modals in the extension (e.g. pending delete in `LinkStorer.jsx`) must fit comfortably within the ~400px width with compact padding (e.g. `12px`), utilizing `max-height: 80vh` and internal scrolling.
+3. **Scroll Containment in Tab Panes:**
+   - Content areas (`.tab-pane`, list sections) must manage vertical scrolling with `overflow-y: auto`.
+   - Prevent scroll rubber-banding with `overscroll-behavior: contain`.
 
-### Virtual Keyboard Tolerance
-When the virtual keyboard appears:
-- Bounded modal containers with `max-height: 85dvh` and `overflow-y: auto` automatically adapt and allow scrolling to inputs and buttons.
+### C. Terminal & Bottom Drawer in Extension
+- In `teno-extension`, `<Terminal />` slides up from the bottom.
+- When the terminal is open, the height of the active tab pane must be adjusted (`padding-bottom` or calc) so that the lowest items and action buttons remain fully visible and clickable above the terminal header.
 
 ---
 
-## 5. Pre-Commit Responsive & Theme Checklist
+## 4. Accessible Touch & Click Targets
+
+Across both Web and Extension:
+- Interactive icon buttons (`.icon-btn`), tabs, and action pills must provide a minimum hit target of **44x44px** (or use sufficient padding on small icons).
+- Use `touch-action: manipulation` to prevent double-tap zoom delay on mobile web devices.
+
+---
+
+## 5. Pre-Commit Styling & Viewport Checklist
 
 Before committing any UI or styling change, verify:
-- [ ] **Dual-Theme Verification:** Does the component render correctly in BOTH Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) styles?
-- [ ] **Light & Dark Mode:** Are contrast ratios accessible in both `[data-theme="dark"]` and `[data-theme="light"]`?
-- [ ] **Viewport Height Safety:** Do modals or slide-overs use `max-height: 85dvh` with `overflow-y: auto`?
-- [ ] **Touch Target Sizing:** Are interactive buttons and icons at least 44x44px on mobile viewports?
-- [ ] **16px Font Rule:** Do mobile form inputs enforce 16px to prevent iOS Safari auto-zoom?
-- [ ] **Zero Horizontal Overflow:** Does the layout scroll purely vertically without unwanted horizontal overflow on 360px and 390px widths?
-- [ ] **Body Scroll Locking:** Do modal dialogs lock `document.body.style.overflow` while open?
+- [ ] **Web Dual-Theme Symmetry:** Does the component render correctly in BOTH Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) styles?
+- [ ] **Web Light & Dark Mode:** Are contrast ratios accessible in both `[data-theme="dark"]` and `[data-theme="light"]`?
+- [ ] **Web Viewport Height Safety:** Do web modals use `max-height: 85dvh` with `overflow-y: auto`?
+- [ ] **Web 16px Font Rule:** Do mobile form inputs enforce 16px font size to prevent iOS Safari auto-zoom?
+- [ ] **Extension Popup Containment:** Does the extension popup fit within ~400x550px without horizontal scroll or double vertical scrollbars?
+- [ ] **Extension Modal Safety:** Are extension confirmation modals compact and non-native (no `window.confirm`)?
+- [ ] **Zero Clipping:** Are bottom action buttons accessible above terminal drawers and keyboard boundaries?
