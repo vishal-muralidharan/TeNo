@@ -2439,3 +2439,147 @@ button.danger:hover {
 .prompt-editor-modal--modern .prompt-editor-btn {
   border-radius: 8px;
 }
+
+/* ─── Prompts Tab View Styles ────────────────────────────────────────────── */
+
+.prompts-tab {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.prompts-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.prompts-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+  max-width: 380px;
+}
+
+.prompts-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.prompts-search-input {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px var(--border-style) var(--border-color);
+  border-radius: 0px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+[data-style="modern"] .prompts-search-input {
+  padding-left: 32px;
+  border-radius: 8px;
+  border-style: solid;
+}
+
+.prompts-search-input:focus {
+  border-color: var(--text-primary);
+}
+
+.prompts-add-btn {
+  background: transparent;
+  border: 1px var(--border-style) var(--border-color);
+  border-radius: 0px;
+  color: var(--text-primary);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: var(--text-transform);
+  transition: all 0.15s ease;
+}
+
+.prompts-add-btn:hover {
+  background: var(--text-primary);
+  color: var(--bg-app);
+}
+
+[data-style="modern"] .prompts-add-btn {
+  border-radius: 8px;
+  background: var(--text-primary);
+  color: var(--bg-app);
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+[data-style="modern"] .prompts-add-btn:hover {
+  opacity: 0.9;
+}
+
+.prompts-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.prompts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prompts-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.prompts-section-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.prompts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.prompts-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  margin-top: 12px;
+}
+
+.prompts-floating-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
+}
