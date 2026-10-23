@@ -106,6 +106,32 @@ Before creating a new utility or component, verify whether a solution already ex
 2. **Extension Popup Boundaries:** Will the new UI fit comfortably inside the ~400px fixed width of the browser extension popup without horizontal overflow?
 3. **Directory Placement:** Determine whether the code belongs in `teno-web/src/components/`, `teno-web/src/pages/`, `teno-web/api/`, or `teno-extension/src/components/`.
 
+### Feature Ergonomics, Immutability & UI Quality Audit:
+Before planning UI components or data mutations, evaluate these mandatory quality criteria:
+1. **Entity Card Geometry & Action Clearance:**
+   - Do not copy compact link bookmark dimensions (`240px` width, `110px` height) for content-heavy or action-dense entities.
+   - Calculate horizontal action clearance: `(Actions Width) + (Minimum Title Width >= 140px) + Gap = Minimum Container Width`.
+   - If an entity has 3 or more action buttons, grid columns must be sized at `>= 350px` (e.g. `minmax(350px, 1fr)`) to prevent header wrapping.
+   - If an entity holds multi-line text (prompts, descriptions, notes), enforce an explicit `min-height` (`>= 145px`) and multi-line clamp (3-4 lines).
+2. **4-Theme Button Contrast & Visibility:**
+   - Verify action button styling across all 4 theme permutations:
+     * Minimalist Dark (`[data-style="minimal"][data-theme="dark"]`)
+     * Minimalist Light (`[data-style="minimal"][data-theme="light"]`)
+     * Modern Dark (`[data-style="modern"][data-theme="dark"]`)
+     * Modern Light (`[data-style="modern"][data-theme="light"]`)
+   - Secondary / Alternative buttons must use explicit outline borders (`border: 1px solid var(--text-primary)`) and foreground colors (`color: var(--text-primary)`). Never rely on subtle hover fills (`--bg-surface-hover`) for resting static button states.
+3. **Immutability for Historical / Archived Records:**
+   - If the feature introduces version control, revisions, or archiving, historical/non-current records must be strictly read-only:
+     * Lock all form inputs (`readOnly` and/or `disabled`).
+     * Hide or disable mutating buttons (`Save`, `Update`, `Save New Version`).
+     * Provide prominent non-mutating actions (`Copy`, `View`, `Restore`).
+     * Display a clear status badge (e.g. `[read-only: viewing v1]`).
+4. **Zero-Layout-Shift Transient Feedback:**
+   - Transient user feedback (`copied`, `saved`, `done`) must never elongate buttons or shift neighboring card elements.
+   - Reserve a fixed button width (`min-width` with `box-sizing: border-box`) or use an absolute, non-displacing toast/badge.
+5. **Database Security Rules & Mutation Parity:**
+   - Whenever creating a new Firestore collection or adding a mutation method, audit `firestore.rules` beforehand. Ensure client payloads provide all auth/member fields (`ownerId`, `memberUids`) required by security rules.
+
 ---
 
 ## 5. Phase 3: Formulating the Step-by-Step Implementation Plan
@@ -172,5 +198,9 @@ Before editing any code, verify:
 [ ] 4. Verified database schema requirements against firestore.rules and docs/.
 [ ] 5. Verified dual-theme compatibility on web (Minimalist and Modern).
 [ ] 6. Verified popup dimension compatibility on extension (~400px width).
-[ ] 7. Formulated an atomic, step-by-step plan with targeted tests and commit messages.
+[ ] 7. Evaluated card geometry & horizontal action clearance (minimum width >= 350px for 3+ actions).
+[ ] 8. Verified button contrast in all 4 theme permutations (minimal dark/light, modern dark/light).
+[ ] 9. Verified state immutability for historical/archived views (inputs locked, mutating buttons hidden).
+[ ] 10. Verified zero-layout-shift for transient feedback (fixed min-width or absolute toast).
+[ ] 11. Formulated an atomic, step-by-step plan with targeted tests and commit messages.
 ```

@@ -4,11 +4,12 @@ const TAB_INDEX = {
   links: 0,
   cart: 1,
   reminders: 2,
-  timer: 3,
+  prompts: 3,
+  timer: 4,
 }
 
 const HELP_GROUPS = {
-  general: ['help', 'history', 'date', 'exit', 'hide', 'clear', 'cd links/cart/reminders/timer'],
+  general: ['help', 'history', 'date', 'exit', 'hide', 'clear', 'cd links/cart/reminders/prompts/timer'],
   ln: ['ls', 'new', 'drop [nickname]', 'roulette'],
   ct: ['ls', 'new', 'drop [nickname]', 'checkout'],
   rm: ['ls', 'add [text]', 'done [index]', 'nuke'],
@@ -249,7 +250,7 @@ export default function Terminal({
     }
 
     if (command === 'cd') {
-      if (['links', 'cart', 'reminders', 'timer'].includes(arg)) {
+      if (['links', 'cart', 'reminders', 'prompts', 'timer'].includes(arg)) {
         navigateTo(arg)
         pushOutputLine(`switched to ${arg}.`)
       } else {

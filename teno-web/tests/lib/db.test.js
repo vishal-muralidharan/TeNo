@@ -21,7 +21,14 @@ import {
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore'
-import { TeNoDatabase, getDb } from '../../src/lib/db'
+import {
+  TeNoDatabase,
+  getDb,
+  getNextVersionId,
+  getPromptVersions,
+  getPromptCurrentContent,
+  getPromptCurrentVersion,
+} from '../../src/lib/db'
 
 // ── Mock data ────────────────────────────────────────────────────────────────
 const UID = 'user-123'
@@ -172,6 +179,230 @@ describe('TeNoDatabase — Core operations', () => {
       expect(doc).toHaveBeenCalledWith(expect.anything(), 'users', UID, 'reminders', 'r1')
       expect(doc).toHaveBeenCalledWith(expect.anything(), 'users', UID, 'reminders', 'r2')
       expect(mockBatch.delete).toHaveBeenCalledTimes(2)
+      expect(mockBatch.commit).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // ── Prompts ────────────────────────────────────────────────────────────────
+  describe('Prompts', () => {
+    it('subscribePrompts queries "prompts" collection with memberUids array-contains', () => {
+      const db = new TeNoDatabase(UID, true)
+      db.subscribePrompts(vi.fn())
+
+      expect(collection).toHaveBeenCalledWith(expect.anything(), 'prompts')
+      expect(where).toHaveBeenCalledWith('memberUids', 'array-contains', UID)
+      expect(query).toHaveBeenCalled()
+      expect(onSnapshot).toHaveBeenCalled()
+    })
+
+    it('addPrompt writes to "prompts" collection with title, content, ownerId, labelId, memberUids, and timestamps', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.addPrompt({ title: 'Revision Prompt', content: 'You are an editor.' })
+
+      expect(collection).toHaveBeenCalledWith(expect.anything(), 'prompts')
+      expect(addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: 'Revision Prompt',
+          content: 'You are an editor.',
+          ownerId: UID,
+          labelId: `default_${UID}`,
+          memberUids: [UID],
+          createdAt: MOCK_TIME,
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('addPrompt respects provided labelId and memberUids', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.addPrompt({
+        title: 'Refactor Prompt',
+        content: 'Refactor this code',
+        labelId: 'label-456',
+        memberUids: [UID, 'user-999'],
+      })
+
+      expect(addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: 'Refactor Prompt',
+          content: 'Refactor this code',
+          ownerId: UID,
+          labelId: 'label-456',
+          memberUids: [UID, 'user-999'],
+          createdAt: MOCK_TIME,
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('updatePrompt updates doc in "prompts" collection with updatedAt timestamp', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.updatePrompt('p1', { title: 'Updated Title' })
+
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(updateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: 'Updated Title',
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('updatePrompt syncs content with currentVersionId when versions provided', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.updatePrompt('p1', {
+        currentVersionId: 'v2',
+        versions: [
+          { id: 'v1', content: 'initial' },
+          { id: 'v2', content: 'updated' },
+        ],
+      })
+
+      expect(updateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          currentVersionId: 'v2',
+          content: 'updated',
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('addPromptVersion generates next version id, appends to versions, and updates doc', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.addPromptVersion('p1', {
+        content: 'Brand new draft',
+        existingVersions: [{ id: 'v1', content: 'v1 content' }],
+      })
+
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(updateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          currentVersionId: 'v2',
+          content: 'Brand new draft',
+          versions: expect.arrayContaining([
+            { id: 'v1', content: 'v1 content' },
+            expect.objectContaining({ id: 'v2', content: 'Brand new draft' }),
+          ]),
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('addPromptVersion initializes v1 if existingVersions is empty', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.addPromptVersion('p1', {
+        content: 'Draft without existing versions',
+        existingVersions: [],
+      })
+
+      expect(updateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          currentVersionId: 'v2',
+          content: 'Draft without existing versions',
+          versions: expect.arrayContaining([
+            expect.objectContaining({ id: 'v1', content: '' }),
+            expect.objectContaining({ id: 'v2', content: 'Draft without existing versions' }),
+          ]),
+        })
+      )
+    })
+
+    it('restorePromptVersion switches currentVersionId and updates content', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.restorePromptVersion('p1', 'v1', [
+        { id: 'v1', content: 'Version 1 content' },
+        { id: 'v2', content: 'Version 2 content' },
+      ])
+
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(updateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          currentVersionId: 'v1',
+          content: 'Version 1 content',
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('restorePromptVersion throws when target version does not exist', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await expect(
+        db.restorePromptVersion('p1', 'v999', [{ id: 'v1', content: 'test' }])
+      ).rejects.toThrow('Version "v999" not found in prompt')
+    })
+
+    it('getNextVersionId computes incremental version tags', () => {
+      expect(getNextVersionId([])).toBe('v1')
+      expect(getNextVersionId([{ id: 'v1' }])).toBe('v2')
+      expect(getNextVersionId([{ id: 'v1' }, { id: 'v2' }])).toBe('v3')
+      expect(getNextVersionId([{ id: 'custom-tag' }])).toBe('v2')
+    })
+
+    it('getPromptVersions and getPromptCurrentContent handle legacy and modern prompt formats', () => {
+      // Legacy prompt doc without versions array
+      const legacyPrompt = { title: 'Old Prompt', content: 'Legacy text', currentVersionId: 'v1' }
+      expect(getPromptVersions(legacyPrompt)).toEqual([
+        { id: 'v1', content: 'Legacy text', createdAt: null },
+      ])
+      expect(getPromptCurrentContent(legacyPrompt)).toBe('Legacy text')
+      expect(getPromptCurrentVersion(legacyPrompt)).toEqual({
+        id: 'v1',
+        content: 'Legacy text',
+        createdAt: null,
+      })
+
+      // Modern prompt doc with versions array
+      const modernPrompt = {
+        title: 'New Prompt',
+        currentVersionId: 'v2',
+        versions: [
+          { id: 'v1', content: 'first draft' },
+          { id: 'v2', content: 'second revision' },
+        ],
+      }
+      expect(getPromptVersions(modernPrompt)).toHaveLength(2)
+      expect(getPromptCurrentContent(modernPrompt)).toBe('second revision')
+      expect(getPromptCurrentVersion(modernPrompt)).toEqual({
+        id: 'v2',
+        content: 'second revision',
+      })
+
+      // Null / empty prompt handling
+      expect(getPromptVersions(null)).toEqual([])
+      expect(getPromptCurrentContent(null)).toBe('')
+      expect(getPromptCurrentVersion(null)).toBeNull()
+    })
+
+    it('deletePrompt deletes doc from "prompts" collection', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.deletePrompt('p1')
+
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(deleteDoc).toHaveBeenCalledWith(expect.anything())
+    })
+
+    it('batchDeleteSharedLabelAndPrompts deletes prompts and label doc via writeBatch', async () => {
+      const db = new TeNoDatabase(UID, true)
+      const mockBatch = {
+        delete: vi.fn(),
+        commit: vi.fn().mockResolvedValue(true),
+      }
+      vi.mocked(writeBatch).mockReturnValue(mockBatch)
+
+      await db.batchDeleteSharedLabelAndPrompts('label-1', [{ id: 'p1' }, { id: 'p2' }])
+
+      expect(writeBatch).toHaveBeenCalled()
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p2')
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'labels', 'label-1')
+      expect(mockBatch.delete).toHaveBeenCalledTimes(3)
       expect(mockBatch.commit).toHaveBeenCalledTimes(1)
     })
   })

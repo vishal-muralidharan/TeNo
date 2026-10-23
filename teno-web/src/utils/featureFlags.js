@@ -17,6 +17,7 @@ export const DEFAULT_FEATURE_FLAGS = {
   links:          true,
   cart:            true,
   reminders:       true,
+  prompts:         true,
   timer:           true,
   shared:          true,
 

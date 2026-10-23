@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import LinkStorer from '../components/LinkStorer'
 import Reminders from '../components/Reminders'
+import PromptsTab from '../components/PromptsTab'
 import Timer from '../components/Timer'
 import Terminal from '../components/Terminal'
 import { useTheme } from '../ThemeContext'
@@ -46,6 +47,7 @@ export default function DashboardPage({
     isEnabled('links')     && { id: 'links',     label: ui.tabs.links,     component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} dbApi={dbApi} openFormSignal={linksFormToken} onLinkOpen={recordLinkOpen} /> },
     isEnabled('cart')      && { id: 'cart',      label: ui.tabs.cart,      component: <LinkStorer collectionName="cart_items" title="Cart" user={user} dbApi={dbApi} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
     isEnabled('reminders') && { id: 'reminders', label: ui.tabs.reminders, component: <Reminders user={user} dbApi={dbApi} /> },
+    isEnabled('prompts')   && { id: 'prompts',   label: ui.tabs.prompts,   component: <PromptsTab user={user} dbApi={dbApi} /> },
     isEnabled('timer')     && { id: 'timer',     label: ui.tabs.timer,     component: <Timer {...timerApi} /> },
 
   ].filter(Boolean)

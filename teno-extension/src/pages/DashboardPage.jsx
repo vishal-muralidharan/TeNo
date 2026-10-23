@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LinkStorer from '../components/LinkStorer'
 import Reminders from '../components/Reminders'
+import Prompts from '../components/Prompts'
 import Timer from '../components/Timer'
 import Terminal from '../components/Terminal'
 
@@ -38,6 +39,7 @@ export default function DashboardPage({
     { id: 'links', label: 'Links', component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} dbApi={dbApi} openFormSignal={linksFormToken} favoritesRowCount={favoritesRowCount} onLinkOpen={recordLinkOpen} /> },
     { id: 'cart', label: 'Cart', component: <LinkStorer collectionName="cart_items" title="Cart" user={user} dbApi={dbApi} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
     { id: 'reminders', label: 'Reminders', component: <Reminders user={user} dbApi={dbApi} /> },
+    { id: 'prompts', label: 'Prompts', component: <Prompts user={user} dbApi={dbApi} /> },
     { id: 'timer', label: 'Timer', component: <Timer {...timerApi} /> },
   ]
 

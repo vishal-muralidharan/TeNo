@@ -48,8 +48,11 @@ describe('themeTranslations — dictionary shape', () => {
       expect.arrayContaining([
         'logo_text',
         'nav_settings', 'nav_logout', 'nav_back',
-        'tab_links', 'tab_cart', 'tab_reminders', 'tab_timer',
-        'add_link', 'add_item', 'add_reminder',
+        'tab_links', 'tab_cart', 'tab_reminders', 'tab_timer', 'tab_prompts',
+        'add_link', 'add_item', 'add_reminder', 'add_prompt',
+        'prompt_copy', 'prompt_copied', 'prompt_edit', 'prompt_delete',
+        'version_current_label', 'action_save_new', 'action_restore',
+        'action_update_current', 'version_history_title', 'version_badge_prefix',
         'toggle_form_open', 'toggle_form_close',
         'prefix_section', 'prefix_command',
         'terminal_reopen',
@@ -330,12 +333,15 @@ describe('getUiConfig("minimal") — Minimalist theme strings', () => {
     expect(ui.icons.logout).toBeNull()
     expect(ui.icons.back).toBeNull()
     expect(ui.icons.addNew).toBeNull()
+    expect(ui.icons.copy).toBeNull()
+    expect(ui.icons.edit).toBeNull()
   })
 
   it('add-button labels use terminal bracket notation', () => {
     expect(ui.addBtn.links).toBe('[+ add_new]')
     expect(ui.addBtn.cart).toBe('[+ add_new]')
     expect(ui.addBtn.reminder).toBe('[+ add_new]')
+    expect(ui.addBtn.prompt).toBe('[+ add_prompt]')
   })
 
   it('tab labels are lowercase', () => {
@@ -343,6 +349,7 @@ describe('getUiConfig("minimal") — Minimalist theme strings', () => {
     expect(ui.tabs.cart).toBe('cart')
     expect(ui.tabs.reminders).toBe('reminders')
     expect(ui.tabs.timer).toBe('timer')
+    expect(ui.tabs.prompts).toBe('prompts')
   })
 
   it('prefix.section starts with "> ./"', () => {
@@ -383,6 +390,17 @@ describe('getUiConfig("minimal") — Minimalist theme strings', () => {
   it('terminal.reopenBar contains the "$_" sigil', () => {
     expect(ui.terminal.reopenBar).toContain('$_')
   })
+
+  it('prompts versioning strings adhere to terminal style', () => {
+    expect(ui.prompts.copy).toBe('[ copy ]')
+    expect(ui.prompts.copySuccess).toBe('[ copied ]')
+    expect(ui.prompts.versionCurrent).toBe('[current]')
+    expect(ui.prompts.saveNewVersion).toBe('[ > ./save_new ]')
+    expect(ui.prompts.restoreVersion).toBe('[ > ./restore ]')
+    expect(ui.prompts.updateCurrent).toBe('[ > ./update ]')
+    expect(ui.prompts.versionHistoryTitle).toBe('version_history')
+    expect(ui.prompts.versionBadgePrefix).toBe('v')
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -410,6 +428,8 @@ describe('getUiConfig("modern") — Modern theme strings', () => {
     expect(ui.icons.logout).not.toBeNull()
     expect(ui.icons.back).not.toBeNull()
     expect(ui.icons.addNew).not.toBeNull()
+    expect(ui.icons.copy).not.toBeNull()
+    expect(ui.icons.edit).not.toBeNull()
   })
 
   it('icon elements have the correct Lucide display names', () => {
@@ -422,6 +442,10 @@ describe('getUiConfig("modern") — Modern theme strings', () => {
       .toMatch(/arrowleft/i)
     expect(ui.icons.addNew.type.displayName ?? ui.icons.addNew.type.name)
       .toMatch(/plus/i)
+    expect(ui.icons.copy.type.displayName ?? ui.icons.copy.type.name)
+      .toMatch(/copy/i)
+    expect(ui.icons.edit.type.displayName ?? ui.icons.edit.type.name)
+      .toMatch(/(edit|pen)/i)
   })
 
   it('icon elements carry the correct size and strokeWidth props', () => {
@@ -430,12 +454,15 @@ describe('getUiConfig("modern") — Modern theme strings', () => {
     expect(ui.icons.logout.props).toMatchObject({   size: 14, strokeWidth: 2 })
     expect(ui.icons.back.props).toMatchObject({     size: 14, strokeWidth: 2 })
     expect(ui.icons.addNew.props).toMatchObject({   size: 14, strokeWidth: 2.5 })
+    expect(ui.icons.copy.props).toMatchObject({     size: 14, strokeWidth: 2 })
+    expect(ui.icons.edit.props).toMatchObject({     size: 14, strokeWidth: 2 })
   })
 
   it('add-button labels are human-readable strings', () => {
     expect(ui.addBtn.links).toBe('Add New Link')
     expect(ui.addBtn.cart).toBe('Add New Item')
     expect(ui.addBtn.reminder).toBe('Add New Reminder')
+    expect(ui.addBtn.prompt).toBe('Add Prompt')
   })
 
   it('tab labels are title-case', () => {
@@ -443,6 +470,7 @@ describe('getUiConfig("modern") — Modern theme strings', () => {
     expect(ui.tabs.cart).toBe('Cart')
     expect(ui.tabs.reminders).toBe('Reminders')
     expect(ui.tabs.timer).toBe('Timer')
+    expect(ui.tabs.prompts).toBe('Prompts')
   })
 
   it('prefix.section is an empty string (no terminal prefix in modern mode)', () => {
@@ -490,6 +518,17 @@ describe('getUiConfig("modern") — Modern theme strings', () => {
 
   it('terminal.reopenBar does NOT contain "$_"', () => {
     expect(ui.terminal.reopenBar).not.toContain('$_')
+  })
+
+  it('prompts versioning strings adhere to modern plain English', () => {
+    expect(ui.prompts.copy).toBe('Copy')
+    expect(ui.prompts.copySuccess).toBe('Copied')
+    expect(ui.prompts.versionCurrent).toBe('Current')
+    expect(ui.prompts.saveNewVersion).toBe('Save as New Version')
+    expect(ui.prompts.restoreVersion).toBe('Restore Version')
+    expect(ui.prompts.updateCurrent).toBe('Update Current')
+    expect(ui.prompts.versionHistoryTitle).toBe('Version History')
+    expect(ui.prompts.versionBadgePrefix).toBe('Version ')
   })
 })
 

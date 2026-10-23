@@ -1,5 +1,69 @@
-import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, setDoc, getDoc, getDocs, arrayUnion } from 'firebase/firestore';
+import { collection, doc, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, setDoc, getDoc, getDocs, arrayUnion, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+
+export function createTimestamp() {
+  if (typeof Timestamp !== 'undefined' && typeof Timestamp.now === 'function') {
+    return Timestamp.now();
+  }
+  return {
+    seconds: Math.floor(Date.now() / 1000),
+    nanoseconds: 0,
+    toDate: () => new Date(),
+    toMillis: () => Date.now(),
+  };
+}
+
+export function getNextVersionId(versions = []) {
+  if (!Array.isArray(versions) || versions.length === 0) return 'v1';
+  let maxNum = 0;
+  versions.forEach((v) => {
+    const match = String(v.id || '').match(/^v(\d+)$/i);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  });
+  return `v${Math.max(maxNum + 1, versions.length + 1)}`;
+}
+
+export function getPromptVersions(prompt) {
+  if (!prompt) return [];
+  if (Array.isArray(prompt.versions) && prompt.versions.length > 0) {
+    return prompt.versions;
+  }
+  if (prompt.content !== undefined && prompt.content !== null) {
+    return [
+      {
+        id: prompt.currentVersionId || 'v1',
+        content: prompt.content,
+        createdAt: prompt.createdAt || null,
+      },
+    ];
+  }
+  return [];
+}
+
+export function getPromptCurrentContent(prompt) {
+  if (!prompt) return '';
+  const versions = getPromptVersions(prompt);
+  if (versions.length > 0) {
+    const activeId = prompt.currentVersionId || versions[versions.length - 1].id;
+    const current = versions.find((v) => v.id === activeId);
+    if (current && typeof current.content === 'string') {
+      return current.content;
+    }
+    return versions[0].content || '';
+  }
+  return prompt.content || '';
+}
+
+export function getPromptCurrentVersion(prompt) {
+  if (!prompt) return null;
+  const versions = getPromptVersions(prompt);
+  if (versions.length === 0) return null;
+  const activeId = prompt.currentVersionId || versions[versions.length - 1].id;
+  return versions.find((v) => v.id === activeId) || versions[versions.length - 1];
+}
 
 export class TeNoDatabase {
   constructor(uid, isNewSchema) {
@@ -188,6 +252,105 @@ export class TeNoDatabase {
     return batch.commit();
   }
 
+  // --- Prompts ---
+  subscribePrompts(callback) {
+    const q = query(
+      collection(db, 'prompts'),
+      where('memberUids', 'array-contains', this.uid)
+    );
+    return onSnapshot(q, callback);
+  }
+
+  async addPrompt(data) {
+    const labelId = data.labelId || this.defaultLabelId;
+    const memberUids = data.memberUids || [this.uid];
+    const { labelId: _, memberUids: __, ...rest } = data;
+
+    const initialVersionId = data.currentVersionId || 'v1';
+    const initialVersions = data.versions && data.versions.length > 0
+      ? data.versions
+      : [
+          {
+            id: initialVersionId,
+            content: data.content || '',
+            createdAt: createTimestamp(),
+          },
+        ];
+
+    const currentVersion = initialVersions.find((v) => v.id === initialVersionId) || initialVersions[0];
+    const activeContent = currentVersion?.content || data.content || '';
+
+    return addDoc(collection(db, 'prompts'), {
+      ...rest,
+      title: data.title || '',
+      content: activeContent,
+      currentVersionId: initialVersionId,
+      versions: initialVersions,
+      labelId,
+      ownerId: this.uid,
+      memberUids,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async updatePrompt(id, data) {
+    const payload = {
+      ...data,
+      updatedAt: serverTimestamp(),
+    };
+    if (data.versions && data.currentVersionId && data.content === undefined) {
+      const active = data.versions.find((v) => v.id === data.currentVersionId);
+      if (active) payload.content = active.content;
+    }
+    return updateDoc(doc(db, 'prompts', id), payload);
+  }
+
+  async addPromptVersion(id, { content, existingVersions = [] }) {
+    const baseVersions = existingVersions.length > 0
+      ? existingVersions
+      : [{ id: 'v1', content: '', createdAt: createTimestamp() }];
+    const newVersionId = getNextVersionId(baseVersions);
+    const newVersion = {
+      id: newVersionId,
+      content: content || '',
+      createdAt: createTimestamp(),
+    };
+    const updatedVersions = [...baseVersions, newVersion];
+    return updateDoc(doc(db, 'prompts', id), {
+      versions: updatedVersions,
+      currentVersionId: newVersionId,
+      content: content || '',
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async restorePromptVersion(id, versionId, existingVersions = []) {
+    const versions = getPromptVersions({ versions: existingVersions });
+    const targetVersion = versions.find((v) => v.id === versionId);
+    if (!targetVersion) {
+      throw new Error(`Version "${versionId}" not found in prompt`);
+    }
+    return updateDoc(doc(db, 'prompts', id), {
+      currentVersionId: versionId,
+      content: targetVersion.content || '',
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async deletePrompt(id) {
+    return deleteDoc(doc(db, 'prompts', id));
+  }
+
+  async batchDeleteSharedLabelAndPrompts(labelId, prompts = []) {
+    const batch = writeBatch(db);
+    prompts.forEach(p => {
+      batch.delete(doc(db, 'prompts', p.id));
+    });
+    batch.delete(doc(db, 'labels', labelId));
+    return batch.commit();
+  }
+
   // --- Settings ---
   subscribeUiSettings(callback) {
     return onSnapshot(doc(db, 'users', this.uid, 'settings', 'ui'), callback);
@@ -280,9 +443,9 @@ export class TeNoDatabase {
 
   /**
    * Subscribe to all labels of a given type that this user is a member of.
-   * Used by LinkStorer / Reminders to render share badges on section headers.
+   * Used by LinkStorer / Reminders / Prompts to render share badges on section headers.
    *
-   * @param {string} type - 'links' | 'cart' | 'reminders'
+   * @param {string} type - 'links' | 'cart' | 'reminders' | 'prompts'
    * @param {function} callback - onSnapshot callback
    */
   subscribeLabelsForSection(type, callback) {
@@ -300,7 +463,7 @@ export class TeNoDatabase {
    * This is called when the user first clicks "Share" on a private label.
    *
    * @param {string} name  - label name (e.g. "a4p")
-   * @param {string} type  - 'links' | 'cart' | 'reminders'
+   * @param {string} type  - 'links' | 'cart' | 'reminders' | 'prompts'
    * @param {object} userInfo - { displayName, email }
    * @returns {Promise<string>} - the label doc id
    */

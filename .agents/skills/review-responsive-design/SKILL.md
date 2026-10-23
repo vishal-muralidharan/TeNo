@@ -78,6 +78,46 @@ export default function MyComponent() {
 - **iOS Safari 16px Font Rule:** Form inputs must enforce at least `16px` font size on mobile screens (`max-width: 599px`) to prevent browser auto-zooming.
 - **Body Scroll Locking:** When a modal is open, lock `document.body.style.overflow = 'hidden'`.
 
+### E. Entity Card Geometry, Content Density & Action Clearance
+Standard bookmark cards are compact (`var(--link-card-width: 240px); min-height: 110px`) because they only display single-line URLs with 1–2 small icons.
+
+When introducing or modifying entity cards that feature multi-action toolbars (e.g. Copy, Edit, Delete), version/status tags, or multi-line text:
+1. **Never Reuse Compact Link Sizing:** Cards with 3 or more action buttons or multi-line content must not be constrained to 240px.
+2. **Horizontal Action Clearance:** Ensure grid columns provide `>= 350px` minimum width (e.g. `grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));`). The card header must guarantee at least `140px` for the entity title and badges alongside the action group.
+3. **Vertical Clearance & Multi-Line Clamping:** Enforce an explicit `min-height` (`>= 145px`) and multi-line clamp (`-webkit-line-clamp: 4` with `line-height: 1.55`) so cards do not shrink into shallow, cramped strips.
+4. **Responsive Downscaling:**
+   ```css
+   .entity-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+     gap: 16px;
+   }
+   @media (max-width: 768px) {
+     .entity-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+   }
+   @media (max-width: 480px) {
+     .entity-grid { grid-template-columns: 1fr; gap: 10px; }
+   }
+   ```
+
+### F. Zero-Layout-Shift Transient Feedback
+Temporary user feedback (e.g. "Copied!", "Saving...", "Saved") must NEVER cause layout shifts or stretch containing cards:
+- **Button Dimension Reservation:** When swapping text inside a button dynamically, assign the button a fixed `min-width` with `box-sizing: border-box; text-align: center;` sized to fit the longest text label.
+- **Non-Displacing Status Toasts:** Alternatively, render transient messages as an absolutely positioned status toast (e.g. `position: absolute; bottom: 6px; right: 12px; pointer-events: none;`) or via icon transitions (e.g. `<Copy />` -> `<Check />`), leaving surrounding card geometry completely unchanged.
+
+### G. Visual Contrast & Button Hierarchies Across All 4 Theme Permutations
+Every UI component, action bar, and modal must be audited across all 4 theme permutations:
+1. Minimalist Dark (`[data-style="minimal"][data-theme="dark"]`)
+2. Minimalist Light (`[data-style="minimal"][data-theme="light"]`)
+3. Modern Dark (`[data-style="modern"][data-theme="dark"]`)
+4. Modern Light (`[data-style="modern"][data-theme="light"]`)
+
+**Button Hierarchy Rules:**
+- **Primary Action:** Solid background with high-contrast text (`background: var(--text-primary); color: var(--bg-surface);`).
+- **Secondary / Alternative Action:** Crisp outline with transparent background (`background: transparent; color: var(--text-primary); border: 1px solid var(--text-primary);`).
+- **Tertiary / Cancel Action:** Muted outline (`background: transparent; color: var(--text-muted); border: 1px solid var(--border-color);`).
+- **Prohibited:** Never use subtle hover fills (`--bg-surface-hover`) for resting static button backgrounds, as they blend invisibly into dark surfaces in dark mode.
+
 ---
 
 ## 3. Extension Popup Viewport Architecture (`teno-extension`)
@@ -131,9 +171,13 @@ Across both Web and Extension:
 Before committing any UI or styling change, verify:
 - [ ] **Web Dual-Theme Symmetry:** Does the component render correctly in BOTH Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) styles?
 - [ ] **Minimalist UI Preservation:** Are minimalist UI elements preserved as-is (0px radius, flat elevation, bracketed actions, terminal prefixes, no graphical icons in minimal)?
+- [ ] **4-Theme Button Contrast:** Are all buttons (primary, secondary, cancel) clearly visible with high-contrast outlines/fills across all 4 theme permutations?
+- [ ] **Entity Card Clearance:** Do grid cards scale (>= 350px width, >= 145px height) to clear multi-action toolbars without title wrapping?
+- [ ] **Zero Layout Shift:** Does transient feedback (copy/save) use fixed-width buttons or absolute toasts without causing container shifts?
 - [ ] **Web Light & Dark Mode:** Are contrast ratios accessible in both `[data-theme="dark"]` and `[data-theme="light"]`?
 - [ ] **Web Viewport Height Safety:** Do web modals use `max-height: 85dvh` with `overflow-y: auto`?
 - [ ] **Web 16px Font Rule:** Do mobile form inputs enforce 16px font size to prevent iOS Safari auto-zoom?
 - [ ] **Extension Popup Containment:** Does the extension popup fit within ~400x550px without horizontal scroll or double vertical scrollbars?
 - [ ] **Extension Modal Safety:** Are extension confirmation modals compact and non-native (no `window.confirm`)?
 - [ ] **Zero Clipping:** Are bottom action buttons accessible above terminal drawers and keyboard boundaries?
+

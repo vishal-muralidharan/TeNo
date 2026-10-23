@@ -21,14 +21,6 @@ service cloud.firestore {
       );
     }
 
-    // Returns true when the requesting user has an owner or editor role
-    // in the given data's members map.
-    function canWrite(data) {
-      return isSignedIn() && isMember(data) && (
-        data.get('members', {}).get(request.auth.uid, {}).role in ['owner', 'editor'] ||
-        data.get('members', {}).get(request.auth.uid, '') in ['owner', 'editor']
-      );
-    }
 
     function isAdmin() {
       return isSignedIn() && request.auth.token.admin == true;
@@ -93,6 +85,16 @@ service cloud.firestore {
     // Root-level reminders only created for shared labels.
     // Private reminders remain in users/{uid}/reminders subcollection.
     match /reminders/{reminderId} {
+      allow read: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+      allow update: if isMember(resource.data);
+      allow delete: if isMember(resource.data);
+    }
+
+    // ─── UNIFIED SCHEMA: PROMPTS (root) ─────────────────────────────────────
+    // Root-level prompts collection. Used by both private default prompts
+    // (memberUids: [uid]) and shared labels.
+    match /prompts/{promptId} {
       allow read: if isMember(resource.data);
       allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
       allow update: if isMember(resource.data);

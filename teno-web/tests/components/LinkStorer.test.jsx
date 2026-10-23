@@ -111,27 +111,28 @@ describe('altUrl domain extraction logic', () => {
 // 2-3. Alt URL — add form payload
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('add link form — alt URL payload', () => {
-  it('includes altUrl and altDomain in addEntry payload when provided', async () => {
+describe('edit link modal — alt URL payload', () => {
+  it('includes altUrl and altDomain in updateEntry payload when provided in edit modal', async () => {
     const user = userEvent.setup()
-    const { dbApi } = renderStorer()
+    const item = { id: 'l1', nickname: 'Bowl', url: 'https://amazon.com/bowl', domain: 'amazon.com', label: '', description: '', isFavorite: false, createdAt: null }
+    const { dbApi } = renderStorer([item])
 
-    fireEvent.click(screen.getByRole('button', { name: /add_new/ }))
+    const moreBtn = document.querySelector('.menu-wrapper .icon-btn')
+    await user.click(moreBtn)
+    await user.click(screen.getByRole('button', { name: /Edit/i }))
 
-    await user.type(screen.getByPlaceholderText('Add Nickname'), 'Bowl')
-    await user.type(screen.getByPlaceholderText('Enter URL'), 'amazon.com/bowl')
-    await user.type(screen.getByPlaceholderText('Alt URL (optional)'), 'flipkart.com/bowl')
+    const altInput = screen.getByPlaceholderText('Alt URL (optional)')
+    await user.type(altInput, 'flipkart.com/bowl')
+    await user.click(document.querySelector('.custom-modal button.btn-primary'))
 
-    await user.click(screen.getByRole('button', { name: 'Save' }))
-
-    await waitFor(() => expect(dbApi.addEntry).toHaveBeenCalledOnce())
-    const payload = dbApi.addEntry.mock.calls[0][1]
+    await waitFor(() => expect(dbApi.updateEntry).toHaveBeenCalledOnce())
+    const payload = dbApi.updateEntry.mock.calls[0][2]
     expect(payload.url).toBe('https://amazon.com/bowl')
     expect(payload.altUrl).toBe('https://flipkart.com/bowl')
     expect(payload.altDomain).toBe('flipkart.com')
   })
 
-  it('omits altUrl and altDomain from addEntry when alt URL is blank', async () => {
+  it('omits altUrl and altDomain from addEntry when adding a new link', async () => {
     const user = userEvent.setup()
     const { dbApi } = renderStorer()
 
@@ -139,7 +140,6 @@ describe('add link form — alt URL payload', () => {
 
     await user.type(screen.getByPlaceholderText('Add Nickname'), 'Bowl')
     await user.type(screen.getByPlaceholderText('Enter URL'), 'amazon.com/bowl')
-    // leave Alt URL blank
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(dbApi.addEntry).toHaveBeenCalledOnce())
@@ -203,7 +203,8 @@ describe('delete label', () => {
 
     await user.click(screen.getAllByTitle(/Delete label/i)[0])
 
-    expect(screen.getByRole('button', { name: 'Delete Label' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Just Delete Label/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Delete Label & All Items In It/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
 
@@ -217,17 +218,29 @@ describe('delete label', () => {
     expect(dbApi.updateEntry).not.toHaveBeenCalled()
   })
 
-  it('calls updateEntry with label:"" for every item in the section on confirm', async () => {
+  it('calls updateEntry with label:"" for every item in the section on confirm ungroup', async () => {
     const user = userEvent.setup()
     const { dbApi } = renderStorer(LINKS)
 
     await user.click(screen.getAllByTitle(/Delete label/i)[0])
-    await user.click(screen.getByRole('button', { name: 'Delete Label' }))
+    await user.click(screen.getByRole('button', { name: /Just Delete Label/i }))
 
     await waitFor(() => expect(dbApi.updateEntry).toHaveBeenCalledTimes(2))
     dbApi.updateEntry.mock.calls.forEach(([,, payload]) => {
       expect(payload).toEqual({ label: '' })
     })
+  })
+
+  it('calls deleteEntry for every item in the section when "Delete Label & All Items In It" is clicked', async () => {
+    const user = userEvent.setup()
+    const { dbApi } = renderStorer(LINKS)
+
+    await user.click(screen.getAllByTitle(/Delete label/i)[0])
+    await user.click(screen.getByRole('button', { name: /Delete Label & All Items In It/i }))
+
+    await waitFor(() => expect(dbApi.deleteEntry).toHaveBeenCalledTimes(2))
+    expect(dbApi.deleteEntry).toHaveBeenCalledWith('saved_links', 'a')
+    expect(dbApi.deleteEntry).toHaveBeenCalledWith('saved_links', 'b')
   })
 })
 

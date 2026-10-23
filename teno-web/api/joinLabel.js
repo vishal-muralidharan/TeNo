@@ -99,8 +99,8 @@ export default async function handler(req, res) {
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // 3b. Propagate uid to all existing items across all three collections
-    const itemCollections = ['links', 'cart_items', 'reminders'];
+    // 3b. Propagate uid to all existing items across all item collections
+    const itemCollections = ['links', 'cart_items', 'reminders', 'prompts'];
 
     for (const colName of itemCollections) {
       const itemsSnap = await db
