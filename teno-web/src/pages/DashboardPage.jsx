@@ -46,6 +46,7 @@ export default function DashboardPage({
     isEnabled('links')     && { id: 'links',     label: ui.tabs.links,     component: <LinkStorer collectionName="saved_links" title="Saved Links" user={user} dbApi={dbApi} openFormSignal={linksFormToken} onLinkOpen={recordLinkOpen} /> },
     isEnabled('cart')      && { id: 'cart',      label: ui.tabs.cart,      component: <LinkStorer collectionName="cart_items" title="Cart" user={user} dbApi={dbApi} openFormSignal={cartFormToken} onLinkOpen={recordLinkOpen} /> },
     isEnabled('reminders') && { id: 'reminders', label: ui.tabs.reminders, component: <Reminders user={user} dbApi={dbApi} /> },
+    isEnabled('prompts')   && { id: 'prompts',   label: ui.tabs.prompts,   component: <div className="prompts-tab-container" data-testid="prompts-tab-placeholder" /> },
     isEnabled('timer')     && { id: 'timer',     label: ui.tabs.timer,     component: <Timer {...timerApi} /> },
 
   ].filter(Boolean)

@@ -11,7 +11,7 @@
  *   ui.icons.settings // => <Settings /> or null
  *   ui.tabs.links     // => "Links" or "links"
  */
-import { Plus, Settings, LogOut, ArrowLeft, UserPlus, Users } from 'lucide-react'
+import { Plus, Settings, LogOut, ArrowLeft, UserPlus, Users, Copy, Edit2 } from 'lucide-react'
 import { t } from './themeTranslations'
 
 export const getUiConfig = (styleMode) => {
@@ -34,6 +34,8 @@ export const getUiConfig = (styleMode) => {
       logout:   isModern ? <LogOut    size={14} strokeWidth={2}   /> : null,
       back:     isModern ? <ArrowLeft size={14} strokeWidth={2}   /> : null,
       addNew:   isModern ? <Plus      size={14} strokeWidth={2.5} /> : null,
+      copy:     isModern ? <Copy      size={14} strokeWidth={2}   /> : null,
+      edit:     isModern ? <Edit2     size={14} strokeWidth={2}   /> : null,
     },
 
     // ── Add buttons ──────────────────────────────────────────────────────────
@@ -41,6 +43,7 @@ export const getUiConfig = (styleMode) => {
       links:    t('add_link',     styleMode),
       cart:     t('add_item',     styleMode),
       reminder: t('add_reminder', styleMode),
+      prompt:   t('add_prompt',   styleMode),
     },
 
     // ── Tab label strings ─────────────────────────────────────────────────────
@@ -49,6 +52,22 @@ export const getUiConfig = (styleMode) => {
       cart:      t('tab_cart',      styleMode),
       reminders: t('tab_reminders', styleMode),
       timer:     t('tab_timer',     styleMode),
+      prompts:   t('tab_prompts',   styleMode),
+    },
+
+    // ── Prompts module copy ───────────────────────────────────────────────────
+    prompts: {
+      copy:               t('prompt_copy', styleMode),
+      copied:             t('prompt_copied', styleMode),
+      edit:               t('prompt_edit', styleMode),
+      delete:             t('prompt_delete', styleMode),
+      titlePlaceholder:   t('prompt_title_placeholder', styleMode),
+      contentPlaceholder: t('prompt_content_placeholder', styleMode),
+      labelPlaceholder:   t('prompt_label_placeholder', styleMode),
+      editorNew:          t('prompt_editor_title_new', styleMode),
+      editorEdit:         t('prompt_editor_title_edit', styleMode),
+      save:               t('prompt_save', styleMode),
+      cancel:             t('prompt_cancel', styleMode),
     },
 
     // ── Toggle-form button labels ─────────────────────────────────────────────

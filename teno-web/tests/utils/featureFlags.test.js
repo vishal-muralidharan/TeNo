@@ -17,7 +17,7 @@ import { DEFAULT_FEATURE_FLAGS, isEnabled } from '../../src/utils/featureFlags'
 
 describe('DEFAULT_FEATURE_FLAGS', () => {
   const EXPECTED_KEYS = [
-    'links', 'cart', 'reminders', 'timer', 'shared',
+    'links', 'cart', 'reminders', 'prompts', 'timer', 'shared',
     'terminal', 'modernTheme',
     'settings', 'clickStats', 'changePassword',
   ]
@@ -28,7 +28,7 @@ describe('DEFAULT_FEATURE_FLAGS', () => {
     expect(Array.isArray(DEFAULT_FEATURE_FLAGS)).toBe(false)
   })
 
-  it('contains exactly the expected 10 keys', () => {
+  it('contains exactly the expected 11 keys', () => {
     const keys = Object.keys(DEFAULT_FEATURE_FLAGS)
     expect(keys).toHaveLength(EXPECTED_KEYS.length)
     expect(keys).toEqual(expect.arrayContaining(EXPECTED_KEYS))

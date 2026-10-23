@@ -50,6 +50,10 @@ export const themeTranslations = {
     minimal: 'timer',
     modern: 'Timer',
   },
+  tab_prompts: {
+    minimal: 'prompts',
+    modern: 'Prompts',
+  },
 
   // ── Add / action buttons ──────────────────────────────────────────────────
   add_link: {
@@ -63,6 +67,54 @@ export const themeTranslations = {
   add_reminder: {
     minimal: '[+ add_new]',
     modern: 'Add New Reminder',
+  },
+  add_prompt: {
+    minimal: '[+ add_prompt]',
+    modern: 'Add Prompt',
+  },
+  prompt_copy: {
+    minimal: '[ copy ]',
+    modern: 'Copy',
+  },
+  prompt_copied: {
+    minimal: 'prompt copied!',
+    modern: 'Prompt copied!',
+  },
+  prompt_edit: {
+    minimal: '[ edit ]',
+    modern: 'Edit',
+  },
+  prompt_delete: {
+    minimal: '[ del ]',
+    modern: 'Delete',
+  },
+  prompt_title_placeholder: {
+    minimal: 'prompt_title...',
+    modern: 'Prompt title...',
+  },
+  prompt_content_placeholder: {
+    minimal: 'type_prompt_content_here...',
+    modern: 'Type prompt content here...',
+  },
+  prompt_label_placeholder: {
+    minimal: 'label...',
+    modern: 'Label (optional)...',
+  },
+  prompt_editor_title_new: {
+    minimal: '> ./new_prompt',
+    modern: 'New Prompt',
+  },
+  prompt_editor_title_edit: {
+    minimal: '> ./edit_prompt',
+    modern: 'Edit Prompt',
+  },
+  prompt_save: {
+    minimal: '[ save ]',
+    modern: 'Save Prompt',
+  },
+  prompt_cancel: {
+    minimal: '[ cancel ]',
+    modern: 'Cancel',
   },
   toggle_form_open: {
     minimal: '> [ + add_new ]',
