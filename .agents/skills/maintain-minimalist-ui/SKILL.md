@@ -143,6 +143,50 @@ TeNo's identity is rooted in its hacker-centric, high-efficiency, terminal-inspi
   - Preserve the compact 0px border-radius, bracketed text, and dense layout.
   - Do not introduce large padding, soft drop-shadows, or graphical icon bloat that displaces information in the constrained ~400px popup window.
 
+### Rule 8: Multi-Button Action Hierarchy & High-Contrast Resting States
+* Minimalist mode relies on stark monochrome contrast. When multiple action buttons appear in modals, forms, or toolbars (e.g. primary commit, secondary save-as, tertiary cancel):
+  - **Primary Action:** Solid fill with inverted text:
+    ```css
+    background: var(--text-primary);
+    color: var(--bg-surface);
+    border: 1px solid var(--text-primary);
+    ```
+  - **Secondary / Alternative Action:** Transparent background with crisp outline:
+    ```css
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--text-primary);
+    ```
+  - **Tertiary / Cancel / Muted Action:** Transparent background with muted border:
+    ```css
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    ```
+* **Prohibited:** Never use low-contrast surface-on-surface fills (e.g. `--bg-surface-hover` as a static resting background). In dark minimal mode, this causes buttons to blend invisibly into the modal/page background.
+* Always verify that every button remains clearly visible in both dark (`[data-theme="dark"]`) and light (`[data-theme="light"]`) modes.
+
+### Rule 9: Horizontal Action Clearance in Minimalist Grids
+* ASCII bracketed buttons (`[ copy ]`, `[ edit ]`, `[ del ]`) occupy significantly more horizontal space (~30–45px per button) than compact graphical icons.
+* Cards or grid items containing multiple bracketed actions must scale their grid column widths:
+  - Enforce minimum column width of `>= 350px` (e.g. `grid-template-columns: repeat(auto-fill, minmax(360px, 1fr))`).
+  - Ensure the header row has at least `140px` available for the entity title and version badge alongside the bracketed action group, preventing cramped title wrapping.
+
+### Rule 10: Zero-Layout-Shift Transient Feedback
+* Status transitions (e.g. changing `[ copy ]` to `[ copied ]`, or `[ save ]` to `[ saving... ]`) must never cause the button or containing card to expand horizontally.
+* Enforce layout stability using either:
+  1. A reserved button `min-width` with `box-sizing: border-box; text-align: center;` sized to accommodate the widest state.
+  2. An absolute, non-displacing terminal status toast:
+     ```css
+     .prompt-card-toast {
+       position: absolute;
+       bottom: 6px;
+       right: 12px;
+       pointer-events: none;
+       background: var(--bg-surface);
+     }
+     ```
+
 ---
 
 ## 4. Pre-Implementation Checklist for Minimalist UI Preservation
@@ -158,5 +202,8 @@ Before completing any UI component addition or modification, verify each item:
 [ ] 6. TYPOGRAPHY: Does text default to lowercase and monospace in Minimalist mode?
 [ ] 7. NO BLUR/GLASS: Are backdrop-filter and box-shadow excluded from Minimalist mode?
 [ ] 8. HOVER STATES: Do interactive elements use terminal monochrome inversion rather than soft modern glows?
-[ ] 9. EXTENSION PARITY: Does the component maintain compact console styling without overflow in teno-extension?
+[ ] 9. BUTTON CONTRAST: Do all action buttons (primary, secondary, cancel) have high-contrast borders and text in both dark and light modes?
+[ ] 10. ACTION CLEARANCE: Do grid cards scale (>= 350px) to clear all bracketed buttons without title wrapping?
+[ ] 11. ZERO LAYOUT SHIFT: Does transient feedback (copied/saved) avoid elongating buttons or shifting surrounding layout?
+[ ] 12. EXTENSION PARITY: Does the component maintain compact console styling without overflow in teno-extension?
 ```
