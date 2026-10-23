@@ -61,6 +61,11 @@ Every development task in this repository must strictly adhere to the following 
   6. **Terminal Prefixes & Inversion:** Preserve terminal path prefixes (`> ./`), shell prompts (`$_ `), and monochrome high-contrast hover inversion.
 * **Prohibited:** Diluting or modernizing the minimalist interface with rounded pill buttons, soft shadows, unbracketed labels, low-contrast invisible resting buttons, or graphical icons in minimal mode.
 
+### Rule 9: Continuous Skill & Documentation Synchronization
+* **Skill Reference:** [.agents/skills/sync-skills-and-docs/SKILL.md](file:///.agents/skills/sync-skills-and-docs/SKILL.md)
+* **Rule:** Whenever introducing a new feature, module, page, modal, UI bracket/badge, database collection, or platform file, all agent skills (`.agents/skills/`), architecture guides (`docs/features/`, `README.md`), and developer guidelines (`AGENTS.md`) must be systematically audited and synchronized before concluding the feature. Follow the 6-phase synchronization workflow and post-feature synchronization checklist.
+* **Prohibited:** Concluding or merging a feature without synchronizing the directory structure, minimalist design dictionary, responsive card geometries, canonical database schemas, and documentation.
+
 ---
 
 ## 2. Standard Multi-Target Development Routine
@@ -178,4 +183,5 @@ Every commit message must follow the Semantic Commit format on **one line only**
 11. **Never cause layout shift on transient feedback:** Status transitions (`copied`, `saving...`) must never widen buttons or elongate containing cards. Reserve fixed `min-width` on buttons or use absolute non-displacing toasts.
 12. **Never allow editing of historical/archived versions:** In versioned entities or historical views, non-current records must remain strictly read-only with locked inputs and disabled/hidden mutation controls.
 13. **Never squeeze multi-action cards into compact bookmark widths:** Entities with multi-action bars or multi-line content must use scalable columns (minimum `>= 350px`) and explicit minimum heights (`>= 145px`) to guarantee action clearance.
+14. **Never conclude a feature without skill & documentation synchronization:** Every newly introduced component, collection, bracketed action, or card geometry must be audited and registered across `.agents/skills/` and `docs/features/`.
 
