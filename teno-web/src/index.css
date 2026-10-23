@@ -2519,39 +2519,50 @@ button.danger:hover {
 }
 
 .prompt-editor-btn-save,
-.prompt-editor-btn-update {
-  background: var(--text-primary);
-  color: var(--bg-app);
-  border-color: var(--text-primary);
-  font-weight: 600;
-}
-
-.prompt-editor-btn-save-new {
-  background: var(--bg-surface-hover);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-  font-weight: 600;
-}
-
+.prompt-editor-btn-update,
 .prompt-editor-btn-restore {
   background: var(--text-primary);
   color: var(--bg-app);
-  border-color: var(--text-primary);
+  border: 1px solid var(--text-primary);
   font-weight: 600;
 }
 
-.prompt-editor-btn:hover:not(:disabled) {
-  opacity: 0.9;
+.prompt-editor-btn-save:hover:not(:disabled),
+.prompt-editor-btn-update:hover:not(:disabled),
+.prompt-editor-btn-restore:hover:not(:disabled) {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.prompt-editor-btn-save-new {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  font-weight: 600;
+}
+
+.prompt-editor-btn-save-new:hover:not(:disabled) {
+  background: var(--text-primary);
+  color: var(--bg-app);
+  border-color: var(--text-primary);
+}
+
+.prompt-editor-btn-cancel {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.prompt-editor-btn-cancel:hover:not(:disabled) {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--text-primary);
 }
 
 .prompt-editor-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
-}
-
-.prompt-editor-btn-cancel:hover {
-  background: var(--bg-surface-hover);
-  color: var(--text-primary);
 }
 
 /* ─── Version History Sidebar / Timeline ─────────────────────────────────── */
@@ -2777,6 +2788,44 @@ button.danger:hover {
 [data-style="modern"] .prompt-editor-btn,
 .prompt-editor-modal--modern .prompt-editor-btn {
   border-radius: 8px;
+}
+
+[data-style="modern"] .prompt-editor-btn-save-new,
+.prompt-editor-modal--modern .prompt-editor-btn-save-new {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+[data-style="modern"] .prompt-editor-btn-save-new:hover:not(:disabled),
+.prompt-editor-modal--modern .prompt-editor-btn-save-new:hover:not(:disabled) {
+  background: var(--bg-surface-hover);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+[data-style="modern"] .prompt-editor-btn-cancel,
+.prompt-editor-modal--modern .prompt-editor-btn-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+[data-style="modern"] .prompt-editor-btn-cancel:hover:not(:disabled),
+.prompt-editor-modal--modern .prompt-editor-btn-cancel:hover:not(:disabled) {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+[data-style="modern"] .prompt-editor-btn-save:hover:not(:disabled),
+[data-style="modern"] .prompt-editor-btn-update:hover:not(:disabled),
+[data-style="modern"] .prompt-editor-btn-restore:hover:not(:disabled),
+.prompt-editor-modal--modern .prompt-editor-btn-save:hover:not(:disabled),
+.prompt-editor-modal--modern .prompt-editor-btn-update:hover:not(:disabled),
+.prompt-editor-modal--modern .prompt-editor-btn-restore:hover:not(:disabled) {
+  opacity: 0.88;
+  background: var(--text-primary);
+  color: var(--bg-app);
 }
 
 @media (max-width: 679px) {
