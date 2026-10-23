@@ -2230,3 +2230,212 @@ button.danger:hover {
   background: var(--bg-surface-hover);
   border-color: var(--border-color);
 }
+
+/* ─── Prompt Editor Modal Styles ─────────────────────────────────────────── */
+
+.prompt-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.prompt-editor-modal {
+  width: 100%;
+  max-width: 680px;
+  max-height: 88dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px var(--border-style) var(--border-color);
+  border-radius: 0px;
+  box-shadow: none;
+  font-family: inherit;
+  overflow: hidden;
+}
+
+.prompt-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.prompt-editor-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: var(--text-transform);
+}
+
+.prompt-editor-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prompt-editor-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.prompt-editor-form {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  gap: 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.prompt-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prompt-editor-field--flex {
+  flex: 1;
+  min-height: 220px;
+}
+
+.prompt-editor-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: var(--text-transform);
+}
+
+.prompt-editor-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.prompt-editor-input:focus {
+  border-color: var(--text-primary);
+}
+
+.prompt-editor-textarea {
+  width: 100%;
+  flex: 1;
+  min-height: 200px;
+  max-height: 50vh;
+  padding: 12px;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0px;
+  font-family: var(--font-mono, 'Fira Code', monospace);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.prompt-editor-textarea:focus {
+  border-color: var(--text-primary);
+}
+
+.prompt-editor-error {
+  font-size: 0.8rem;
+  color: var(--color-danger, #ef4444);
+  font-family: inherit;
+}
+
+.prompt-editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.prompt-editor-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 0px;
+  color: var(--text-primary);
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-transform: var(--text-transform);
+  transition: all 0.15s ease;
+}
+
+.prompt-editor-btn-save {
+  background: var(--text-primary);
+  color: var(--bg-app);
+  border-color: var(--text-primary);
+  font-weight: 600;
+}
+
+.prompt-editor-btn-save:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.prompt-editor-btn-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.prompt-editor-btn-cancel:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+/* Modern Theme Overrides */
+[data-style="modern"] .prompt-editor-overlay,
+.prompt-editor-overlay--modern {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+[data-style="modern"] .prompt-editor-modal,
+.prompt-editor-modal--modern {
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+}
+
+[data-style="modern"] .prompt-editor-input,
+.prompt-editor-modal--modern .prompt-editor-input {
+  border-radius: 8px;
+}
+
+[data-style="modern"] .prompt-editor-textarea,
+.prompt-editor-modal--modern .prompt-editor-textarea {
+  border-radius: 8px;
+}
+
+[data-style="modern"] .prompt-editor-btn,
+.prompt-editor-modal--modern .prompt-editor-btn {
+  border-radius: 8px;
+}
