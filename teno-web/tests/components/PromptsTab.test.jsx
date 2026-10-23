@@ -327,4 +327,54 @@ describe('PromptsTab', () => {
       expect(toasts.length).toBeGreaterThan(0)
     })
   })
+
+  it('displays error toast when adding a prompt fails (e.g. permission or network error)', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    dbApi.addPrompt = vi.fn().mockRejectedValue(new Error('Missing or insufficient permissions.'))
+
+    render(<PromptsTab user={mockUser} dbApi={dbApi} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '[+ add_prompt]' }))
+
+    fireEvent.change(screen.getByPlaceholderText('prompt_title...'), {
+      target: { value: 'Failing Prompt' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('type_prompt_content_here...'), {
+      target: { value: 'Content that will fail' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '[ save ]' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('error: failed to save prompt')).toBeInTheDocument()
+    })
+
+    // Modal stays open so user does not lose input
+    expect(screen.getByPlaceholderText('prompt_title...')).toHaveValue('Failing Prompt')
+    consoleSpy.mockRestore()
+  })
+
+  it('displays error toast when updating a prompt fails', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    dbApi.updatePrompt = vi.fn().mockRejectedValue(new Error('Permission denied on update.'))
+
+    render(<PromptsTab user={mockUser} dbApi={dbApi} />)
+
+    const codingSection = screen.getByTestId('prompt-section-coding')
+    const editBtn = codingSection.querySelector('.prompt-card-btn-edit')
+    fireEvent.click(editBtn)
+
+    fireEvent.change(screen.getByPlaceholderText('prompt_title...'), {
+      target: { value: 'Updated Prompt That Fails' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /> \.\/update|Update Current/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('error: failed to save prompt')).toBeInTheDocument()
+    })
+
+    consoleSpy.mockRestore()
+  })
 })
+

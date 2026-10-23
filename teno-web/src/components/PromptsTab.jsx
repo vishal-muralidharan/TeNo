@@ -132,6 +132,7 @@ export default function PromptsTab({ user, dbApi }) {
       setEditorState(null)
     } catch (err) {
       console.error('Failed to save prompt:', err)
+      showToast(isModern ? 'Failed to save prompt. Please try again.' : 'error: failed to save prompt')
     }
   }
 
