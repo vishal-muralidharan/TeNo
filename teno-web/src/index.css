@@ -122,7 +122,7 @@ body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   margin: 0;
   border: none;
@@ -132,7 +132,10 @@ body {
 .app-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
+  /* Pad the very bottom of the flex column away from the device's home
+     indicator / Android navigation bar when no terminal bar is present. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Header */
@@ -304,12 +307,13 @@ body {
 
 /* When terminal is open, slide-pane must scroll past the fixed terminal shell */
 .terminal-enabled.terminal-open .slide-pane {
-  padding-bottom: calc(var(--terminal-active-height, var(--terminal-height)) + 16px);
+  padding-bottom: calc(var(--terminal-active-height, var(--terminal-height)) + 16px + env(safe-area-inset-bottom, 0px));
 }
 
-/* When terminal feature is enabled but closed, the 28px reopen bar sits fixed at the bottom */
+/* When terminal feature is enabled but closed, the 28px reopen bar sits fixed at the bottom.
+   Add env(safe-area-inset-bottom) so content doesn't underflow the bar on notched devices. */
 .terminal-enabled:not(.terminal-open) .slide-pane {
-  padding-bottom: calc(28px + 14px);
+  padding-bottom: calc(28px + 14px + env(safe-area-inset-bottom, 0px));
 }
 
 .terminal-spacer {
@@ -1165,14 +1169,16 @@ button.danger:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 28px;
+  /* Grow the bar's own height to absorb the home indicator / Android nav bar */
+  height: calc(28px + env(safe-area-inset-bottom, 0px));
   background: #000;
   border-top: 1px solid #fff;
   color: #fff;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  padding: 0 10px;
+  /* Keep the text vertically centred in the visible 28px portion */
+  padding: 0 10px env(safe-area-inset-bottom, 0px);
   z-index: 40;
 }
 
