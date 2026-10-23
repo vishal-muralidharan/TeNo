@@ -13,7 +13,8 @@ const TAB_INDEX = {
   links: 0,
   cart: 1,
   reminders: 2,
-  timer: 3,
+  prompts: 3,
+  timer: 4,
 }
 
 const normalizeText = (value) => (value || '').trim().toLowerCase()
