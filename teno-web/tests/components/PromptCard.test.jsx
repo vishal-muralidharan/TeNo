@@ -153,4 +153,49 @@ describe('PromptCard', () => {
 
     expect(screen.getByText('Untitled Prompt')).toBeInTheDocument()
   })
+
+  it('renders version badge [v1] in minimal mode and copies active version content', async () => {
+    vi.mocked(useTheme).mockReturnValue({ styleMode: 'minimal' })
+    const versionedPrompt = {
+      id: 'vp-1',
+      title: 'Multi-version Prompt',
+      currentVersionId: 'v2',
+      versions: [
+        { id: 'v1', content: 'Draft v1 content' },
+        { id: 'v2', content: 'Active v2 content' },
+      ],
+    }
+
+    render(<PromptCard prompt={versionedPrompt} />)
+
+    const badge = screen.getByTestId('prompt-version-badge')
+    expect(badge).toHaveTextContent('[v2]')
+    expect(screen.getByText('Active v2 content')).toBeInTheDocument()
+
+    const card = screen.getByRole('button', { name: /Prompt: Multi-version Prompt/i })
+    fireEvent.click(card)
+
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Active v2 content')
+    })
+  })
+
+  it('renders sleek Version X pill in modern mode', () => {
+    vi.mocked(useTheme).mockReturnValue({ styleMode: 'modern' })
+    const versionedPrompt = {
+      id: 'vp-2',
+      title: 'Prompt with V3',
+      currentVersionId: 'v3',
+      versions: [
+        { id: 'v1', content: 'Draft v1' },
+        { id: 'v2', content: 'Draft v2' },
+        { id: 'v3', content: 'Draft v3' },
+      ],
+    }
+
+    render(<PromptCard prompt={versionedPrompt} />)
+
+    const badge = screen.getByTestId('prompt-version-badge')
+    expect(badge).toHaveTextContent('Version 3')
+  })
 })

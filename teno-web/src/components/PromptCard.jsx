@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Copy, Edit2, Trash2, Check } from 'lucide-react'
 import { useTheme } from '../ThemeContext'
 import { getUiConfig } from '../utils/uiConfig'
+import { getPromptCurrentContent, getPromptCurrentVersion } from '../lib/db'
 
 export default function PromptCard({
   prompt,
@@ -15,13 +16,22 @@ export default function PromptCard({
 
   const [copied, setCopied] = useState(false)
 
+  const activeContent = getPromptCurrentContent(prompt)
+  const currentVersion = getPromptCurrentVersion(prompt)
+  const currentTag = currentVersion?.id || prompt?.currentVersionId || 'v1'
+
+  const versionNum = String(currentTag).match(/^v(\d+)$/i)?.[1]
+  const versionBadgeText = isModern
+    ? (versionNum ? `${ui.prompts.versionBadgePrefix}${versionNum}` : currentTag)
+    : `[${currentTag}]`
+
   const handleCopy = async (e) => {
     if (e) e.stopPropagation()
-    if (!prompt?.content) return
+    if (!activeContent) return
 
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(prompt.content)
+        await navigator.clipboard.writeText(activeContent)
       }
       setCopied(true)
       onCopySuccess?.(prompt)
@@ -57,7 +67,17 @@ export default function PromptCard({
       data-testid={`prompt-card-${prompt?.id || 'new'}`}
     >
       <div className="prompt-card-header">
-        <h4 className="prompt-card-title">{prompt?.title || 'Untitled Prompt'}</h4>
+        <div className="prompt-card-title-group">
+          <h4 className="prompt-card-title">{prompt?.title || 'Untitled Prompt'}</h4>
+          <span
+            className="prompt-card-version-badge"
+            title={`Active Version: ${currentTag}`}
+            aria-label={`Active Version: ${currentTag}`}
+            data-testid="prompt-version-badge"
+          >
+            {versionBadgeText}
+          </span>
+        </div>
         <div className="prompt-card-actions" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
@@ -98,7 +118,7 @@ export default function PromptCard({
       </div>
 
       <div className="prompt-card-preview">
-        {prompt?.content || ''}
+        {activeContent}
       </div>
 
       {copied && (
