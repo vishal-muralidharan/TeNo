@@ -38,6 +38,7 @@ Whenever a feature introduces new code, consult this matrix to identify which sk
 | **New Test Suite or Mock Requirement** | `targeted-module-testing`<br>`review-directory-structure` | `teno-web/tests/setup.js` |
 | **New Platform File or Root Configuration** | `review-directory-structure` | `AGENTS.md` (Rule 3) |
 | **New Cross-Platform Sub-Feature (Web vs Ext)** | `audit-and-planning`<br>`maintain-minimalist-ui` | `docs/features/core-modules.md` |
+| **New Feature Flag or Gated Capability** | `audit-and-planning`<br>`review-db-structure`<br>`targeted-module-testing` | `teno-web/src/utils/featureFlags.js`<br>`README.md` |
 
 ---
 
@@ -132,8 +133,9 @@ Inspect [.agents/skills/review-db-structure/SKILL.md](file:///.agents/skills/rev
 2. **Collection Schemas & Field Shapes (Section 2):**
    - Document document fields, data types, nested version arrays, and timestamps.
    - Document security rule requirements (`read`, `create`, `update`, `delete`) and denormalized `memberUids` rules.
+   - Verify feature flag keys and fail-open defaults for `/system_config/feature_flags`.
 3. **Database Change Checklist (Section 5):**
-   - Ensure checklist includes parity for the newly introduced collections.
+   - Ensure checklist includes parity for the newly introduced collections and feature flag fallbacks.
 
 ---
 
@@ -143,6 +145,7 @@ Inspect [.agents/skills/review-db-structure/SKILL.md](file:///.agents/skills/rev
    - Verify that the Universal Search Scope Matrix includes the newly added component directories or collections.
 2. **`audit-and-planning`:**
    - Update Pre-Implementation and Root Cause checklists to account for the new feature's design constraints, state-aware immutability, and security rule matchers.
+   - Verify if the feature introduces a new flag key in `DEFAULT_FEATURE_FLAGS` (`teno-web/src/utils/featureFlags.js`) and evaluate fail-open behavior.
 
 ---
 
@@ -184,9 +187,11 @@ Before closing out any feature branch or pull request, complete this audit:
 [ ] 4. REVIEW-DB-STRUCTURE:
     - Documented new Firestore collection schema, subcollections, and field types.
     - Documented matching firestore.rules permission blocks and memberUids parity.
+    - Registered any new flags in DEFAULT_FEATURE_FLAGS (teno-web/src/utils/featureFlags.js).
 
 [ ] 5. REPO-SEARCH & AUDIT-AND-PLANNING:
     - Verified new components and symbols are indexed and searchable.
+    - Audited feature flag gating in DEFAULT_FEATURE_FLAGS and FeatureFlagContext.
 
 [ ] 6. ARCHITECTURE DOCS & RULES:
     - Updated docs/features/core-modules.md with the new module guide.
