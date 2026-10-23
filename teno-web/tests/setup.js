@@ -123,6 +123,10 @@ vi.mock('firebase/firestore', () => ({
   arrayUnion:  vi.fn((...args) => ({ _type: 'arrayUnion', args })),
   arrayRemove: vi.fn((...args) => ({ _type: 'arrayRemove', args })),
   serverTimestamp: vi.fn(() => ({ _type: 'serverTimestamp' })),
+  Timestamp: {
+    now: vi.fn(() => ({ seconds: Math.floor(Date.now() / 1000), nanoseconds: 0, toMillis: () => Date.now(), toDate: () => new Date() })),
+    fromDate: vi.fn((d) => ({ seconds: Math.floor(d.getTime() / 1000), nanoseconds: 0, toMillis: () => d.getTime(), toDate: () => d })),
+  },
   FieldValue:  {
     arrayUnion:      vi.fn((...args) => ({ _type: 'arrayUnion', args })),
     arrayRemove:     vi.fn((...args) => ({ _type: 'arrayRemove', args })),
