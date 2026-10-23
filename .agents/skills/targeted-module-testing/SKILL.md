@@ -41,8 +41,10 @@ TeNo's primary automated test suite is located in `teno-web/tests/`:
 | :--- | :--- | :--- |
 | `src/components/<Name>.jsx` | `tests/components/<Name>.test.jsx` | `npx vitest run tests/components/<Name>.test.jsx` |
 | `src/<Name>Context.jsx` | `tests/context/<Name>Context.test.jsx`| `npx vitest run tests/context/<Name>Context.test.jsx` |
+| `src/FeatureFlagContext.jsx` | `tests/context/FeatureFlagContext.test.jsx` | `npx vitest run tests/context/FeatureFlagContext.test.jsx` |
 | `src/lib/db.js` | `tests/lib/db.test.js` | `npx vitest run tests/lib/db.test.js` |
 | `src/utils/<name>.{js,jsx}` | `tests/utils/<name>.test.js` | `npx vitest run tests/utils/<name>.test.js` |
+| `src/utils/featureFlags.js` | `tests/utils/featureFlags.test.js` | `npx vitest run tests/utils/featureFlags.test.js` |
 | `api/<endpoint>.js` | `tests/api/<endpoint>.test.js` | `npx vitest run tests/api/<endpoint>.test.js` |
 | All component tests | `tests/components/` | `npx vitest run tests/components` |
 | All context tests | `tests/context/` | `npx vitest run tests/context` |
