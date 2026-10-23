@@ -11,6 +11,7 @@ Every development task in this repository must strictly adhere to the following 
 ### Rule 1: Step-by-Step Atomic Commits Across Surfaces
 * **Skill Reference:** [.agents/skills/atomic-commits/SKILL.md](file:///.agents/skills/atomic-commits/SKILL.md)
 * **Rule:** Every change in a file or cohesive group of files that contribute to a similar function or step must be committed **before** moving on to the next function, module, or step.
+* **Primacy Over User Phases:** Irrespective of any high-level phases, milestones, or batches outlined in a user request, the plan, audit, and commits must happen as per the skill only and not as per the phases.
 * **Prohibited:** Accumulating changes across multiple distinct functions, components, or sub-projects (`teno-web` vs `teno-extension`) into a single batch commit. Always commit web changes (with tests) separately from extension changes.
 
 ### Rule 2: Targeted Module Testing & Verification Synchronization

@@ -17,6 +17,13 @@ This skill provides step-by-step instructions for committing code changes in sma
 
 Never accumulate changes across multiple unrelated functions, components, or sub-projects (`teno-web` vs `teno-extension`) into a single monolithic commit. Keeping commits modular and atomic ensures easy rollbacks, clear audit history, and reliable code reviews across the web app, browser extension, serverless API, and database rules.
 
+### Primacy of Skill-Defined Atomic Increments Over User-Provided Phases
+
+> **Crucial Rule:** Irrespective of high-level phases, milestones, or grouped deliverables provided in a user prompt, the pre-implementation audit, execution plan, test verification, and git commits must ALWAYS follow the atomic standards of this skill (`atomic-commits`) and `audit-and-planning`, NOT the user's high-level phase groupings.
+* When a user presents instructions organized in broad phases (e.g. "Phase 1: DB & Rules", "Phase 2: Navigation & Card UI", "Phase 3: Editor Modal", "Phase 4: Collaboration & Integration"), you must decompose each phase into granular, atomic steps.
+* Each independent functional unit (schema rules, library methods, translations, UI components, modals, tabs) must be developed, tested, and committed on its own before moving to the next.
+* Never batch distinct functional units into a single commit merely because they were grouped under a single "Phase" in the user prompt. Skill-defined atomicity always takes precedence over user prompt formatting.
+
 ---
 
 ## When to Use This Skill
@@ -131,6 +138,7 @@ Only after the commit is recorded and the workspace status for this unit is clea
 
 ## Anti-Patterns to Avoid
 
+- ❌ **Batching by User Phases:** Committing multiple distinct components, database rules, or architectural layers together simply because a user prompt grouped them into a single "Phase" (e.g. committing DB rules, UI card, and navigation in one batch instead of atomic commits).
 - ❌ **Monolithic Web + Extension Commit:** Modifying `teno-web/src/components/LinkStorer.jsx` and `teno-extension/src/components/LinkStorer.jsx` together in one commit without separate verification.
 - ❌ **Premature Next Step:** Starting edits on Extension while uncommitted changes in Web are pending.
 - ❌ **Unverified Commit:** Committing web code without running Vitest, or committing extension code with syntax errors.
