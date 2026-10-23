@@ -81,11 +81,14 @@ describe('PromptEditorModal', () => {
     const saveBtn = screen.getByRole('button', { name: '[ save ]' })
     fireEvent.click(saveBtn)
 
-    expect(onSave).toHaveBeenCalledWith({
-      title: 'Refactor Code',
-      content: 'function test() {\n  return true;\n}',
-      label: 'dev',
-    })
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Refactor Code',
+        content: 'function test() {\n  return true;\n}',
+        label: 'dev',
+        saveType: 'create',
+      })
+    )
   })
 
   it('preserves existing prompt id when editing on save', () => {
@@ -95,14 +98,17 @@ describe('PromptEditorModal', () => {
     render(<PromptEditorModal isOpen={true} prompt={prompt} onSave={onSave} onClose={vi.fn()} />)
 
     fireEvent.change(screen.getByPlaceholderText('prompt_title...'), { target: { value: 'New Title' } })
-    fireEvent.click(screen.getByRole('button', { name: '[ save ]' }))
+    fireEvent.click(screen.getByRole('button', { name: /> \.\/update/i }))
 
-    expect(onSave).toHaveBeenCalledWith({
-      id: 'p-10',
-      title: 'New Title',
-      content: 'Old Content',
-      label: 'ai',
-    })
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'p-10',
+        title: 'New Title',
+        content: 'Old Content',
+        label: 'ai',
+        saveType: 'update_current',
+      })
+    )
   })
 
   it('inserts indentation spaces when Tab is pressed in textarea', () => {
@@ -152,5 +158,135 @@ describe('PromptEditorModal', () => {
     expect(screen.getByRole('dialog', { name: /New Prompt/i })).toHaveClass('prompt-editor-overlay--modern')
     expect(screen.getByText('Save Prompt')).toBeInTheDocument()
     expect(screen.getByText('Cancel')).toBeInTheDocument()
+  })
+
+  it('renders ASCII tree in minimal mode and allows viewing and restoring older versions', async () => {
+    vi.mocked(useTheme).mockReturnValue({ styleMode: 'minimal' })
+    const onSave = vi.fn()
+    const multiVersionPrompt = {
+      id: 'p-multi',
+      title: 'Iterative Prompt',
+      currentVersionId: 'v2',
+      versions: [
+        { id: 'v1', content: 'Initial prompt draft', createdAt: { toDate: () => new Date('2026-10-24T10:00:00Z') } },
+        { id: 'v2', content: 'Second refined version', createdAt: { toDate: () => new Date('2026-10-24T12:00:00Z') } },
+      ],
+      label: 'writing',
+    }
+
+    render(
+      <PromptEditorModal
+        isOpen={true}
+        prompt={multiVersionPrompt}
+        onSave={onSave}
+        onClose={vi.fn()}
+      />
+    )
+
+    // Check ASCII branches
+    expect(screen.getByText(/├──/)).toBeInTheDocument()
+    expect(screen.getByText(/└──/)).toBeInTheDocument()
+    expect(screen.getByText(/\[current\]/i)).toBeInTheDocument()
+
+    // Initially loads active version (v2) in editable state
+    const textarea = screen.getByPlaceholderText('type_prompt_content_here...')
+    expect(textarea).toHaveValue('Second refined version')
+    expect(textarea).not.toHaveAttribute('readonly')
+
+    // Click older version (v1)
+    const v1Button = screen.getByRole('button', { name: /Version v1/i })
+    fireEvent.click(v1Button)
+
+    // Textarea now shows v1 in read-only mode
+    expect(textarea).toHaveValue('Initial prompt draft')
+    expect(textarea).toHaveAttribute('readonly')
+    expect(screen.getByText(/> \[ viewing v1 · read-only \]/i)).toBeInTheDocument()
+
+    // Restore button is visible
+    const restoreBtn = screen.getByRole('button', { name: /> \.\/restore/i })
+    expect(restoreBtn).toBeInTheDocument()
+
+    // Click restore
+    fireEvent.click(restoreBtn)
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'p-multi',
+        currentVersionId: 'v1',
+        content: 'Initial prompt draft',
+        saveType: 'restore_version',
+      })
+    )
+  })
+
+  it('provides "Save as New Version" which appends next version tag on submit', () => {
+    vi.mocked(useTheme).mockReturnValue({ styleMode: 'minimal' })
+    const onSave = vi.fn()
+    const multiVersionPrompt = {
+      id: 'p-multi',
+      title: 'Iterative Prompt',
+      currentVersionId: 'v2',
+      versions: [
+        { id: 'v1', content: 'Initial prompt draft' },
+        { id: 'v2', content: 'Second refined version' },
+      ],
+      label: 'writing',
+    }
+
+    render(
+      <PromptEditorModal
+        isOpen={true}
+        prompt={multiVersionPrompt}
+        onSave={onSave}
+        onClose={vi.fn()}
+      />
+    )
+
+    const textarea = screen.getByPlaceholderText('type_prompt_content_here...')
+    fireEvent.change(textarea, { target: { value: 'Third brand new draft' } })
+
+    const saveNewBtn = screen.getByRole('button', { name: /> \.\/save --new-version/i })
+    fireEvent.click(saveNewBtn)
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'p-multi',
+        currentVersionId: 'v3',
+        content: 'Third brand new draft',
+        saveType: 'new_version',
+        versions: expect.arrayContaining([
+          expect.objectContaining({ id: 'v1' }),
+          expect.objectContaining({ id: 'v2' }),
+          expect.objectContaining({ id: 'v3', content: 'Third brand new draft' }),
+        ]),
+      })
+    )
+  })
+
+  it('renders sleek vertical step timeline in modern mode', () => {
+    vi.mocked(useTheme).mockReturnValue({ styleMode: 'modern' })
+    const multiVersionPrompt = {
+      id: 'p-modern-timeline',
+      title: 'Modern Prompt',
+      currentVersionId: 'v2',
+      versions: [
+        { id: 'v1', content: 'V1 content' },
+        { id: 'v2', content: 'V2 content' },
+      ],
+      label: 'design',
+    }
+
+    render(
+      <PromptEditorModal
+        isOpen={true}
+        prompt={multiVersionPrompt}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />
+    )
+
+    // Current badge in modern mode
+    expect(screen.getByText('Current')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Update Current/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Save as New Version/i })).toBeInTheDocument()
   })
 })

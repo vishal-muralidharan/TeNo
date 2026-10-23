@@ -1,8 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
+import { X, Check, History, RotateCcw } from 'lucide-react'
 import { useTheme } from '../ThemeContext'
 import { getUiConfig } from '../utils/uiConfig'
+import {
+  getPromptVersions,
+  getNextVersionId,
+  createTimestamp,
+} from '../lib/db'
 
 export default function PromptEditorModal({
   isOpen = true,
@@ -20,22 +25,30 @@ export default function PromptEditorModal({
   const [label, setLabel] = useState('')
   const [validationError, setValidationError] = useState('')
 
+  const versions = useMemo(() => getPromptVersions(prompt), [prompt])
+  const activeVersionId = prompt?.currentVersionId || versions[versions.length - 1]?.id || 'v1'
+  const [selectedVersionId, setSelectedVersionId] = useState(activeVersionId)
+
   const titleInputRef = useRef(null)
   const textareaRef = useRef(null)
 
   useEffect(() => {
     if (isOpen) {
       setTitle(prompt?.title || '')
-      setContent(prompt?.content || '')
       setLabel(prompt?.label || initialLabel || '')
       setValidationError('')
 
-      // Focus first input
+      const currentVers = getPromptVersions(prompt)
+      const currentId = prompt?.currentVersionId || currentVers[currentVers.length - 1]?.id || 'v1'
+      setSelectedVersionId(currentId)
+
+      const activeVer = currentVers.find((v) => v.id === currentId) || currentVers[currentVers.length - 1]
+      setContent(activeVer?.content || prompt?.content || '')
+
       setTimeout(() => {
         titleInputRef.current?.focus()
       }, 50)
 
-      // Lock body scroll
       const originalOverflow = document.body.style.overflow
       document.body.style.overflow = 'hidden'
       return () => {
@@ -44,7 +57,6 @@ export default function PromptEditorModal({
     }
   }, [isOpen, prompt, initialLabel])
 
-  // Handle ESC key
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (e) => {
@@ -62,9 +74,18 @@ export default function PromptEditorModal({
   const isTitleEmpty = !title.trim()
   const isContentEmpty = !content.trim()
   const canSave = !isTitleEmpty && !isContentEmpty
+  const isViewingCurrent = selectedVersionId === activeVersionId
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSelectVersion = (versionId) => {
+    setSelectedVersionId(versionId)
+    const targetVer = versions.find((v) => v.id === versionId)
+    if (targetVer) {
+      setContent(targetVer.content || '')
+    }
+    setValidationError('')
+  }
+
+  const handleSaveAction = (type) => {
     if (isTitleEmpty) {
       setValidationError('Title cannot be empty.')
       titleInputRef.current?.focus()
@@ -76,15 +97,79 @@ export default function PromptEditorModal({
       return
     }
 
+    if (type === 'create') {
+      const initialVerId = 'v1'
+      const initialVers = [
+        { id: initialVerId, content, createdAt: createTimestamp() },
+      ]
+      onSave?.({
+        title: title.trim(),
+        content,
+        label: label.trim().toLowerCase(),
+        currentVersionId: initialVerId,
+        versions: initialVers,
+        saveType: 'create',
+      })
+      return
+    }
+
+    if (type === 'update_current') {
+      const updatedVersions = versions.length > 0
+        ? versions.map((v) => (v.id === activeVersionId ? { ...v, content } : v))
+        : [{ id: activeVersionId, content, createdAt: createTimestamp() }]
+
+      onSave?.({
+        id: prompt.id,
+        title: title.trim(),
+        content,
+        label: label.trim().toLowerCase(),
+        currentVersionId: activeVersionId,
+        versions: updatedVersions,
+        saveType: 'update_current',
+      })
+      return
+    }
+
+    if (type === 'new_version') {
+      const baseVersions = versions.length > 0
+        ? versions
+        : [{ id: 'v1', content: prompt?.content || '', createdAt: createTimestamp() }]
+      const nextId = getNextVersionId(baseVersions)
+      const newVersionObj = {
+        id: nextId,
+        content,
+        createdAt: createTimestamp(),
+      }
+      const updatedVersions = [...baseVersions, newVersionObj]
+      onSave?.({
+        id: prompt.id,
+        title: title.trim(),
+        content,
+        label: label.trim().toLowerCase(),
+        currentVersionId: nextId,
+        versions: updatedVersions,
+        saveType: 'new_version',
+      })
+      return
+    }
+  }
+
+  const handleRestore = () => {
+    const targetVer = versions.find((v) => v.id === selectedVersionId)
+    if (!targetVer) return
+
     onSave?.({
-      ...(prompt?.id ? { id: prompt.id } : {}),
+      id: prompt.id,
       title: title.trim(),
-      content,
+      content: targetVer.content || '',
       label: label.trim().toLowerCase(),
+      currentVersionId: selectedVersionId,
+      versions,
+      saveType: 'restore_version',
+      versionId: selectedVersionId,
     })
   }
 
-  // Handle tab insertion in textarea
   const handleTextareaKeyDown = (e) => {
     if (e.key === 'Tab') {
       e.preventDefault()
@@ -101,7 +186,26 @@ export default function PromptEditorModal({
     }
   }
 
+  const formatVersionDate = (timestamp) => {
+    if (!timestamp) return ''
+    let date
+    if (typeof timestamp.toDate === 'function') {
+      date = timestamp.toDate()
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000)
+    } else if (timestamp instanceof Date) {
+      date = timestamp
+    } else {
+      date = new Date(timestamp)
+    }
+    if (isNaN(date.getTime())) return ''
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
   const modalTitle = isEdit ? ui.prompts.editorEdit : ui.prompts.editorNew
+
+  // Display versions list
+  const displayVersions = versions.length > 0 ? versions : (isEdit ? [{ id: 'v1', content: prompt?.content || '', createdAt: prompt?.createdAt }] : [])
 
   return createPortal(
     <div
@@ -116,7 +220,14 @@ export default function PromptEditorModal({
     >
       <div className={`prompt-editor-modal ${isModern ? 'prompt-editor-modal--modern' : 'prompt-editor-modal--minimal'}`}>
         <div className="prompt-editor-header">
-          <h3 className="prompt-editor-title">{modalTitle}</h3>
+          <div className="prompt-editor-header-title-group">
+            <h3 className="prompt-editor-title">{modalTitle}</h3>
+            {isEdit && (
+              <span className="prompt-editor-header-badge">
+                {isModern ? `Version ${activeVersionId.replace(/^v/i, '') || activeVersionId}` : `[ ${activeVersionId} ]`}
+              </span>
+            )}
+          </div>
           <button
             type="button"
             className="prompt-editor-close-btn"
@@ -127,84 +238,205 @@ export default function PromptEditorModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="prompt-editor-form">
-          <div className="prompt-editor-field">
-            <label htmlFor="prompt-title" className="prompt-editor-label">
-              {ui.prefix.section}Title
-            </label>
-            <input
-              id="prompt-title"
-              ref={titleInputRef}
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value)
-                if (validationError) setValidationError('')
-              }}
-              placeholder={ui.prompts.titlePlaceholder}
-              className="prompt-editor-input"
-              autoComplete="off"
-            />
+        <div className="prompt-editor-body">
+          <div className="prompt-editor-main">
+            <form onSubmit={(e) => e.preventDefault()} className="prompt-editor-form">
+              <div className="prompt-editor-field">
+                <label htmlFor="prompt-title" className="prompt-editor-label">
+                  {ui.prefix.section}Title
+                </label>
+                <input
+                  id="prompt-title"
+                  ref={titleInputRef}
+                  type="text"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value)
+                    if (validationError) setValidationError('')
+                  }}
+                  placeholder={ui.prompts.titlePlaceholder}
+                  className="prompt-editor-input"
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="prompt-editor-field">
+                <label htmlFor="prompt-label" className="prompt-editor-label">
+                  {ui.prefix.section}Label
+                </label>
+                <input
+                  id="prompt-label"
+                  type="text"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  placeholder={ui.prompts.labelPlaceholder}
+                  className="prompt-editor-input prompt-editor-input--label"
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="prompt-editor-field prompt-editor-field--flex">
+                <div className="prompt-editor-content-header">
+                  <label htmlFor="prompt-content" className="prompt-editor-label">
+                    {ui.prefix.section}Content
+                  </label>
+                  {!isViewingCurrent && (
+                    <span className="prompt-editor-readonly-tag">
+                      {isModern ? `Viewing ${selectedVersionId} (Read-only)` : `> [ viewing ${selectedVersionId} · read-only ]`}
+                    </span>
+                  )}
+                </div>
+
+                <textarea
+                  id="prompt-content"
+                  ref={textareaRef}
+                  value={content}
+                  readOnly={!isViewingCurrent}
+                  onChange={(e) => {
+                    if (!isViewingCurrent) return
+                    setContent(e.target.value)
+                    if (validationError) setValidationError('')
+                  }}
+                  onKeyDown={isViewingCurrent ? handleTextareaKeyDown : undefined}
+                  placeholder={ui.prompts.contentPlaceholder}
+                  className={`prompt-editor-textarea ${!isViewingCurrent ? 'prompt-editor-textarea--readonly' : ''}`}
+                  rows={12}
+                  spellCheck="false"
+                />
+              </div>
+
+              {validationError && (
+                <div className="prompt-editor-error" role="alert">
+                  {validationError}
+                </div>
+              )}
+
+              <div className="prompt-editor-actions">
+                <button
+                  type="button"
+                  className="prompt-editor-btn prompt-editor-btn-cancel"
+                  onClick={onClose}
+                >
+                  {ui.prompts.cancel}
+                </button>
+
+                {!isViewingCurrent ? (
+                  <button
+                    type="button"
+                    className="prompt-editor-btn prompt-editor-btn-restore"
+                    onClick={handleRestore}
+                  >
+                    {ui.prompts.restoreVersion}
+                  </button>
+                ) : isEdit ? (
+                  <div className="prompt-editor-actions-group">
+                    <button
+                      type="button"
+                      disabled={!canSave}
+                      className="prompt-editor-btn prompt-editor-btn-update"
+                      onClick={() => handleSaveAction('update_current')}
+                    >
+                      {ui.prompts.updateCurrent}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!canSave}
+                      className="prompt-editor-btn prompt-editor-btn-save-new"
+                      onClick={() => handleSaveAction('new_version')}
+                    >
+                      {ui.prompts.saveNewVersion}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={!canSave}
+                    className="prompt-editor-btn prompt-editor-btn-save"
+                    onClick={() => handleSaveAction('create')}
+                  >
+                    {ui.prompts.save}
+                  </button>
+                )}
+              </div>
+            </form>
           </div>
 
-          <div className="prompt-editor-field">
-            <label htmlFor="prompt-label" className="prompt-editor-label">
-              {ui.prefix.section}Label
-            </label>
-            <input
-              id="prompt-label"
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder={ui.prompts.labelPlaceholder}
-              className="prompt-editor-input prompt-editor-input--label"
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="prompt-editor-field prompt-editor-field--flex">
-            <label htmlFor="prompt-content" className="prompt-editor-label">
-              {ui.prefix.section}Content
-            </label>
-            <textarea
-              id="prompt-content"
-              ref={textareaRef}
-              value={content}
-              onChange={(e) => {
-                setContent(e.target.value)
-                if (validationError) setValidationError('')
-              }}
-              onKeyDown={handleTextareaKeyDown}
-              placeholder={ui.prompts.contentPlaceholder}
-              className="prompt-editor-textarea"
-              rows={12}
-              spellCheck="false"
-            />
-          </div>
-
-          {validationError && (
-            <div className="prompt-editor-error" role="alert">
-              {validationError}
+          <aside className="prompt-editor-sidebar">
+            <div className="prompt-timeline-header">
+              <span className="prompt-timeline-title">
+                {ui.prefix.section}{ui.prompts.versionHistoryTitle}
+              </span>
             </div>
-          )}
 
-          <div className="prompt-editor-actions">
-            <button
-              type="button"
-              className="prompt-editor-btn prompt-editor-btn-cancel"
-              onClick={onClose}
-            >
-              {ui.prompts.cancel}
-            </button>
-            <button
-              type="submit"
-              disabled={!canSave}
-              className="prompt-editor-btn prompt-editor-btn-save"
-            >
-              {ui.prompts.save}
-            </button>
-          </div>
-        </form>
+            <div className="prompt-timeline-body">
+              {displayVersions.length === 0 ? (
+                <div className="prompt-timeline-empty">
+                  {isModern ? 'Draft (v1)' : '└── v1 [draft]'}
+                </div>
+              ) : (
+                <div className={`prompt-timeline-list ${isModern ? 'prompt-timeline-list--modern' : 'prompt-timeline-list--minimal'}`}>
+                  {displayVersions.map((v, index) => {
+                    const isCurrent = v.id === activeVersionId
+                    const isSelected = v.id === selectedVersionId
+                    const isLast = index === displayVersions.length - 1
+                    const treePrefix = isLast ? '└── ' : '├── '
+                    const dateStr = formatVersionDate(v.createdAt)
+
+                    if (isModern) {
+                      return (
+                        <div
+                          key={v.id}
+                          className={`prompt-timeline-item-modern ${isSelected ? 'selected' : ''} ${isCurrent ? 'current' : ''}`}
+                          onClick={() => handleSelectVersion(v.id)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              handleSelectVersion(v.id)
+                            }
+                          }}
+                          aria-label={`Version ${v.id}${isCurrent ? ' (Current)' : ''}`}
+                        >
+                          <div className="prompt-timeline-dot-wrapper">
+                            <span className={`prompt-timeline-dot ${isCurrent ? 'dot-current' : ''}`} />
+                            {!isLast && <span className="prompt-timeline-line" />}
+                          </div>
+                          <div className="prompt-timeline-item-content">
+                            <div className="prompt-timeline-item-row">
+                              <span className="prompt-timeline-version-name">{v.id}</span>
+                              {isCurrent && (
+                                <span className="prompt-timeline-current-badge">
+                                  {ui.prompts.versionCurrent}
+                                </span>
+                              )}
+                            </div>
+                            {dateStr && <span className="prompt-timeline-date">{dateStr}</span>}
+                          </div>
+                        </div>
+                      )
+                    }
+
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        className={`prompt-timeline-tree-node ${isSelected ? 'selected' : ''} ${isCurrent ? 'current' : ''}`}
+                        onClick={() => handleSelectVersion(v.id)}
+                        aria-label={`Version ${v.id}${isCurrent ? ' current' : ''}`}
+                      >
+                        <span className="prompt-tree-branch">{treePrefix}</span>
+                        <span className="prompt-tree-tag">{v.id}</span>
+                        {dateStr && <span className="prompt-tree-date"> ({dateStr})</span>}
+                        {isCurrent && <span className="prompt-tree-current"> {ui.prompts.versionCurrent}</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
     </div>,
     document.body
