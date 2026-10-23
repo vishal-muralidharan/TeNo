@@ -99,6 +99,16 @@ service cloud.firestore {
       allow delete: if isMember(resource.data);
     }
 
+    // ─── UNIFIED SCHEMA: PROMPTS (root) ─────────────────────────────────────
+    // Root-level prompts collection. Used by both private default prompts
+    // (memberUids: [uid]) and shared labels.
+    match /prompts/{promptId} {
+      allow read: if isMember(resource.data);
+      allow create: if isOwner(request.resource.data.ownerId) && isMember(request.resource.data);
+      allow update: if isMember(resource.data);
+      allow delete: if isMember(resource.data);
+    }
+
     // ─── OLD SCHEMA: SHARED LABELS & LINKS (kept for rollback safety) ────────
     match /shared_labels/{labelId} {
       allow read, update, delete: if isMember(resource.data);

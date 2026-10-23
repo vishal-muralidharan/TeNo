@@ -176,6 +176,101 @@ describe('TeNoDatabase — Core operations', () => {
     })
   })
 
+  // ── Prompts ────────────────────────────────────────────────────────────────
+  describe('Prompts', () => {
+    it('subscribePrompts queries "prompts" collection with memberUids array-contains', () => {
+      const db = new TeNoDatabase(UID, true)
+      db.subscribePrompts(vi.fn())
+
+      expect(collection).toHaveBeenCalledWith(expect.anything(), 'prompts')
+      expect(where).toHaveBeenCalledWith('memberUids', 'array-contains', UID)
+      expect(query).toHaveBeenCalled()
+      expect(onSnapshot).toHaveBeenCalled()
+    })
+
+    it('addPrompt writes to "prompts" collection with title, content, ownerId, labelId, memberUids, and timestamps', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.addPrompt({ title: 'Revision Prompt', content: 'You are an editor.' })
+
+      expect(collection).toHaveBeenCalledWith(expect.anything(), 'prompts')
+      expect(addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: 'Revision Prompt',
+          content: 'You are an editor.',
+          ownerId: UID,
+          labelId: `default_${UID}`,
+          memberUids: [UID],
+          createdAt: MOCK_TIME,
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('addPrompt respects provided labelId and memberUids', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.addPrompt({
+        title: 'Refactor Prompt',
+        content: 'Refactor this code',
+        labelId: 'label-456',
+        memberUids: [UID, 'user-999'],
+      })
+
+      expect(addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: 'Refactor Prompt',
+          content: 'Refactor this code',
+          ownerId: UID,
+          labelId: 'label-456',
+          memberUids: [UID, 'user-999'],
+          createdAt: MOCK_TIME,
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('updatePrompt updates doc in "prompts" collection with updatedAt timestamp', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.updatePrompt('p1', { title: 'Updated Title' })
+
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(updateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: 'Updated Title',
+          updatedAt: MOCK_TIME,
+        })
+      )
+    })
+
+    it('deletePrompt deletes doc from "prompts" collection', async () => {
+      const db = new TeNoDatabase(UID, true)
+      await db.deletePrompt('p1')
+
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(deleteDoc).toHaveBeenCalledWith(expect.anything())
+    })
+
+    it('batchDeleteSharedLabelAndPrompts deletes prompts and label doc via writeBatch', async () => {
+      const db = new TeNoDatabase(UID, true)
+      const mockBatch = {
+        delete: vi.fn(),
+        commit: vi.fn().mockResolvedValue(true),
+      }
+      vi.mocked(writeBatch).mockReturnValue(mockBatch)
+
+      await db.batchDeleteSharedLabelAndPrompts('label-1', [{ id: 'p1' }, { id: 'p2' }])
+
+      expect(writeBatch).toHaveBeenCalled()
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p1')
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'prompts', 'p2')
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'labels', 'label-1')
+      expect(mockBatch.delete).toHaveBeenCalledTimes(3)
+      expect(mockBatch.commit).toHaveBeenCalledTimes(1)
+    })
+  })
+
   // ── Settings ───────────────────────────────────────────────────────────────
   describe('Settings', () => {
     it('subscribeUiSettings and updateUiSettings use "users/UID/settings/ui"', async () => {

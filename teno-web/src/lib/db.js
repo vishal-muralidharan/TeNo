@@ -188,6 +188,52 @@ export class TeNoDatabase {
     return batch.commit();
   }
 
+  // --- Prompts ---
+  subscribePrompts(callback) {
+    const q = query(
+      collection(db, 'prompts'),
+      where('memberUids', 'array-contains', this.uid)
+    );
+    return onSnapshot(q, callback);
+  }
+
+  async addPrompt(data) {
+    const labelId = data.labelId || this.defaultLabelId;
+    const memberUids = data.memberUids || [this.uid];
+    const { labelId: _, memberUids: __, ...rest } = data;
+
+    return addDoc(collection(db, 'prompts'), {
+      ...rest,
+      title: data.title || '',
+      content: data.content || '',
+      labelId,
+      ownerId: this.uid,
+      memberUids,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async updatePrompt(id, data) {
+    return updateDoc(doc(db, 'prompts', id), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async deletePrompt(id) {
+    return deleteDoc(doc(db, 'prompts', id));
+  }
+
+  async batchDeleteSharedLabelAndPrompts(labelId, prompts = []) {
+    const batch = writeBatch(db);
+    prompts.forEach(p => {
+      batch.delete(doc(db, 'prompts', p.id));
+    });
+    batch.delete(doc(db, 'labels', labelId));
+    return batch.commit();
+  }
+
   // --- Settings ---
   subscribeUiSettings(callback) {
     return onSnapshot(doc(db, 'users', this.uid, 'settings', 'ui'), callback);
@@ -280,9 +326,9 @@ export class TeNoDatabase {
 
   /**
    * Subscribe to all labels of a given type that this user is a member of.
-   * Used by LinkStorer / Reminders to render share badges on section headers.
+   * Used by LinkStorer / Reminders / Prompts to render share badges on section headers.
    *
-   * @param {string} type - 'links' | 'cart' | 'reminders'
+   * @param {string} type - 'links' | 'cart' | 'reminders' | 'prompts'
    * @param {function} callback - onSnapshot callback
    */
   subscribeLabelsForSection(type, callback) {
@@ -300,7 +346,7 @@ export class TeNoDatabase {
    * This is called when the user first clicks "Share" on a private label.
    *
    * @param {string} name  - label name (e.g. "a4p")
-   * @param {string} type  - 'links' | 'cart' | 'reminders'
+   * @param {string} type  - 'links' | 'cart' | 'reminders' | 'prompts'
    * @param {object} userInfo - { displayName, email }
    * @returns {Promise<string>} - the label doc id
    */
