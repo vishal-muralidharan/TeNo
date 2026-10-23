@@ -51,6 +51,8 @@ describe('themeTranslations — dictionary shape', () => {
         'tab_links', 'tab_cart', 'tab_reminders', 'tab_timer', 'tab_prompts',
         'add_link', 'add_item', 'add_reminder', 'add_prompt',
         'prompt_copy', 'prompt_copied', 'prompt_edit', 'prompt_delete',
+        'version_current_label', 'action_save_new', 'action_restore',
+        'action_update_current', 'version_history_title', 'version_badge_prefix',
         'toggle_form_open', 'toggle_form_close',
         'prefix_section', 'prefix_command',
         'terminal_reopen',
@@ -388,6 +390,15 @@ describe('getUiConfig("minimal") — Minimalist theme strings', () => {
   it('terminal.reopenBar contains the "$_" sigil', () => {
     expect(ui.terminal.reopenBar).toContain('$_')
   })
+
+  it('prompts versioning strings adhere to terminal style', () => {
+    expect(ui.prompts.versionCurrent).toBe('[current]')
+    expect(ui.prompts.saveNewVersion).toBe('> ./save --new-version')
+    expect(ui.prompts.restoreVersion).toBe('> ./restore')
+    expect(ui.prompts.updateCurrent).toBe('> ./update')
+    expect(ui.prompts.versionHistoryTitle).toBe('version_history')
+    expect(ui.prompts.versionBadgePrefix).toBe('v')
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -505,6 +516,15 @@ describe('getUiConfig("modern") — Modern theme strings', () => {
 
   it('terminal.reopenBar does NOT contain "$_"', () => {
     expect(ui.terminal.reopenBar).not.toContain('$_')
+  })
+
+  it('prompts versioning strings adhere to modern plain English', () => {
+    expect(ui.prompts.versionCurrent).toBe('Current')
+    expect(ui.prompts.saveNewVersion).toBe('Save as New Version')
+    expect(ui.prompts.restoreVersion).toBe('Restore Version')
+    expect(ui.prompts.updateCurrent).toBe('Update Current')
+    expect(ui.prompts.versionHistoryTitle).toBe('Version History')
+    expect(ui.prompts.versionBadgePrefix).toBe('Version ')
   })
 })
 

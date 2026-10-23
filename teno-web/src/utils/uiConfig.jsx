@@ -68,6 +68,12 @@ export const getUiConfig = (styleMode) => {
       editorEdit:         t('prompt_editor_title_edit', styleMode),
       save:               t('prompt_save', styleMode),
       cancel:             t('prompt_cancel', styleMode),
+      versionCurrent:     t('version_current_label', styleMode),
+      saveNewVersion:     t('action_save_new', styleMode),
+      restoreVersion:     t('action_restore', styleMode),
+      updateCurrent:      t('action_update_current', styleMode),
+      versionHistoryTitle: t('version_history_title', styleMode),
+      versionBadgePrefix: t('version_badge_prefix', styleMode),
     },
 
     // ── Toggle-form button labels ─────────────────────────────────────────────

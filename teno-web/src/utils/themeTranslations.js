@@ -116,6 +116,30 @@ export const themeTranslations = {
     minimal: '[ cancel ]',
     modern: 'Cancel',
   },
+  version_current_label: {
+    minimal: '[current]',
+    modern: 'Current',
+  },
+  action_save_new: {
+    minimal: '> ./save --new-version',
+    modern: 'Save as New Version',
+  },
+  action_restore: {
+    minimal: '> ./restore',
+    modern: 'Restore Version',
+  },
+  action_update_current: {
+    minimal: '> ./update',
+    modern: 'Update Current',
+  },
+  version_history_title: {
+    minimal: 'version_history',
+    modern: 'Version History',
+  },
+  version_badge_prefix: {
+    minimal: 'v',
+    modern: 'Version ',
+  },
   toggle_form_open: {
     minimal: '> [ + add_new ]',
     modern: 'Add New',
