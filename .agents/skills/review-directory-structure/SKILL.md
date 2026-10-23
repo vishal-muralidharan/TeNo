@@ -19,7 +19,7 @@ The repository is structured as a multi-package workspace separating the web app
 ```text
 /
 ├── .agents/                          # Agent workspace configurations and skills
-│   └── skills/                       # Reusable workflow and guideline skills (atomic-commits, repo-search...)
+│   └── skills/                       # Reusable workflow and guideline skills (atomic-commits, repo-search, sync-skills-and-docs...)
 ├── docs/                             # Core feature & architectural documentation
 │   └── features/                     # Feature guides (dual-theme, collab, core-modules, settings)
 ├── .firebaserc                       # Firebase CLI active project configuration
