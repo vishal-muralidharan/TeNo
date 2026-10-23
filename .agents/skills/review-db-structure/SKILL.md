@@ -19,8 +19,9 @@ TeNo uses Google Cloud Firestore in Datastore / Native mode with a unified label
 
 ```text
 Firestore Root
-├── /labels/{labelId}                           # Unified label grouping (links, cart, reminders)
+├── /labels/{labelId}                           # Unified label grouping (links, cart, reminders, prompts)
 ├── /links/{linkId}                             # Root links collection (shared & unified links)
+├── /prompts/{promptId}                         # Root prompts collection (LLM prompt vault & version control)
 ├── /cart_items/{itemId}                       # Shared cart items (root level)
 ├── /reminders/{reminderId}                     # Shared reminders (root level)
 ├── /users/{userId}                             # User profile & private subcollections
@@ -107,7 +108,24 @@ Stores reminders for shared labels. Private reminders reside in `/users/{userId}
   - `memberUids` (array<string>): Synced from parent label.
   - `createdAt` (Timestamp).
 
-### 5. `/users/{userId}`
+### 5. `/prompts/{promptId}` (Root Prompts Collection)
+Stores AI/LLM text prompts with version control and label grouping.
+* **Security Rules:**
+  - `read`, `update`, `delete`: Allowed if user is authenticated and either:
+    - User UID is in `memberUids` (`request.auth.uid in resource.data.memberUids`), OR
+    - `ownerId == request.auth.uid`.
+  - `create`: Allowed if `ownerId == request.auth.uid` AND user is authenticated (`request.auth.uid != null`).
+* **Fields:**
+  - `title` (string): Prompt title/name.
+  - `labelId` (string | null): ID of parent label in `/labels/`, or `null` for ungrouped.
+  - `ownerId` (string): UID of creator.
+  - `memberUids` (array<string>): Synced from parent label, containing at minimum `[ownerId]`.
+  - `currentVersionId` (string): Active version tag (e.g. `"v1"`).
+  - `versions` (array<map>): Immutable version snapshots (`id`, `content`, `createdAt`).
+  - `createdAt` (Timestamp): Server timestamp.
+  - `updatedAt` (Timestamp): Server timestamp.
+
+### 6. `/users/{userId}`
 * **Security Rules:**
   - `read`, `create`: Owner only (`request.auth.uid == userId`).
   - `update`: Owner only, write-locked for administrative fields (`subscription`, `isAdmin`, `words_*`).

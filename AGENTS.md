@@ -27,7 +27,7 @@ Every development task in this repository must strictly adhere to the following 
 * **Skill Reference:** [.agents/skills/review-directory-structure/SKILL.md](file:///.agents/skills/review-directory-structure/SKILL.md)
 * **Rule:** Every new or moved file must be positioned strictly within its designated architectural layer (`teno-web/src/components/`, `teno-web/src/pages/`, `teno-web/src/lib/`, `teno-web/src/utils/`, `teno-web/api/`, `teno-web/tests/`, `teno-extension/src/components/`, `teno-extension/src/pages/`, `teno-extension/public/`, or root Firebase configurations).
 * **Symlink Integrity:** `teno-extension/src/lib` is a symlink to `teno-web/src/lib`. Canonical database logic resides in `teno-web/src/lib/db.js` so both platforms stay synchronized.
-* **Root Cleanliness Policy:** The root directory is strictly reserved for `.gitignore`, `AGENTS.md`, `README.md`, `firebase.json`, `firestore.rules`, `firestore.indexes.json`, and primary architectural subdirectories (`.agents/`, `docs/`, `migrations/`, `scripts/`, `teno-web/`, `teno-extension/`). Secondary configs, temporary logs, or scratch scripts must never reside loose in the root.
+* **Root Cleanliness Policy:** The root directory is strictly reserved for `.gitignore`, `AGENTS.md`, `README.md`, `firebase.json`, `.firebaserc`, `firestore.rules`, `firestore.indexes.json`, and primary architectural subdirectories (`.agents/`, `docs/`, `migrations/`, `scripts/`, `teno-web/`, `teno-extension/`). Secondary configs, temporary logs, or scratch scripts must never reside loose in the root.
 
 ### Rule 4: File & Folder Naming Conventions
 * **Skill Reference:** [.agents/skills/file-folder-naming/SKILL.md](file:///.agents/skills/file-folder-naming/SKILL.md)
@@ -46,7 +46,7 @@ Every development task in this repository must strictly adhere to the following 
   - **Extension (`teno-extension`):** Layouts must fit within constrained popup dimensions (~400x550px) without outer window scrollbars or horizontal overflow. Prevent native `window.alert` / `window.confirm` dialogs that cause popup dismissal.
 
 ### Rule 7: Pre-Implementation Audit & Multi-Target Planning
-* **Skill Reference:** [.agents/skills/audit-and-planning/SKILL.md](file:///.agents/skills/audit-and-planning/SKILL.md)
+* **Skill Reference:** [.agents/skills/audit-and-planning/SKILL.md](file:///.agents/skills/audit-and-planning/SKILL.md) & [.agents/skills/repo-search/SKILL.md](file:///.agents/skills/repo-search/SKILL.md)
 * **Rule:** Before writing or modifying any code for a bug fix, feature, or refactor, you must first perform an audit of existing code across both `teno-web` and `teno-extension`, determine whether the scope is Web-only, Extension-only, or Both, diagnose verified root causes (for bugs) or requirements, layout reflow, immutability of historical versions, and 4-theme contrast (for features), and formulate a clear, step-by-step implementation plan composed of atomic, testable increments.
 * **Prohibited:** Writing or editing code prematurely without auditing the codebase, diagnosing the verified root cause, or having an explicit step-by-step implementation plan.
 
@@ -61,55 +61,98 @@ Every development task in this repository must strictly adhere to the following 
   6. **Terminal Prefixes & Inversion:** Preserve terminal path prefixes (`> ./`), shell prompts (`$_ `), and monochrome high-contrast hover inversion.
 * **Prohibited:** Diluting or modernizing the minimalist interface with rounded pill buttons, soft shadows, unbracketed labels, low-contrast invisible resting buttons, or graphical icons in minimal mode.
 
+### Rule 9: Continuous Skill & Documentation Synchronization
+* **Skill Reference:** [.agents/skills/sync-skills-and-docs/SKILL.md](file:///.agents/skills/sync-skills-and-docs/SKILL.md)
+* **Rule:** Whenever introducing a new feature, module, page, modal, UI bracket/badge, database collection, or platform file, all agent skills (`.agents/skills/`), architecture guides (`docs/features/`, `README.md`), and developer guidelines (`AGENTS.md`) must be systematically audited and synchronized before concluding the feature. Follow the 6-phase synchronization workflow and post-feature synchronization checklist.
+* **Prohibited:** Concluding or merging a feature without synchronizing the directory structure, minimalist design dictionary, responsive card geometries, canonical database schemas, and documentation.
+
 ---
 
-## 2. Standard Multi-Target Development Routine
+## 2. Standard Multi-Target Development Routine & Pipeline
 
-When fulfilling any user prompt or feature request, follow this linear, repeatable cycle for each function or step:
+When fulfilling any user prompt or feature request, follow this complete, end-to-end development pipeline across two mandatory stages:
 
 ```text
-┌────────────────────────────────────────────────────────┐
-│ 0. Pre-Implementation Audit & Scope Determination      │
-│    - Determine target: Web-only, Extension-only, Both  │
-│    - Search usages across teno-web and teno-extension │
-│    - Formulate atomic step-by-step plan                │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ 1. Scope Functional Unit & Review Structure / Naming   │
-│    Isolate step; verify directory & naming conventions │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ 2. Implement & Synchronize Tests                       │
-│    - Write / edit module code in target sub-project    │
-│    - On web: Verify dual-theme & minimalist integrity  │
-│    - On extension: Verify popup bounds & compilation   │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ 3. Execute Targeted Module Tests / Verifications       │
-│    - Run module-specific test runner in teno-web       │
-│    - Verify extension compilation if extension touched │
-│    - Fix any regressions immediately until green       │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ 4. Atomic Git Commit (Single-Line Semantic Commit)     │
-│    - Stage only the relevant files (`git add <files>`) │
-│    - Commit using: <type>(<scope>): <present tense>    │
-│    - Confirm commit with `git log -n 1 --oneline`      │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ 5. Proceed to Next Function or Sub-Project             │
-│    Only begin subsequent step once step 4 is complete  │
-└────────────────────────────────────────────────────────┘
+══════════════════════════════════════════════════════════════════════════════
+STAGE A: ATOMIC IMPLEMENTATION CYCLE (Repeat for each functional step)
+══════════════════════════════════════════════════════════════════════════════
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 0. Pre-Implementation Audit & Scope Determination                          │
+│    - Discover usages & cross-platform parity via repo-search skill         │
+│    - Determine target: Web-only, Extension-only, Both                     │
+│    - Diagnose root causes & requirements via audit-and-planning skill      │
+│    - Formulate atomic, step-by-step implementation plan                    │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 1. Scope Functional Unit & Review Structure / Naming                       │
+│    - Isolate single cohesive step or function                              │
+│    - Verify architectural layer via review-directory-structure skill       │
+│    - Verify casing via file-folder-naming skill (PascalCase / camelCase)   │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 2. Implement & Synchronize Tests                                           │
+│    - Write / edit module code in target sub-project                        │
+│    - On web: Verify dual-theme (minimal/modern) & maintain-minimalist-ui   │
+│    - Enforce card geometry (>= 350px width, >= 145px height) & zero shift  │
+│    - On extension: Verify popup bounds (~400x550px) & clean compilation   │
+│    - Synchronize / add unit tests in teno-web/tests/                       │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 3. Execute Targeted Module Tests & Verifications                           │
+│    - Run module test runner in teno-web (targeted-module-testing skill)    │
+│    - Verify extension compilation if extension touched (vite build)        │
+│    - Fix any regressions immediately until 100% green                      │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 4. Atomic Git Commit (Single-Line Semantic Commit)                         │
+│    - Stage only relevant files (atomic-commits skill)                      │
+│    - Commit using: <type>(<scope>): <present tense>                        │
+│    - Confirm commit with git log -n 1 --oneline                            │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 5. Iterate or Transition to Synchronization Pipeline                       │
+│    - If more units/steps remain: Return to Step 1                          │
+│    - If all functional code & tests are committed: Proceed to Stage B      │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+══════════════════════════════════════════════════════════════════════════════
+STAGE B: FEATURE CONCLUSION & SYNCHRONIZATION PIPELINE (sync-skills-and-docs)
+══════════════════════════════════════════════════════════════════════════════
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 6. Execute Systematic 6-Phase Skill & Documentation Synchronization Audit  │
+│    Phase 1: review-directory-structure (ASCII trees, component lists)      │
+│    Phase 2: maintain-minimalist-ui (spec matrix, ASCII bracket registry)   │
+│    Phase 3: review-responsive-design (card geometry, 4-theme contrast)     │
+│    Phase 4: review-db-structure (collection schemas, firestore.rules)      │
+│    Phase 5: repo-search & audit-and-planning (search scopes & checklists)  │
+│    Phase 6: docs/features/, README.md & AGENTS.md (architecture & rules)   │
+│    - Commit each documentation update atomically with docs(<scope>): ...   │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 7. Full Regression Suite Verification & Build Health Check                 │
+│    - Run full web test suite: npm test (teno-web/)                         │
+│    - Run extension production build: npx vite build (teno-extension/)      │
+│    - Ensure 100% test pass rate, 0 build warnings/errors, clean git tree   │
+└─────────────────────────────────────┬──────────────────────────────────────┘
+                                      │
+                                      ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 8. Conclude Feature & Report to User                                       │
+│    Feature is verified, fully tested, documented, and synchronized         │
+└────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -178,4 +221,5 @@ Every commit message must follow the Semantic Commit format on **one line only**
 11. **Never cause layout shift on transient feedback:** Status transitions (`copied`, `saving...`) must never widen buttons or elongate containing cards. Reserve fixed `min-width` on buttons or use absolute non-displacing toasts.
 12. **Never allow editing of historical/archived versions:** In versioned entities or historical views, non-current records must remain strictly read-only with locked inputs and disabled/hidden mutation controls.
 13. **Never squeeze multi-action cards into compact bookmark widths:** Entities with multi-action bars or multi-line content must use scalable columns (minimum `>= 350px`) and explicit minimum heights (`>= 145px`) to guarantee action clearance.
+14. **Never conclude a feature without skill & documentation synchronization:** Every newly introduced component, collection, bracketed action, or card geometry must be audited and registered across `.agents/skills/` and `docs/features/`.
 

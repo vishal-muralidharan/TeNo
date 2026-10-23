@@ -19,9 +19,10 @@ The repository is structured as a multi-package workspace separating the web app
 ```text
 /
 ├── .agents/                          # Agent workspace configurations and skills
-│   └── skills/                       # Reusable workflow and guideline skills
+│   └── skills/                       # Reusable workflow and guideline skills (atomic-commits, repo-search, sync-skills-and-docs...)
 ├── docs/                             # Core feature & architectural documentation
 │   └── features/                     # Feature guides (dual-theme, collab, core-modules, settings)
+├── .firebaserc                       # Firebase CLI active project configuration
 ├── firebase.json                     # Firebase CLI root anchor (rules, indexes, emulators)
 ├── firestore.rules                   # Production Cloud Firestore security rules
 ├── firestore.indexes.json            # Composite indexes for Firestore queries
@@ -37,7 +38,7 @@ The repository is structured as a multi-package workspace separating the web app
 │   ├── public/                       # Static public assets (icons, favicons)
 │   ├── src/                          # Client-side React 19 source tree
 │   │   ├── api/                      # Client-side API fetch client wrappers (user.js)
-│   │   ├── components/               # Core UI modules & modals (LinkStorer, Reminders, ShareModal...)
+│   │   ├── components/               # Core UI modules & modals (LinkStorer, Reminders, PromptsTab, PromptCard, PromptEditorModal...)
 │   │   ├── lib/                      # Core abstractions (TeNoDatabase in db.js - canonical source)
 │   │   ├── pages/                    # Full web route views (Dashboard, Settings, Login, Join, DPDP...)
 │   │   ├── utils/                    # Theme config, translations, feature flags (uiConfig, themeTranslations)
@@ -49,7 +50,7 @@ The repository is structured as a multi-package workspace separating the web app
 │   │   └── ThemeContext.jsx          # Theme state & styleMode engine ('minimal' vs 'modern')
 │   ├── tests/                        # Mirrored Vitest test suite
 │   │   ├── api/                      # Serverless function tests
-│   │   ├── components/               # React component & modal tests
+│   │   ├── components/               # React component & modal tests (PromptCard, PromptEditorModal, PromptsTab...)
 │   │   ├── context/                  # Context provider tests
 │   │   ├── lib/                      # TeNoDatabase unit tests
 │   │   ├── setup.js                  # Global test setup, jsdom stubs & Firebase mocks
@@ -63,7 +64,7 @@ The repository is structured as a multi-package workspace separating the web app
 │   ├── sm/                           # Extension-specific helpers
 │   │   └── typingCaret.js            # Input cursor & typing animation helper
 │   ├── src/                          # Extension React 19 source (popup interface)
-│   │   ├── components/               # Extension components (LinkStorer, Reminders, Timer, Terminal)
+│   │   ├── components/               # Extension components (LinkStorer, Reminders, Prompts, Timer, Terminal)
 │   │   ├── lib/                      # Symlink -> ../../teno-web/src/lib (shared TeNoDatabase)
 │   │   ├── pages/                    # Extension page views (DashboardPage, LoginPage, SettingsPage)
 │   │   ├── firebase.js               # Extension Firebase client config
@@ -132,12 +133,12 @@ The root directory must remain strictly curated. Only the following essential ca
 
 ### `teno-web/src/components/`
 * **Purpose:** Stores reusable UI components, modals, and core functional modules for the web app.
-* **Contents:** `LinkStorer.jsx`, `Reminders.jsx`, `Timer.jsx`, `Terminal.jsx`, `ShareModal.jsx`, `MembersModal.jsx`, `ConfirmModal.jsx`, `TermsAgreementModal.jsx`.
+* **Contents:** `LinkStorer.jsx`, `Reminders.jsx`, `PromptsTab.jsx`, `PromptCard.jsx`, `PromptEditorModal.jsx`, `Timer.jsx`, `Terminal.jsx`, `ShareModal.jsx`, `MembersModal.jsx`, `ConfirmModal.jsx`, `TermsAgreementModal.jsx`.
 
 ### `teno-extension/src/components/`
 * **Purpose:** Stores the extension popup versions of core functional modules.
-* **Contents:** `LinkStorer.jsx`, `Reminders.jsx`, `Timer.jsx`, `Terminal.jsx`.
-* **Rule:** Maintain component naming symmetry with `teno-web`. When updating core features (e.g. label delete behavior in `LinkStorer`), verify whether the extension counterpart requires parallel synchronization.
+* **Contents:** `LinkStorer.jsx`, `Reminders.jsx`, `Prompts.jsx`, `Timer.jsx`, `Terminal.jsx`.
+* **Rule:** Maintain component naming symmetry with `teno-web`. When updating core features (e.g. label delete behavior in `LinkStorer` or prompt copy in `Prompts`), verify whether the extension counterpart requires parallel synchronization.
 
 ### `teno-web/src/lib/`
 * **Purpose:** Core abstractions and data access layers.
@@ -152,7 +153,7 @@ The root directory must remain strictly curated. Only the following essential ca
 * **Rule:** Endpoints live exclusively in `teno-web/api/`. Extension calls them via HTTP `fetch`.
 
 ### `teno-web/tests/` (Targeted Test Directory)
-* **Purpose:** Mirrored test suites for all client and serverless code in `teno-web`.
+* **Purpose:** Mirrored test suites for all client and serverless code in `teno-web`. Includes component tests (`PromptCard.test.jsx`, `PromptEditorModal.test.jsx`, `PromptsTab.test.jsx`, `LinkStorer.test.jsx`, etc.).
 
 ---
 
@@ -161,6 +162,6 @@ The root directory must remain strictly curated. Only the following essential ca
 Before creating a new file or directory, verify:
 1. **Target Sub-Project:** Does the file belong to `teno-web/` or `teno-extension/`?
 2. **Shared Code Placement:** If adding database logic or data access helpers, is it placed in `teno-web/src/lib/` to leverage the `teno-extension/src/lib` symlink?
-3. **Root Cleanliness:** Does the file belong in root? (Only platform anchors `firebase.json`, `firestore.rules`, `firestore.indexes.json`, `AGENTS.md`, `README.md`, `.gitignore` are allowed).
+3. **Root Cleanliness:** Does the file belong in root? (Only platform anchors `.firebaserc`, `firebase.json`, `firestore.rules`, `firestore.indexes.json`, `AGENTS.md`, `README.md`, `.gitignore` are allowed).
 4. **Backend vs. Client:** Serverless endpoints belong in `teno-web/api/`, not in `teno-extension/` or root.
 5. **Component Parity Check:** If updating a component that exists in both `teno-web/src/components/` and `teno-extension/src/components/`, has the parallel placement and impact been identified?
