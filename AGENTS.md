@@ -27,7 +27,7 @@ Every development task in this repository must strictly adhere to the following 
 * **Skill Reference:** [.agents/skills/review-directory-structure/SKILL.md](file:///.agents/skills/review-directory-structure/SKILL.md)
 * **Rule:** Every new or moved file must be positioned strictly within its designated architectural layer (`teno-web/src/components/`, `teno-web/src/pages/`, `teno-web/src/lib/`, `teno-web/src/utils/`, `teno-web/api/`, `teno-web/tests/`, `teno-extension/src/components/`, `teno-extension/src/pages/`, `teno-extension/public/`, or root Firebase configurations).
 * **Symlink Integrity:** `teno-extension/src/lib` is a symlink to `teno-web/src/lib`. Canonical database logic resides in `teno-web/src/lib/db.js` so both platforms stay synchronized.
-* **Root Cleanliness Policy:** The root directory is strictly reserved for `.gitignore`, `AGENTS.md`, `README.md`, `firebase.json`, `firestore.rules`, `firestore.indexes.json`, and primary architectural subdirectories (`.agents/`, `docs/`, `migrations/`, `scripts/`, `teno-web/`, `teno-extension/`). Secondary configs, temporary logs, or scratch scripts must never reside loose in the root.
+* **Root Cleanliness Policy:** The root directory is strictly reserved for `.gitignore`, `AGENTS.md`, `README.md`, `firebase.json`, `.firebaserc`, `firestore.rules`, `firestore.indexes.json`, and primary architectural subdirectories (`.agents/`, `docs/`, `migrations/`, `scripts/`, `teno-web/`, `teno-extension/`). Secondary configs, temporary logs, or scratch scripts must never reside loose in the root.
 
 ### Rule 4: File & Folder Naming Conventions
 * **Skill Reference:** [.agents/skills/file-folder-naming/SKILL.md](file:///.agents/skills/file-folder-naming/SKILL.md)
