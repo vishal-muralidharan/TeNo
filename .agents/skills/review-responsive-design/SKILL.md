@@ -44,6 +44,8 @@ All web styling is governed by root variables and theme selectors dynamically ap
 | **UI Labels & Chrome** | Monospaced text brackets (e.g. `[ delete ]`, `> [ + add_new ]`) | Lucide icons, tactile buttons, soft transitions |
 | **Text Transform** | `lowercase` | `none` |
 
+> **Note on Minimalist UI Preservation:** Whenever creating or modifying components, adhere to [.agents/skills/maintain-minimalist-ui/SKILL.md](file:///.agents/skills/maintain-minimalist-ui/SKILL.md) to strictly preserve zero-radius borders, bracketed action buttons, terminal prefixes, and prohibition of graphical icons in minimalist mode.
+
 ### B. Consuming the Translation Dictionary (`uiConfig.jsx`)
 Never hardcode style-specific strings or icons directly in web components:
 ```jsx
@@ -128,6 +130,7 @@ Across both Web and Extension:
 
 Before committing any UI or styling change, verify:
 - [ ] **Web Dual-Theme Symmetry:** Does the component render correctly in BOTH Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) styles?
+- [ ] **Minimalist UI Preservation:** Are minimalist UI elements preserved as-is (0px radius, flat elevation, bracketed actions, terminal prefixes, no graphical icons in minimal)?
 - [ ] **Web Light & Dark Mode:** Are contrast ratios accessible in both `[data-theme="dark"]` and `[data-theme="light"]`?
 - [ ] **Web Viewport Height Safety:** Do web modals use `max-height: 85dvh` with `overflow-y: auto`?
 - [ ] **Web 16px Font Rule:** Do mobile form inputs enforce 16px font size to prevent iOS Safari auto-zoom?

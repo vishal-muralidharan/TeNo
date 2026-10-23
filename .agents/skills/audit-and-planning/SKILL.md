@@ -102,7 +102,7 @@ Before creating a new utility or component, verify whether a solution already ex
 3. **Check Cross-Package Impact:** Does the bug exist in `teno-web`, `teno-extension`, or both?
 
 ### For New Features or UI Additions:
-1. **Web Dual-Theme Verification:** Does the feature require styling in both Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) styles?
+1. **Web Dual-Theme & Minimalist UI Preservation:** Does the feature require styling in both Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) styles? Are Minimalist UI elements maintained strictly as-is (0px radius, flat elevation, bracketed actions, terminal prefixes, no graphical icons in minimal)? See [.agents/skills/maintain-minimalist-ui/SKILL.md](file:///.agents/skills/maintain-minimalist-ui/SKILL.md).
 2. **Extension Popup Boundaries:** Will the new UI fit comfortably inside the ~400px fixed width of the browser extension popup without horizontal overflow?
 3. **Directory Placement:** Determine whether the code belongs in `teno-web/src/components/`, `teno-web/src/pages/`, `teno-web/api/`, or `teno-extension/src/components/`.
 
