@@ -31,6 +31,11 @@ TeNo's identity is rooted in its hacker-centric, high-efficiency, terminal-inspi
 | **Glassmorphism / Blur**| **Prohibited**: no `backdrop-filter: blur()` | Translucent frosted glass |
 | **Action Buttons** | Bracket-enclosed text: e.g. `[ delete ]`, `[+ add_new]` | Tactile rounded buttons with Lucide icons |
 | **Action / Status Badges**| Bracketed monospaced tags: `[shared]`, `[owner]` | Pill chips with status dots: `● Shared` |
+| **Version Badges & History**| Monospace bracket tags: `[v1]`, `[v2]`, `[current]`, `[read-only: viewing v1]` | Sleek rounded pill chips: `Version 1`, `Version 2 (Active)`, `Current` |
+| **Dual Commit Actions** | Terminal prefix actions: `[ > ./update ]`, `[ > ./save_new ]` | Tactile dual buttons: `Update Version`, `Save as New Version` |
+| **Multi-Line Previews** | Monospace pre-line clamped text (`font-family: var(--font-mono)`) | Formatted card preview with clean sans-serif typography |
+| **Transient Status Toasts**| Absolute monospace badge: `[ copied ]`, `[ saved ]` (`background: var(--bg-surface)`) | Floating pill toast with soft green border and status dot |
+| **Extension Console Banner**| Bracketed guide: `[ 1-click copy · edit in web ]` | Pill chip with info dot |
 | **Section Headings** | Terminal path prefix: `> ./<section_name>` | Clean text without prefix |
 | **Terminal / Prompt** | `$_ ` or `> ` shell prefixes | Clean search / command bars |
 | **Graphical Icons** | **Prohibited**: No SVG or Lucide icons in minimal | Lucide SVG icons (`<Settings />`, `<Plus />`, etc.) |
@@ -79,11 +84,15 @@ TeNo's identity is rooted in its hacker-centric, high-efficiency, terminal-inspi
 ### Rule 3: ASCII Bracketed Notation for All Actions and Badges
 * Every interactive button, link-action, or status badge in Minimalist mode must use bracket notation.
 * Standard minimal bracket formats:
-  - Add / Create: `[+ add_new]`, `> [ + add_new ]`, `[+ add]`
-  - Delete / Remove: `[ delete ]`, `[ x ]`, `[ - close ]`
+  - Add / Create: `[+ add_new]`, `> [ + add_new ]`, `[+ add]`, `[+ add_prompt]`
+  - Delete / Remove: `[ delete ]`, `[ del ]`, `[ x ]`, `[ - close ]`
   - Confirmation: `[ yes ]`, `[ no ]`, `[ ok ]`, `[ cancel ]`
   - Collaboration: `[ ↗ share ]`, `[shared]`, `[owner]`
   - Navigation / Actions: `[ back ]`, `[ edit ]`, `[ save ]`, `[ copy ]`
+  - Version Control & History: `[v1]`, `[v2]`, `[current]`, `[active]`, `[history]`, `[read-only: viewing v1]`
+  - Dual Save Mutations: `[ > ./update ]`, `[ > ./save_new ]`, `[ update ]`, `[ save_new ]`
+  - Transient Status Badges: `[ copied ]`, `[ saving... ]`, `[ saved ]`
+  - Extension Console Badges: `[ 1-click copy · edit in web ]`
 
 ### Rule 4: Single Source of Truth via `themeTranslations.js` & `uiConfig.jsx`
 * Never hardcode display text or button labels directly inside component JSX.
@@ -187,6 +196,45 @@ TeNo's identity is rooted in its hacker-centric, high-efficiency, terminal-inspi
      }
      ```
 
+### Rule 11: Version History & State-Aware Controls in Minimalist Mode
+* **Version Tags:** In Minimalist mode, version identifiers must use bracketed lowercase monospace formatting: `[v1]`, `[v2]`, `[current]`, `[active]`.
+* **Historical Version Read-Only Badge:** When inspecting historical or non-current versions, render an explicit status badge: `[read-only: viewing v1]`.
+* **Locked Form Controls:** Form inputs and textareas in historical views must enforce terminal locked styling:
+  ```css
+  .editor-textarea[readonly] {
+    opacity: 0.85;
+    cursor: default;
+    border-color: var(--border-color);
+    background: var(--bg-surface);
+  }
+  ```
+* **Action Bar Differentiation:** Mutating action buttons (e.g. `[ > ./update ]`, `[ > ./save_new ]`) must be completely omitted or hidden when viewing historical versions. In their place, prominent non-mutating actions (e.g. `[ copy ]`) must be provided.
+* **Timeline Selector Buttons:** Version timeline selectors must use bracketed items (`[v1]`, `[v2]`, `[current]`) with terminal inverted monochrome styling on the active item:
+  ```css
+  .version-timeline-btn.active {
+    background-color: var(--text-primary);
+    color: var(--bg-surface);
+  }
+  ```
+
+### Rule 12: Multi-Line Content Preview Clamping
+* For entities holding multi-line text (prompts, notes, code snippets), format preview text using monospace typography with structured line clamping:
+  ```css
+  .prompt-card-preview {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+    word-break: break-word;
+  }
+  ```
+
 ---
 
 ## 4. Pre-Implementation Checklist for Minimalist UI Preservation
@@ -206,4 +254,6 @@ Before completing any UI component addition or modification, verify each item:
 [ ] 10. ACTION CLEARANCE: Do grid cards scale (>= 350px) to clear all bracketed buttons without title wrapping?
 [ ] 11. ZERO LAYOUT SHIFT: Does transient feedback (copied/saved) avoid elongating buttons or shifting surrounding layout?
 [ ] 12. EXTENSION PARITY: Does the component maintain compact console styling without overflow in teno-extension?
+[ ] 13. VERSION BADGES & IMMUTABILITY: Are version tags formatted in monospace brackets (e.g. [v1], [current]) and historical views strictly read-only with locked inputs?
+[ ] 14. MULTI-LINE CLAMPING: Does rich text use monospace line-clamping without visual overflow or card elongation?
 ```
