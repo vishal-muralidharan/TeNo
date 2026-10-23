@@ -41,9 +41,9 @@ The repository is structured as a multi-package workspace separating the web app
 │   │   ├── components/               # Core UI modules & modals (LinkStorer, Reminders, PromptsTab, PromptCard, PromptEditorModal...)
 │   │   ├── lib/                      # Core abstractions (TeNoDatabase in db.js - canonical source)
 │   │   ├── pages/                    # Full web route views (Dashboard, Settings, Login, Join, DPDP...)
-│   │   ├── utils/                    # Theme config, translations, feature flags (uiConfig, themeTranslations)
+│   │   ├── utils/                    # Theme config, translations, feature flags (uiConfig, themeTranslations, featureFlags)
 │   │   ├── App.jsx                   # Web application layout & tab router
-│   │   ├── FeatureFlagContext.jsx    # Remote feature flags context
+│   │   ├── FeatureFlagContext.jsx    # Remote feature flags context (system_config/feature_flags)
 │   │   ├── firebase.js               # Firebase Client SDK initialization
 │   │   ├── index.css                 # Pure CSS design system & dual-theme tokens
 │   │   ├── main.jsx                  # React DOM bootstrap
@@ -51,10 +51,10 @@ The repository is structured as a multi-package workspace separating the web app
 │   ├── tests/                        # Mirrored Vitest test suite
 │   │   ├── api/                      # Serverless function tests
 │   │   ├── components/               # React component & modal tests (PromptCard, PromptEditorModal, PromptsTab...)
-│   │   ├── context/                  # Context provider tests
+│   │   ├── context/                  # Context provider tests (FeatureFlagContext, ThemeContext)
 │   │   ├── lib/                      # TeNoDatabase unit tests
 │   │   ├── setup.js                  # Global test setup, jsdom stubs & Firebase mocks
-│   │   └── utils/                    # UI config & helper tests
+│   │   └── utils/                    # UI config & helper tests (featureFlags, uiConfig...)
 │   ├── package.json                  # Web dependencies & test runner scripts
 │   └── vite.config.js                # Vite & Vitest configuration
 ├── teno-extension/                   # Browser extension sub-project (Popup Interface)
@@ -153,7 +153,7 @@ The root directory must remain strictly curated. Only the following essential ca
 * **Rule:** Endpoints live exclusively in `teno-web/api/`. Extension calls them via HTTP `fetch`.
 
 ### `teno-web/tests/` (Targeted Test Directory)
-* **Purpose:** Mirrored test suites for all client and serverless code in `teno-web`. Includes component tests (`PromptCard.test.jsx`, `PromptEditorModal.test.jsx`, `PromptsTab.test.jsx`, `LinkStorer.test.jsx`, etc.).
+* **Purpose:** Mirrored test suites for all client and serverless code in `teno-web`. Includes component tests (`PromptCard.test.jsx`, `PromptEditorModal.test.jsx`, `PromptsTab.test.jsx`, `LinkStorer.test.jsx`, etc.), context tests (`FeatureFlagContext.test.jsx`), and utility tests (`featureFlags.test.js`).
 
 ---
 
