@@ -37,7 +37,7 @@ Every development task in this repository must strictly adhere to the following 
 * **Rule:** Any reading, writing, modifying, or refactoring of Firestore collections, documents, fields, or security rules must strictly conform to the canonical database architecture (`docs/features/collaboration-and-sharing.md`), maintain `memberUids` denormalization across related collections (`links`, `cart_items`, `reminders`), guarantee non-undefined payloads, route client operations through `TeNoDatabase` (`src/lib/db.js`), properly detach `onSnapshot` subscriptions in extension popups, and follow the pre-commit DB checklist.
 
 ### Rule 6: Responsive Mobile Design & Dual-Theme System
-* **Skill Reference:** [.agents/skills/review-responsive-design/SKILL.md](file:///.agents/skills/review-responsive-design/SKILL.md)
+* **Skill Reference:** [.agents/skills/review-responsive-design/SKILL.md](file:///.agents/skills/review-responsive-design/SKILL.md) & [.agents/skills/maintain-minimalist-ui/SKILL.md](file:///.agents/skills/maintain-minimalist-ui/SKILL.md)
 * **Rule:** 
   - **Web (`teno-web`):** Every UI component, page, modal, or form must support BOTH the **Minimalist** (`[data-style="minimal"]`) and **Modern** (`[data-style="modern"]`) styles as well as light/dark modes. Pure CSS custom properties (no Tailwind). All overlays and modals must implement dynamic viewport heights (`dvh`), bounded scroll containers (`max-height: 85dvh`, `overflow-y: auto`), safe-area insets (`env(safe-area-inset-*)`), ergonomic touch targets (minimum 44x44px), body scroll locking, and iOS Safari auto-zoom prevention (minimum 16px font on mobile inputs). Consume the translation dictionary (`uiConfig.jsx`) for theme-aware strings.
   - **Extension (`teno-extension`):** Layouts must fit within constrained popup dimensions (~400x550px) without outer window scrollbars or horizontal overflow. Prevent native `window.alert` / `window.confirm` dialogs that cause popup dismissal.
@@ -46,6 +46,16 @@ Every development task in this repository must strictly adhere to the following 
 * **Skill Reference:** [.agents/skills/audit-and-planning/SKILL.md](file:///.agents/skills/audit-and-planning/SKILL.md)
 * **Rule:** Before writing or modifying any code for a bug fix, feature, or refactor, you must first perform an audit of existing code across both `teno-web` and `teno-extension`, determine whether the scope is Web-only, Extension-only, or Both, diagnose verified root causes (for bugs) or requirements and layout reflow (for features), and formulate a clear, step-by-step implementation plan composed of atomic, testable increments.
 * **Prohibited:** Writing or editing code prematurely without auditing the codebase, diagnosing the verified root cause, or having an explicit step-by-step implementation plan.
+
+### Rule 8: Minimalist UI Element Integrity & Preservation
+* **Skill Reference:** [.agents/skills/maintain-minimalist-ui/SKILL.md](file:///.agents/skills/maintain-minimalist-ui/SKILL.md)
+* **Rule:** Whenever creating new components or modifying existing ones across `teno-web` and `teno-extension`, the Minimalist (`[data-style="minimal"]`) UI elements and brutalist/terminal aesthetic must be maintained strictly as is:
+  1. **Zero-Radius & Flat Elevation:** Enforce `--border-radius: 0px` and `--shadow-card: none` on all minimalist containers, inputs, buttons, and cards. Never apply `backdrop-filter: blur()` or soft drop shadows in minimal mode.
+  2. **Prohibition of Graphical Icons:** Never render Lucide or SVG icons in minimal mode (`ui.icons.*` must return `null` in minimal mode). Use ASCII brackets or text glyphs instead.
+  3. **ASCII Bracketed Actions & Badges:** All interactive actions, buttons, and status tags in minimal mode must be enclosed in ASCII brackets (e.g. `[ delete ]`, `[+ add_new]`, `[ yes ]`, `[ ↗ share ]`, `[shared]`).
+  4. **Translation Dictionary Compliance:** All UI strings must be declared in `themeTranslations.js` (with separate minimal lowercase/bracketed and modern definitions) and consumed via `uiConfig.jsx`. Never hardcode raw strings or modern English in component JSX.
+  5. **Terminal Prefixes & Inversion:** Preserve terminal path prefixes (`> ./`), shell prompts (`$_ `), and monochrome high-contrast hover inversion.
+* **Prohibited:** Diluting or modernizing the minimalist interface with rounded pill buttons, soft shadows, unbracketed labels, or graphical icons in minimal mode.
 
 ---
 
@@ -71,7 +81,7 @@ When fulfilling any user prompt or feature request, follow this linear, repeatab
 ┌────────────────────────────────────────────────────────┐
 │ 2. Implement & Synchronize Tests                       │
 │    - Write / edit module code in target sub-project    │
-│    - On web: Verify dual-theme support & update tests  │
+│    - On web: Verify dual-theme & minimalist integrity  │
 │    - On extension: Verify popup bounds & compilation   │
 └──────────────────────────┬─────────────────────────────┘
                            │
@@ -137,12 +147,13 @@ Every commit message must follow the Semantic Commit format on **one line only**
 * **Single-Line Only:** Do not include multi-line bodies or footers in commit messages.
 * **Present Tense:** Write the subject in present tense (e.g. `add`, `update`, `fix`, `refactor`, `remove`, not `added`, `fixed`, `adding`).
 * **Types:** `feat`, `fix`, `test`, `test-fix`, `refactor`, `style`, `docs`, `chore`
-* **TeNo Scopes:** `web`, `extension`, `links`, `cart`, `reminders`, `timer`, `terminal`, `theme`, `auth`, `labels`, `db`, `api`, `rules`, `migrations`, `settings`, `skills`, `rules`
+* **TeNo Scopes:** `web`, `extension`, `links`, `cart`, `reminders`, `timer`, `terminal`, `theme`, `minimal`, `ui`, `auth`, `labels`, `db`, `api`, `rules`, `migrations`, `settings`, `skills`
 * **Examples:**
   * `feat(web): provide option to delete items when deleting a label`
   * `feat(extension): port label delete confirmation modal to popup layout`
   * `fix(links): use icon.horse for all favicons to guarantee 200 OK responses`
   * `test(components): update LinkStorer test assertions for dual-mode label delete modal`
+  * `style(minimal): preserve bracketed action buttons and zero radius on share modal`
   * `style(theme): adjust glassmorphic background blur in modern dark theme`
   * `refactor(db): optimize query subscriptions in TeNoDatabase`
 
@@ -158,3 +169,4 @@ Every commit message must follow the Semantic Commit format on **one line only**
 6. **Always use single-line semantic commit:** Never create multi-line commit messages or omit the `<type>(<scope>):` prefix.
 7. **Never pollute root directory:** Never place secondary configs, loose scripts, temporary debug logs, or test execution artifacts in the root directory.
 8. **Never start coding without prior audit and plan:** Always search existing implementations across both web and extension, diagnose root cause, and establish an atomic step-by-step plan before making edits.
+9. **Never break or dilute Minimalist UI elements:** When creating new components or modifying existing ones, strictly preserve the minimalist terminal/brutalist design (0px radius, flat elevation, bracketed actions, terminal prefixes, absence of graphical icons, lowercase typography, and `uiConfig.jsx`/`themeTranslations.js` integration). Never leak modern styling into minimalist mode.
