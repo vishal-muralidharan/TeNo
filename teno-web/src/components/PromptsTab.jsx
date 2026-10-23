@@ -6,6 +6,7 @@ import PromptCard from './PromptCard'
 import PromptEditorModal from './PromptEditorModal'
 import ConfirmModal from './ConfirmModal'
 import ShareModal from './ShareModal'
+import { getPromptCurrentContent } from '../lib/db'
 
 export default function PromptsTab({ user, dbApi }) {
   const { styleMode } = useTheme()
@@ -64,12 +65,14 @@ export default function PromptsTab({ user, dbApi }) {
   const filteredPrompts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return prompts
-    return prompts.filter(
-      (p) =>
+    return prompts.filter((p) => {
+      const activeContent = getPromptCurrentContent(p)
+      return (
         (p.title || '').toLowerCase().includes(q) ||
-        (p.content || '').toLowerCase().includes(q) ||
+        activeContent.toLowerCase().includes(q) ||
         (p.label || '').toLowerCase().includes(q)
-    )
+      )
+    })
   }, [prompts, searchQuery])
 
   // Group prompts by label
@@ -96,7 +99,7 @@ export default function PromptsTab({ user, dbApi }) {
     })
   }, [filteredPrompts])
 
-  // Save prompt (create or update)
+  // Save prompt (create or update, support versioning)
   const handleSavePrompt = async (data) => {
     if (!dbApi) return
 
@@ -107,13 +110,21 @@ export default function PromptsTab({ user, dbApi }) {
       title: data.title,
       content: data.content,
       label: labelName,
+      ...(data.currentVersionId ? { currentVersionId: data.currentVersionId } : {}),
+      ...(data.versions ? { versions: data.versions } : {}),
       ...(parentLabel ? { labelId: parentLabel.id, memberUids: parentLabel.memberUids || [user.uid] } : {}),
     }
 
     try {
       if (data.id) {
         await dbApi.updatePrompt(data.id, payload)
-        showToast(isModern ? 'Prompt updated successfully' : 'prompt updated')
+        if (data.saveType === 'new_version') {
+          showToast(isModern ? 'New version saved' : 'new version saved')
+        } else if (data.saveType === 'restore_version') {
+          showToast(isModern ? 'Version restored' : 'version restored')
+        } else {
+          showToast(isModern ? 'Prompt updated successfully' : 'prompt updated')
+        }
       } else {
         await dbApi.addPrompt(payload)
         showToast(isModern ? 'Prompt created successfully' : 'prompt created')

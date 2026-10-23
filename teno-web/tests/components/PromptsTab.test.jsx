@@ -177,11 +177,15 @@ describe('PromptsTab', () => {
     fireEvent.click(screen.getByRole('button', { name: '[ save ]' }))
 
     await waitFor(() => {
-      expect(dbApi.addPrompt).toHaveBeenCalledWith({
-        title: 'New Test Prompt',
-        content: 'This is test prompt body.',
-        label: '',
-      })
+      expect(dbApi.addPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'New Test Prompt',
+          content: 'This is test prompt body.',
+          label: '',
+          currentVersionId: 'v1',
+          versions: expect.any(Array),
+        })
+      )
     })
   })
 
@@ -199,13 +203,17 @@ describe('PromptsTab', () => {
     fireEvent.click(screen.getByRole('button', { name: '[ save ]' }))
 
     await waitFor(() => {
-      expect(dbApi.addPrompt).toHaveBeenCalledWith({
-        title: 'New Coder',
-        content: 'Code prompt',
-        label: 'coding',
-        labelId: 'lbl-1',
-        memberUids: ['user-123', 'user-456'],
-      })
+      expect(dbApi.addPrompt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'New Coder',
+          content: 'Code prompt',
+          label: 'coding',
+          labelId: 'lbl-1',
+          memberUids: ['user-123', 'user-456'],
+          currentVersionId: 'v1',
+          versions: expect.any(Array),
+        })
+      )
     })
   })
 
@@ -232,16 +240,49 @@ describe('PromptsTab', () => {
       target: { value: 'Code Refactor Prompt v2' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: '[ save ]' }))
+    fireEvent.click(screen.getByRole('button', { name: /> \.\/update|Update Current/i }))
 
     await waitFor(() => {
-      expect(dbApi.updatePrompt).toHaveBeenCalledWith('p-1', {
-        title: 'Code Refactor Prompt v2',
-        content: 'Review code for clean architecture and SOLID principles.',
-        label: 'coding',
-        labelId: 'lbl-1',
-        memberUids: ['user-123', 'user-456'],
-      })
+      expect(dbApi.updatePrompt).toHaveBeenCalledWith(
+        'p-1',
+        expect.objectContaining({
+          title: 'Code Refactor Prompt v2',
+          content: 'Review code for clean architecture and SOLID principles.',
+          label: 'coding',
+          labelId: 'lbl-1',
+          memberUids: ['user-123', 'user-456'],
+          currentVersionId: 'v1',
+          versions: expect.any(Array),
+        })
+      )
+    })
+  })
+
+  it('saves new version when clicking Save as New Version in editor modal', async () => {
+    render(<PromptsTab user={mockUser} dbApi={dbApi} />)
+
+    const codingSection = screen.getByTestId('prompt-section-coding')
+    const editBtn = codingSection.querySelector('.prompt-card-btn-edit')
+    fireEvent.click(editBtn)
+
+    fireEvent.change(screen.getByPlaceholderText('type_prompt_content_here...'), {
+      target: { value: 'Enhanced SOLID principles checklist' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /> \.\/save --new-version|Save as New Version/i }))
+
+    await waitFor(() => {
+      expect(dbApi.updatePrompt).toHaveBeenCalledWith(
+        'p-1',
+        expect.objectContaining({
+          currentVersionId: 'v2',
+          content: 'Enhanced SOLID principles checklist',
+          versions: expect.arrayContaining([
+            expect.objectContaining({ id: 'v1' }),
+            expect.objectContaining({ id: 'v2', content: 'Enhanced SOLID principles checklist' }),
+          ]),
+        })
+      )
     })
   })
 
