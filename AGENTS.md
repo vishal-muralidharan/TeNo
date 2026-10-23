@@ -46,7 +46,7 @@ Every development task in this repository must strictly adhere to the following 
   - **Extension (`teno-extension`):** Layouts must fit within constrained popup dimensions (~400x550px) without outer window scrollbars or horizontal overflow. Prevent native `window.alert` / `window.confirm` dialogs that cause popup dismissal.
 
 ### Rule 7: Pre-Implementation Audit & Multi-Target Planning
-* **Skill Reference:** [.agents/skills/audit-and-planning/SKILL.md](file:///.agents/skills/audit-and-planning/SKILL.md)
+* **Skill Reference:** [.agents/skills/audit-and-planning/SKILL.md](file:///.agents/skills/audit-and-planning/SKILL.md) & [.agents/skills/repo-search/SKILL.md](file:///.agents/skills/repo-search/SKILL.md)
 * **Rule:** Before writing or modifying any code for a bug fix, feature, or refactor, you must first perform an audit of existing code across both `teno-web` and `teno-extension`, determine whether the scope is Web-only, Extension-only, or Both, diagnose verified root causes (for bugs) or requirements, layout reflow, immutability of historical versions, and 4-theme contrast (for features), and formulate a clear, step-by-step implementation plan composed of atomic, testable increments.
 * **Prohibited:** Writing or editing code prematurely without auditing the codebase, diagnosing the verified root cause, or having an explicit step-by-step implementation plan.
 
