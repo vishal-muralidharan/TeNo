@@ -12,6 +12,11 @@ describe('PromptEditorModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useTheme).mockReturnValue({ styleMode: 'minimal' })
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+    })
   })
 
   it('does not render when isOpen is false', () => {
@@ -199,10 +204,24 @@ describe('PromptEditorModal', () => {
     const v1Button = screen.getByRole('button', { name: /Version v1/i })
     fireEvent.click(v1Button)
 
-    // Textarea now shows v1 in read-only mode
+    // Textarea, title, and label now show v1 in read-only mode
     expect(textarea).toHaveValue('Initial prompt draft')
     expect(textarea).toHaveAttribute('readonly')
+    expect(screen.getByPlaceholderText('prompt_title...')).toHaveAttribute('readonly')
+    expect(screen.getByPlaceholderText('label...')).toHaveAttribute('readonly')
     expect(screen.getByText(/> \[ viewing v1 · read-only \]/i)).toBeInTheDocument()
+
+    // Cannot edit or save as new version when viewing an older version
+    expect(screen.queryByRole('button', { name: /> \.\/save_new/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /> \.\/update/i })).not.toBeInTheDocument()
+
+    // Older versions can be copied
+    const copyBtns = screen.getAllByRole('button', { name: /\[ copy \]/i })
+    expect(copyBtns.length).toBeGreaterThan(0)
+    fireEvent.click(copyBtns[0])
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Initial prompt draft')
+    })
 
     // Restore button is visible
     const restoreBtn = screen.getByRole('button', { name: /> \.\/restore/i })

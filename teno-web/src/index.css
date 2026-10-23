@@ -2415,10 +2415,36 @@ button.danger:hover {
   gap: 8px;
 }
 
+.prompt-editor-readonly-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .prompt-editor-readonly-tag {
   font-size: 0.75rem;
   font-family: var(--font-mono, monospace);
   color: var(--text-muted);
+}
+
+.prompt-editor-copy-badge-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.prompt-editor-copy-badge-btn:hover {
+  background: var(--text-primary);
+  color: var(--bg-app);
+  border-color: var(--text-primary);
 }
 
 .prompt-editor-label {
@@ -2466,6 +2492,7 @@ button.danger:hover {
   box-sizing: border-box;
 }
 
+.prompt-editor-input--readonly,
 .prompt-editor-textarea--readonly {
   opacity: 0.85;
   background: rgba(255, 255, 255, 0.03);
@@ -2520,29 +2547,35 @@ button.danger:hover {
 
 .prompt-editor-btn-save,
 .prompt-editor-btn-update,
-.prompt-editor-btn-restore {
+.prompt-editor-btn-copy-older {
   background: var(--text-primary);
   color: var(--bg-app);
   border: 1px solid var(--text-primary);
   font-weight: 600;
+  min-width: 92px;
+  text-align: center;
 }
 
 .prompt-editor-btn-save:hover:not(:disabled),
 .prompt-editor-btn-update:hover:not(:disabled),
-.prompt-editor-btn-restore:hover:not(:disabled) {
+.prompt-editor-btn-copy-older:hover:not(:disabled) {
   background: var(--bg-app);
   color: var(--text-primary);
   border-color: var(--text-primary);
 }
 
-.prompt-editor-btn-save-new {
+.prompt-editor-btn-save-new,
+.prompt-editor-btn-restore {
   background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--text-primary);
   font-weight: 600;
+  min-width: 92px;
+  text-align: center;
 }
 
-.prompt-editor-btn-save-new:hover:not(:disabled) {
+.prompt-editor-btn-save-new:hover:not(:disabled),
+.prompt-editor-btn-restore:hover:not(:disabled) {
   background: var(--text-primary);
   color: var(--bg-app);
   border-color: var(--text-primary);
@@ -2817,12 +2850,41 @@ button.danger:hover {
   color: var(--text-primary);
 }
 
+[data-style="modern"] .prompt-editor-btn-copy-older,
+.prompt-editor-modal--modern .prompt-editor-btn-copy-older {
+  background: var(--text-primary);
+  color: var(--bg-app);
+  border: 1px solid var(--text-primary);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-style="modern"] .prompt-editor-btn-copy-older:hover:not(:disabled),
+.prompt-editor-modal--modern .prompt-editor-btn-copy-older:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+[data-style="modern"] .prompt-editor-btn-restore,
+.prompt-editor-modal--modern .prompt-editor-btn-restore {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+[data-style="modern"] .prompt-editor-btn-restore:hover:not(:disabled),
+.prompt-editor-modal--modern .prompt-editor-btn-restore:hover:not(:disabled) {
+  background: var(--bg-surface-hover);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
 [data-style="modern"] .prompt-editor-btn-save:hover:not(:disabled),
 [data-style="modern"] .prompt-editor-btn-update:hover:not(:disabled),
-[data-style="modern"] .prompt-editor-btn-restore:hover:not(:disabled),
 .prompt-editor-modal--modern .prompt-editor-btn-save:hover:not(:disabled),
-.prompt-editor-modal--modern .prompt-editor-btn-update:hover:not(:disabled),
-.prompt-editor-modal--modern .prompt-editor-btn-restore:hover:not(:disabled) {
+.prompt-editor-modal--modern .prompt-editor-btn-update:hover:not(:disabled) {
   opacity: 0.88;
   background: var(--text-primary);
   color: var(--bg-app);

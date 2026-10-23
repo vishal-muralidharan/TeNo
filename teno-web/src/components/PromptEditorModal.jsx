@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Check, History, RotateCcw } from 'lucide-react'
+import { X, Check, Copy, History, RotateCcw } from 'lucide-react'
 import { useTheme } from '../ThemeContext'
 import { getUiConfig } from '../utils/uiConfig'
 import {
@@ -24,6 +24,7 @@ export default function PromptEditorModal({
   const [content, setContent] = useState('')
   const [label, setLabel] = useState('')
   const [validationError, setValidationError] = useState('')
+  const [copiedOlderVersion, setCopiedOlderVersion] = useState(false)
 
   const versions = useMemo(() => getPromptVersions(prompt), [prompt])
   const activeVersionId = prompt?.currentVersionId || versions[versions.length - 1]?.id || 'v1'
@@ -37,6 +38,7 @@ export default function PromptEditorModal({
       setTitle(prompt?.title || '')
       setLabel(prompt?.label || initialLabel || '')
       setValidationError('')
+      setCopiedOlderVersion(false)
 
       const currentVers = getPromptVersions(prompt)
       const currentId = prompt?.currentVersionId || currentVers[currentVers.length - 1]?.id || 'v1'
@@ -78,6 +80,7 @@ export default function PromptEditorModal({
 
   const handleSelectVersion = (versionId) => {
     setSelectedVersionId(versionId)
+    setCopiedOlderVersion(false)
     const targetVer = versions.find((v) => v.id === versionId)
     if (targetVer) {
       setContent(targetVer.content || '')
@@ -174,6 +177,23 @@ export default function PromptEditorModal({
     }, false)
   }
 
+  const handleCopyOlderVersion = async (e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    if (!content) return
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(content)
+      }
+      setCopiedOlderVersion(true)
+      setTimeout(() => setCopiedOlderVersion(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy older version prompt:', err)
+    }
+  }
+
   const handleTextareaKeyDown = (e) => {
     if (e.key === 'Tab') {
       e.preventDefault()
@@ -254,12 +274,14 @@ export default function PromptEditorModal({
                   ref={titleInputRef}
                   type="text"
                   value={title}
+                  readOnly={!isViewingCurrent}
                   onChange={(e) => {
+                    if (!isViewingCurrent) return
                     setTitle(e.target.value)
                     if (validationError) setValidationError('')
                   }}
                   placeholder={ui.prompts.titlePlaceholder}
-                  className="prompt-editor-input"
+                  className={`prompt-editor-input ${!isViewingCurrent ? 'prompt-editor-input--readonly' : ''}`}
                   autoComplete="off"
                 />
               </div>
@@ -272,9 +294,13 @@ export default function PromptEditorModal({
                   id="prompt-label"
                   type="text"
                   value={label}
-                  onChange={(e) => setLabel(e.target.value)}
+                  readOnly={!isViewingCurrent}
+                  onChange={(e) => {
+                    if (!isViewingCurrent) return
+                    setLabel(e.target.value)
+                  }}
                   placeholder={ui.prompts.labelPlaceholder}
-                  className="prompt-editor-input prompt-editor-input--label"
+                  className={`prompt-editor-input prompt-editor-input--label ${!isViewingCurrent ? 'prompt-editor-input--readonly' : ''}`}
                   autoComplete="off"
                 />
               </div>
@@ -285,9 +311,24 @@ export default function PromptEditorModal({
                     {ui.prefix.section}Content
                   </label>
                   {!isViewingCurrent && (
-                    <span className="prompt-editor-readonly-tag">
-                      {isModern ? `Viewing ${selectedVersionId} (Read-only)` : `> [ viewing ${selectedVersionId} · read-only ]`}
-                    </span>
+                    <div className="prompt-editor-readonly-group">
+                      <span className="prompt-editor-readonly-tag">
+                        {isModern ? `Viewing ${selectedVersionId} (Read-only)` : `> [ viewing ${selectedVersionId} · read-only ]`}
+                      </span>
+                      <button
+                        type="button"
+                        className="prompt-editor-copy-badge-btn"
+                        onClick={handleCopyOlderVersion}
+                        title={copiedOlderVersion ? ui.prompts.copySuccess : ui.prompts.copy}
+                        aria-label={copiedOlderVersion ? ui.prompts.copySuccess : ui.prompts.copy}
+                      >
+                        {copiedOlderVersion ? (
+                          isModern ? <><Check size={12} /> Copied!</> : '[ copied! ]'
+                        ) : (
+                          isModern ? <><Copy size={12} /> Copy</> : ui.prompts.copy
+                        )}
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -328,18 +369,23 @@ export default function PromptEditorModal({
                   <div className="prompt-editor-actions-group">
                     <button
                       type="button"
+                      className="prompt-editor-btn prompt-editor-btn-copy-older"
+                      onClick={handleCopyOlderVersion}
+                      title={copiedOlderVersion ? ui.prompts.copySuccess : ui.prompts.copy}
+                      aria-label={copiedOlderVersion ? ui.prompts.copySuccess : ui.prompts.copy}
+                    >
+                      {copiedOlderVersion ? (
+                        isModern ? <><Check size={14} /> Copied!</> : '[ copied! ]'
+                      ) : (
+                        isModern ? <><Copy size={14} /> Copy Prompt</> : ui.prompts.copy
+                      )}
+                    </button>
+                    <button
+                      type="button"
                       className="prompt-editor-btn prompt-editor-btn-restore"
                       onClick={handleRestore}
                     >
                       {ui.prompts.restoreVersion}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={!canSave}
-                      className="prompt-editor-btn prompt-editor-btn-save-new"
-                      onClick={() => handleSaveAction('new_version')}
-                    >
-                      {ui.prompts.saveNewVersion}
                     </button>
                   </div>
                 ) : isEdit ? (
