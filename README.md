@@ -1,6 +1,6 @@
 # TeNo
 
-**TeNo** is a highly polished, dual-theme productivity and bookmarking tool designed to seamlessly manage links, a reading/wishlist cart, and quick reminders. TeNo combines modern aesthetic sensibilities with a high-performance architecture to deliver an optimal user experience across the web and a dedicated browser extension.
+**TeNo** is a highly polished, dual-theme productivity and bookmarking tool designed to seamlessly manage links, a reading/wishlist cart, quick reminders, and an AI/LLM prompt vault with version control. TeNo combines modern aesthetic sensibilities with a high-performance architecture to deliver an optimal user experience across the web and a dedicated browser extension.
 
 ## Tech Stack
 - **Frontend Framework**: React, Vite
@@ -44,5 +44,5 @@ To dive deeper into the architecture and functionality of TeNo, please explore t
 
 - [Dual Theme System](docs/features/dual-theme-system.md) - Learn about the Minimalist vs Modern styling architecture.
 - [Collaboration & Sharing](docs/features/collaboration-and-sharing.md) - Discover the unified label architecture and role-based access control (RBAC).
-- [Core Modules](docs/features/core-modules.md) - Understand the primary functional tabs: Links, Cart, Reminders, and Timer.
+- [Core Modules](docs/features/core-modules.md) - Understand the primary functional tabs: Links, Cart, Reminders, Timer, and Prompts.
 - [Settings & Compliance](docs/features/settings-and-compliance.md) - Details on data export (GDPR/DPDP) and server-side account deletion.
