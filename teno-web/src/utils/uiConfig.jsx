@@ -58,6 +58,7 @@ export const getUiConfig = (styleMode) => {
     // ── Prompts module copy ───────────────────────────────────────────────────
     prompts: {
       copy:               t('prompt_copy', styleMode),
+      copySuccess:        t('prompt_copy_success', styleMode),
       copied:             t('prompt_copied', styleMode),
       edit:               t('prompt_edit', styleMode),
       delete:             t('prompt_delete', styleMode),

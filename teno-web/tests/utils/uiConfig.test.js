@@ -392,6 +392,8 @@ describe('getUiConfig("minimal") — Minimalist theme strings', () => {
   })
 
   it('prompts versioning strings adhere to terminal style', () => {
+    expect(ui.prompts.copy).toBe('[ copy ]')
+    expect(ui.prompts.copySuccess).toBe('[ copied ]')
     expect(ui.prompts.versionCurrent).toBe('[current]')
     expect(ui.prompts.saveNewVersion).toBe('[ > ./save_new ]')
     expect(ui.prompts.restoreVersion).toBe('[ > ./restore ]')
@@ -519,6 +521,8 @@ describe('getUiConfig("modern") — Modern theme strings', () => {
   })
 
   it('prompts versioning strings adhere to modern plain English', () => {
+    expect(ui.prompts.copy).toBe('Copy')
+    expect(ui.prompts.copySuccess).toBe('Copied')
     expect(ui.prompts.versionCurrent).toBe('Current')
     expect(ui.prompts.saveNewVersion).toBe('Save as New Version')
     expect(ui.prompts.restoreVersion).toBe('Restore Version')

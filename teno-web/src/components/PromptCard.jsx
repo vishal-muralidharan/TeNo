@@ -83,11 +83,11 @@ export default function PromptCard({
             type="button"
             className="prompt-card-btn prompt-card-btn-copy"
             onClick={handleCopy}
-            title={copied ? ui.prompts.copied : ui.prompts.copy}
-            aria-label={copied ? ui.prompts.copied : ui.prompts.copy}
+            title={copied ? ui.prompts.copySuccess : ui.prompts.copy}
+            aria-label={copied ? ui.prompts.copySuccess : ui.prompts.copy}
           >
             {copied ? (
-              isModern ? <Check size={14} /> : `[ ${ui.prompts.copied} ]`
+              isModern ? <Check size={14} /> : ui.prompts.copySuccess
             ) : (
               isModern ? <Copy size={14} /> : ui.prompts.copy
             )}

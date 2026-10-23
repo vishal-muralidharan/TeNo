@@ -77,6 +77,7 @@ describe('PromptCard', () => {
 
     await waitFor(() => {
       expect(screen.getByText('prompt copied!')).toBeInTheDocument()
+      expect(screen.getByText('[ copied ]')).toBeInTheDocument()
     })
   })
 

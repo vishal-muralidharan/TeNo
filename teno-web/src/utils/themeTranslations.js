@@ -76,6 +76,10 @@ export const themeTranslations = {
     minimal: '[ copy ]',
     modern: 'Copy',
   },
+  prompt_copy_success: {
+    minimal: '[ copied ]',
+    modern: 'Copied',
+  },
   prompt_copied: {
     minimal: 'prompt copied!',
     modern: 'Prompt copied!',
