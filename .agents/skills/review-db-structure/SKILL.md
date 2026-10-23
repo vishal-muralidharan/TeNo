@@ -161,6 +161,13 @@ Both `teno-web` and `teno-extension` consume Firestore through `TeNoDatabase` in
 5. **Client vs Admin Operations:**
    Account deletion and invite acceptance require cross-user or administrative privileges. Never attempt these operations directly from client components; invoke the corresponding serverless endpoints (`api/joinLabel.js`, `api/delete-account.js`).
 
+6. **Security Rules to Client Mutation Parity:**
+   Whenever introducing a new root-level collection, subcollection, or expanding document update operations (e.g. versioned arrays, multi-action updates):
+   - **Explicit Rule Blocks:** Ensure `firestore.rules` has an explicit `match` rule block covering all required operations (`read`, `create`, `update`, `delete`).
+   - **Auth & Member Constraints:** Ensure every create and update payload includes all fields required by security rules (e.g. `ownerId == request.auth.uid`, `request.auth.uid in resource.data.memberUids`). Never omit `ownerId` or `memberUids` when creating new entities.
+   - **Mutation Testing:** Add targeted unit tests in `tests/lib/db.test.js` covering both creation and subsequent updates.
+   - **Live Verification:** Run active browser/app save verification to ensure writes succeed without permission-denied console errors.
+
 ---
 
 ## 5. DB Change Checklist
@@ -168,7 +175,10 @@ Both `teno-web` and `teno-extension` consume Firestore through `TeNoDatabase` in
 Before committing any DB-related change, verify:
 - [ ] No `undefined` values in Firestore payloads (sanitize with `null` or default fallbacks).
 - [ ] Denormalized `memberUids` updated across related collections if membership changes.
-- [ ] Security rules in `firestore.rules` accommodate the query/mutation patterns.
+- [ ] Security rules in `firestore.rules` match all client query and mutation patterns.
+- [ ] Create payloads include `ownerId` and `memberUids` to satisfy rule authorization.
 - [ ] Changes mediated through `TeNoDatabase` in `teno-web/src/lib/db.js`.
 - [ ] Listener unsubscribe cleanup tested in both `teno-web` and `teno-extension`.
 - [ ] Targeted tests in `teno-web/tests/lib/db.test.js` or `teno-web/tests/api/` pass cleanly.
+- [ ] Live save/update flow verified in running application.
+
