@@ -132,6 +132,21 @@ Stores AI/LLM text prompts with version control and label grouping.
   - `delete`: Prohibited via client rules (handled securely via serverless `api/delete-account.js`).
   - Subcollections: Fully accessible by document owner (`match /{document=**} { allow read, write: if isOwner(userId); }`).
 
+### 7. `/system_config/feature_flags`
+Global configuration document storing application-wide feature flag states.
+* **Security Rules:**
+  - `read`: Allowed publicly (`allow read: if true;`) to enable flag evaluation before authentication.
+  - `write`: Restricted to admin accounts (`allow write: if isAdmin();` where `request.auth.token.admin == true`).
+* **Fields:**
+  - Map of boolean flags keyed by feature ID:
+    - Core modules: `links` (boolean), `cart` (boolean), `reminders` (boolean), `prompts` (boolean), `timer` (boolean), `shared` (boolean).
+    - Structural UI: `terminal` (boolean), `modernTheme` (boolean).
+    - Settings sub-features: `settings` (boolean), `clickStats` (boolean), `changePassword` (boolean).
+* **Fail-Open & Fallback Semantics:**
+  - Handled via `FeatureFlagProvider` in `teno-web/src/FeatureFlagContext.jsx` with fallbacks defined in `DEFAULT_FEATURE_FLAGS` (`teno-web/src/utils/featureFlags.js`).
+  - Missing keys or offline/error states evaluate to `true` (fail-open) via `isEnabled(flags, key)`.
+  - Admin toggles use `setDoc(doc(db, 'system_config', 'feature_flags'), { [key]: value }, { merge: true })` to preserve existing flags.
+
 ---
 
 ## 3. Web & Extension Database Consumption
@@ -196,6 +211,7 @@ Before committing any DB-related change, verify:
 - [ ] Security rules in `firestore.rules` match all client query and mutation patterns.
 - [ ] Create payloads include `ownerId` and `memberUids` to satisfy rule authorization.
 - [ ] Changes mediated through `TeNoDatabase` in `teno-web/src/lib/db.js`.
+- [ ] Feature flag additions registered in `DEFAULT_FEATURE_FLAGS` (`teno-web/src/utils/featureFlags.js`) with fail-open fallback.
 - [ ] Listener unsubscribe cleanup tested in both `teno-web` and `teno-extension`.
 - [ ] Targeted tests in `teno-web/tests/lib/db.test.js` or `teno-web/tests/api/` pass cleanly.
 - [ ] Live save/update flow verified in running application.
