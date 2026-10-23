@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { getPromptCurrentContent, getPromptCurrentVersion } from '../lib/db'
 
 export default function Prompts({ user, dbApi }) {
   const [prompts, setPrompts] = useState([])
@@ -22,13 +23,14 @@ export default function Prompts({ user, dbApi }) {
   }, [user, dbApi])
 
   const handleCopy = async (prompt) => {
-    if (!prompt?.content) return
+    const activeContent = getPromptCurrentContent(prompt)
+    if (!activeContent) return
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(prompt.content)
+        await navigator.clipboard.writeText(activeContent)
       } else {
         const textArea = document.createElement('textarea')
-        textArea.value = prompt.content
+        textArea.value = activeContent
         textArea.style.position = 'fixed'
         textArea.style.left = '-9999px'
         document.body.appendChild(textArea)
@@ -46,12 +48,14 @@ export default function Prompts({ user, dbApi }) {
   const filteredPrompts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return prompts
-    return prompts.filter(
-      (p) =>
+    return prompts.filter((p) => {
+      const activeContent = getPromptCurrentContent(p)
+      return (
         (p.title || '').toLowerCase().includes(q) ||
-        (p.content || '').toLowerCase().includes(q) ||
+        activeContent.toLowerCase().includes(q) ||
         (p.label || '').toLowerCase().includes(q)
-    )
+      )
+    })
   }, [prompts, searchQuery])
 
   // Group prompts by label
@@ -109,6 +113,10 @@ export default function Prompts({ user, dbApi }) {
               <div className="prompts-items">
                 {section.items.map((p) => {
                   const isCopied = copiedId === p.id
+                  const currentVer = getPromptCurrentVersion(p)
+                  const activeContent = getPromptCurrentContent(p)
+                  const verBadge = currentVer?.id ? `[${currentVer.id}]` : null
+
                   return (
                     <div
                       key={p.id}
@@ -125,7 +133,14 @@ export default function Prompts({ user, dbApi }) {
                       title="Click to copy prompt"
                     >
                       <div className="prompt-item-header">
-                        <span className="prompt-item-title">{p.title || 'untitled'}</span>
+                        <div className="prompt-item-title-group">
+                          <span className="prompt-item-title">{p.title || 'untitled'}</span>
+                          {verBadge && (
+                            <span className="prompt-item-version" aria-label={`Version ${currentVer.id}`}>
+                              {verBadge}
+                            </span>
+                          )}
+                        </div>
                         <button
                           type="button"
                           className="prompt-copy-btn"
@@ -140,7 +155,7 @@ export default function Prompts({ user, dbApi }) {
                       </div>
 
                       <div className="prompt-item-content">
-                        {p.content || ''}
+                        {activeContent}
                       </div>
                     </div>
                   )
