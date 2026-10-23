@@ -87,7 +87,8 @@ describe('PromptEditorModal', () => {
         content: 'function test() {\n  return true;\n}',
         label: 'dev',
         saveType: 'create',
-      })
+      }),
+      false
     )
   })
 
@@ -98,7 +99,7 @@ describe('PromptEditorModal', () => {
     render(<PromptEditorModal isOpen={true} prompt={prompt} onSave={onSave} onClose={vi.fn()} />)
 
     fireEvent.change(screen.getByPlaceholderText('prompt_title...'), { target: { value: 'New Title' } })
-    fireEvent.click(screen.getByRole('button', { name: /> \.\/update/i }))
+    fireEvent.click(screen.getByRole('button', { name: /> \.\/update|Update Current/i }))
 
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -107,7 +108,8 @@ describe('PromptEditorModal', () => {
         content: 'Old Content',
         label: 'ai',
         saveType: 'update_current',
-      })
+      }),
+      false
     )
   })
 
@@ -214,7 +216,8 @@ describe('PromptEditorModal', () => {
         currentVersionId: 'v1',
         content: 'Initial prompt draft',
         saveType: 'restore_version',
-      })
+      }),
+      false
     )
   })
 
@@ -244,7 +247,7 @@ describe('PromptEditorModal', () => {
     const textarea = screen.getByPlaceholderText('type_prompt_content_here...')
     fireEvent.change(textarea, { target: { value: 'Third brand new draft' } })
 
-    const saveNewBtn = screen.getByRole('button', { name: /> \.\/save --new-version/i })
+    const saveNewBtn = screen.getByRole('button', { name: /> \.\/save_new|Save as New Version/i })
     fireEvent.click(saveNewBtn)
 
     expect(onSave).toHaveBeenCalledWith(
@@ -253,12 +256,59 @@ describe('PromptEditorModal', () => {
         currentVersionId: 'v3',
         content: 'Third brand new draft',
         saveType: 'new_version',
+        isNewVersion: true,
         versions: expect.arrayContaining([
           expect.objectContaining({ id: 'v1' }),
           expect.objectContaining({ id: 'v2' }),
           expect.objectContaining({ id: 'v3', content: 'Third brand new draft' }),
         ]),
-      })
+      }),
+      true
+    )
+  })
+
+  it('provides "Update" button which updates active version in place with isNewVersion=false', () => {
+    vi.mocked(useTheme).mockReturnValue({ styleMode: 'minimal' })
+    const onSave = vi.fn()
+    const multiVersionPrompt = {
+      id: 'p-multi',
+      title: 'Iterative Prompt',
+      currentVersionId: 'v2',
+      versions: [
+        { id: 'v1', content: 'Initial prompt draft' },
+        { id: 'v2', content: 'Second refined version' },
+      ],
+      label: 'writing',
+    }
+
+    render(
+      <PromptEditorModal
+        isOpen={true}
+        prompt={multiVersionPrompt}
+        onSave={onSave}
+        onClose={vi.fn()}
+      />
+    )
+
+    const textarea = screen.getByPlaceholderText('type_prompt_content_here...')
+    fireEvent.change(textarea, { target: { value: 'Updated second version in place' } })
+
+    const updateBtn = screen.getByRole('button', { name: /> \.\/update|Update Current/i })
+    fireEvent.click(updateBtn)
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'p-multi',
+        currentVersionId: 'v2',
+        content: 'Updated second version in place',
+        saveType: 'update_current',
+        isNewVersion: false,
+        versions: expect.arrayContaining([
+          expect.objectContaining({ id: 'v1' }),
+          expect.objectContaining({ id: 'v2', content: 'Updated second version in place' }),
+        ]),
+      }),
+      false
     )
   })
 

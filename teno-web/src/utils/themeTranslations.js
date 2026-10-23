@@ -121,15 +121,15 @@ export const themeTranslations = {
     modern: 'Current',
   },
   action_save_new: {
-    minimal: '> ./save --new-version',
+    minimal: '[ > ./save_new ]',
     modern: 'Save as New Version',
   },
   action_restore: {
-    minimal: '> ./restore',
+    minimal: '[ > ./restore ]',
     modern: 'Restore Version',
   },
   action_update_current: {
-    minimal: '> ./update',
+    minimal: '[ > ./update ]',
     modern: 'Update Current',
   },
   version_history_title: {

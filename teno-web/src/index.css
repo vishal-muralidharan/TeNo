@@ -2448,17 +2448,21 @@ button.danger:hover {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   margin-top: 6px;
   padding-top: 10px;
   border-top: 1px solid var(--border-color);
   flex-wrap: wrap;
 }
 
+.prompt-editor-actions .prompt-editor-btn-cancel {
+  margin-right: auto;
+}
+
 .prompt-editor-actions-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -2473,6 +2477,7 @@ button.danger:hover {
   cursor: pointer;
   text-transform: var(--text-transform);
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .prompt-editor-btn-save,

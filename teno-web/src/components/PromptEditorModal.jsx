@@ -109,7 +109,8 @@ export default function PromptEditorModal({
         currentVersionId: initialVerId,
         versions: initialVers,
         saveType: 'create',
-      })
+        isNewVersion: false,
+      }, false)
       return
     }
 
@@ -126,7 +127,8 @@ export default function PromptEditorModal({
         currentVersionId: activeVersionId,
         versions: updatedVersions,
         saveType: 'update_current',
-      })
+        isNewVersion: false,
+      }, false)
       return
     }
 
@@ -149,7 +151,8 @@ export default function PromptEditorModal({
         currentVersionId: nextId,
         versions: updatedVersions,
         saveType: 'new_version',
-      })
+        isNewVersion: true,
+      }, true)
       return
     }
   }
@@ -167,7 +170,8 @@ export default function PromptEditorModal({
       versions,
       saveType: 'restore_version',
       versionId: selectedVersionId,
-    })
+      isNewVersion: false,
+    }, false)
   }
 
   const handleTextareaKeyDown = (e) => {
@@ -321,13 +325,23 @@ export default function PromptEditorModal({
                 </button>
 
                 {!isViewingCurrent ? (
-                  <button
-                    type="button"
-                    className="prompt-editor-btn prompt-editor-btn-restore"
-                    onClick={handleRestore}
-                  >
-                    {ui.prompts.restoreVersion}
-                  </button>
+                  <div className="prompt-editor-actions-group">
+                    <button
+                      type="button"
+                      className="prompt-editor-btn prompt-editor-btn-restore"
+                      onClick={handleRestore}
+                    >
+                      {ui.prompts.restoreVersion}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!canSave}
+                      className="prompt-editor-btn prompt-editor-btn-save-new"
+                      onClick={() => handleSaveAction('new_version')}
+                    >
+                      {ui.prompts.saveNewVersion}
+                    </button>
+                  </div>
                 ) : isEdit ? (
                   <div className="prompt-editor-actions-group">
                     <button

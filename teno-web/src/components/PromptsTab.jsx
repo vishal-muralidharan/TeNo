@@ -99,10 +99,11 @@ export default function PromptsTab({ user, dbApi }) {
     })
   }, [filteredPrompts])
 
-  // Save prompt (create or update, support versioning)
-  const handleSavePrompt = async (data) => {
+  // Save prompt (create or update, support versioning with explicit isNewVersion parameter)
+  const handleSavePrompt = async (data, isNewVersionParam) => {
     if (!dbApi) return
 
+    const isNewVersion = isNewVersionParam ?? data.isNewVersion ?? (data.saveType === 'new_version')
     const labelName = (data.label || '').trim().toLowerCase()
     const parentLabel = labelName ? sectionLabels[labelName] : null
 
@@ -118,7 +119,7 @@ export default function PromptsTab({ user, dbApi }) {
     try {
       if (data.id) {
         await dbApi.updatePrompt(data.id, payload)
-        if (data.saveType === 'new_version') {
+        if (isNewVersion) {
           showToast(isModern ? 'New version saved' : 'new version saved')
         } else if (data.saveType === 'restore_version') {
           showToast(isModern ? 'Version restored' : 'version restored')

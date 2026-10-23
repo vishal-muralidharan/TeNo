@@ -269,7 +269,7 @@ describe('PromptsTab', () => {
       target: { value: 'Enhanced SOLID principles checklist' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /> \.\/save --new-version|Save as New Version/i }))
+    fireEvent.click(screen.getByRole('button', { name: /> \.\/save_new|Save as New Version/i }))
 
     await waitFor(() => {
       expect(dbApi.updatePrompt).toHaveBeenCalledWith(

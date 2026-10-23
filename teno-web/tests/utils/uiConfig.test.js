@@ -393,9 +393,9 @@ describe('getUiConfig("minimal") — Minimalist theme strings', () => {
 
   it('prompts versioning strings adhere to terminal style', () => {
     expect(ui.prompts.versionCurrent).toBe('[current]')
-    expect(ui.prompts.saveNewVersion).toBe('> ./save --new-version')
-    expect(ui.prompts.restoreVersion).toBe('> ./restore')
-    expect(ui.prompts.updateCurrent).toBe('> ./update')
+    expect(ui.prompts.saveNewVersion).toBe('[ > ./save_new ]')
+    expect(ui.prompts.restoreVersion).toBe('[ > ./restore ]')
+    expect(ui.prompts.updateCurrent).toBe('[ > ./update ]')
     expect(ui.prompts.versionHistoryTitle).toBe('version_history')
     expect(ui.prompts.versionBadgePrefix).toBe('v')
   })
