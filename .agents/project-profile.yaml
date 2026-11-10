@@ -1,0 +1,83 @@
+schema_version: 2
+project:
+  name: teno
+  mode: existing
+  platforms:
+  - web
+  summary: Minimalist focus browser and workspace application with web dashboard and
+    Chrome extension.
+stack:
+  language: javascript
+  framework: React
+  bundler: Vite
+  styling: css
+  router: React Router
+  package_manager: npm
+  database: Firebase
+  test_runner: Vitest
+design:
+  enabled: true
+  tokens_file: teno-web/src/index.css
+  component_dirs:
+  - teno-web/src/components
+responsive:
+  enabled: false
+commands:
+  check: cd teno-web && npm run test
+  test: cd teno-web && npm run test
+structure:
+  layers:
+  - path: teno-web/src
+    purpose: Web application components, contexts, and pages
+  - path: teno-extension/src
+    purpose: Chrome extension popup and background scripts
+  - path: migrations
+    purpose: Database schema and migration scripts
+  root_allowed:
+  - firebase.json
+  - firestore.rules
+  - firestore.indexes.json
+  - .firebaserc
+  tests: tests-dir
+naming:
+- item: Components
+  style: PascalCase
+  example: PromptCard.jsx
+git:
+  push: never
+  commit_format: '<type>(<scope>): <subject>'
+  workflow:
+    default_branch: master
+  scopes:
+  - name: agents
+    paths:
+    - .agents/**
+    - AGENTS.md
+    purpose: Build Forge pipeline and agent configuration
+  - name: web
+    paths:
+    - teno-web/**
+    purpose: Web dashboard application
+  - name: extension
+    paths:
+    - teno-extension/**
+    purpose: Chrome extension implementation
+  - name: firebase
+    paths:
+    - firebase.json
+    - firestore.rules
+    - firestore.indexes.json
+    purpose: Firebase config and rules
+docs:
+  skills_dir: .agents/skills
+  repo_map: README.md
+  agents_file: AGENTS.generated.md
+blueprints:
+  dir: .agents/blueprints
+  enabled: true
+  areas:
+  - ui
+  - data
+  - tokens
+  - layout
+rules: []
