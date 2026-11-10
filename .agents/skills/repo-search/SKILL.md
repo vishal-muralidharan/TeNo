@@ -1,158 +1,56 @@
 ---
 name: repo-search
-description: >-
-  Use this skill to perform read-only discovery and auditing of any feature, component, utility,
-  or symbol across the entire TeNo repository (including teno-web, teno-extension, firestore.rules,
-  tests, docs, and .agents/skills/). Reports whether the component is present, its exact declaration
-  and usage sites, cross-platform parity, and presents findings in chat or as a Markdown artifact without making any code edits.
+description: Use to find out whether a feature, component, hook, helper, data field, style token or any symbol already exists in the repo, and where it is declared and used. Read-only discovery that reports findings without editing code. Also refreshes the repo map on request. Use it before creating any new file or function, when the user asks "is there already a...", "where is...", "find usages of...", or "refresh the repo map", and whenever audit-and-planning needs a search phase.
+compatibility: Needs file read, file edit, and shell access.
 ---
 
-# Repository Search & Component Discovery (Web, Extension & Skills)
+# Repo search
 
-This skill provides a systematic, **read-only** search and audit procedure across the entire **TeNo** codebase. Given any feature name, React component, database entity, CSS class, or concept, this skill determines whether it exists in the repository, scans declaration and usage sites across all architectural layers (including agent skills), assesses cross-platform parity between Web and Extension, and presents structured findings in chat or as a Markdown document.
+Two modes. Search mode is the default. Map mode runs only when asked.
 
----
+## Read first
 
-## 1. Core Directive: Search Only (No Edits or Additions)
+1. `.agents/project-profile.yaml`. If it is missing, run `project-bootstrap`.
+2. The repo map at `docs.repo_map`. Use its layer table to narrow the search before you scan the whole tree.
 
-> **Mandatory Rule:** This skill is strictly **READ-ONLY**. 
-> - **Do NOT make any code edits, additions, deletions, or refactors.**
-> - **Do NOT create new application files, tests, or stylesheets.**
-> - Simply execute a comprehensive search and report the verified findings in chat or in a Markdown document (if requested by the user).
+## Search mode (read only)
 
----
+Do not edit, add or delete any file in this mode. Report findings in chat. Only the user can ask for a written report file.
 
-## 2. Universal Search Scope Matrix
+1. **Find names and variants.** Search the exact name, PascalCase, camelCase, kebab-case and snake_case forms, plus related CSS classes or data field names.
+2. **Separate declarations from usages.** Find the file that defines the symbol. Then list the files that import or call it.
+3. **Check the layer.** Compare the declaration's folder with `structure.layers`. Say whether it sits in the right layer.
+4. **Check state and storage.** Say whether it reads or writes shared state, storage, or the schema in `data.schema_source`.
+5. **Check conformance.** If `design.enabled`, check that it uses tokens from `design.tokens_file`. If `responsive.enabled`, check touch target size and width handling.
+6. **Report.**
 
-When given a component or feature query, search across all seven architectural surfaces:
+Where to look, in order: the layers in the repo map, then the tests, then the docs and agent files (`README.md`, AGENTS.md, the skills folder).
 
-| Surface / Layer | Search Locations | Target Entity Types |
-| :--- | :--- | :--- |
-| **1. Web Components & Pages** | `teno-web/src/components/`<br>`teno-web/src/pages/`<br>`teno-web/src/App.jsx` | React components, modals, tabs, views, router routes |
-| **2. Extension Components** | `teno-extension/src/components/`<br>`teno-extension/src/pages/`<br>`teno-extension/src/App.jsx` | Popup tabs, compact drawer views, read-only consoles |
-| **3. Database & Shared Logic** | `teno-web/src/lib/db.js`<br>`teno-web/api/`<br>`teno-extension/src/lib/` | `TeNoDatabase` methods, collections, serverless endpoints |
-| **4. Theme, UI & Styling** | `teno-web/src/utils/themeTranslations.js`<br>`teno-web/src/utils/uiConfig.jsx`<br>`teno-web/src/index.css`<br>`teno-extension/src/index.css` | UI translations, bracketed labels, icons, CSS classes |
-| **5. Automated Test Suites** | `teno-web/tests/components/`<br>`teno-web/tests/context/`<br>`teno-web/tests/lib/`<br>`teno-web/tests/utils/`<br>`teno-web/tests/api/` | Unit tests, mock declarations, contract assertions |
-| **6. Security Rules & Docs** | `firestore.rules`<br>`docs/features/`<br>`firebase.json` | Match blocks, RBAC, schema documentation |
-| **7. Skills & Rules Guidelines** | `.agents/skills/**/SKILL.md`<br>`AGENTS.md`<br>`README.md` | Agent guidelines, quality guardrails, naming rules |
+### Output format
 
----
+Use paths relative to the repo root. Never use absolute paths or machine specific links.
 
-## 3. Systematic Search Procedure
-
-Follow these four steps when conducting a repository search:
-
-```text
-┌────────────────────────────────────────────────────────┐
-│ Step 1: Broad Keyword & Identifier Discovery           │
-│ Search exact names, kebab-case, PascalCase & concepts   │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 2: Separate Declarations from Usage Call Sites    │
-│ Pinpoint primary file definition vs consuming imports  │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 3: Cross-Surface Parity & Layer Analysis          │
-│ Compare Web vs Extension, check CSS tokens & tests     │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 4: Scan Agent Skills & Repository Rules           │
-│ Check if skills or AGENTS.md govern the component      │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 5: Format & Deliver Structured Findings           │
-│ Deliver in chat (default) or save as Markdown document  │
-└────────────────────────────────────────────────────────┘
+```
+Target: <symbol or feature searched>
+Found: yes | no | partial
+Declaration: <path:line>
+Usage sites: <paths>
+Layer: <layer from the profile> (correct | misplaced)
+State and storage: <what it touches, or none>
+Conformance: <design and layout findings, or not applicable>
+Verdict: reuse | extend | create new, with the reason
 ```
 
-### Step 1: Identifier & Variation Discovery
-Search for the target component or feature using its common naming variations:
-- PascalCase: `PromptCard`, `LinkStorer`, `ConfirmModal`, `Timer`
-- camelCase: `getPromptCurrentContent`, `deleteEntry`, `uiConfig`
-- kebab-case / lowercase: `prompt-card`, `prompts-grid`, `prompts`, `join-label`
-- Translation keys: `prompts.*`, `confirm.*`
+If nothing is found, say so and list the exact queries you tried.
 
-Use `grep_search` across `teno-web`, `teno-extension`, `.agents/skills/`, `docs/`, and `firestore.rules`.
+## Map mode (writes one file)
 
-### Step 2: Separate Declarations from Usages
-- **Declaration:** Where the component/function is defined (`export default function ComponentName`, `export const functionName`, or `class TeNoDatabase`).
-- **Call Sites:** Where the component is mounted in JSX (`<ComponentName ... />`), imported (`import ComponentName from ...`), or invoked.
+Run only when the user asks for a refresh, or when `sync-skills-and-docs` calls for it. In this mode you may write only the file at `docs.repo_map`. Change nothing else.
 
-### Step 3: Evaluate Cross-Platform Parity
-Answer the key architectural questions:
-1. Is it implemented in **`teno-web`**?
-2. Is it implemented in **`teno-extension`**?
-3. If both, do they have feature symmetry, or is the extension version specialized (e.g. read-only 1-click copy)?
-4. Are there dedicated test suites in `teno-web/tests/`?
-5. Does it have custom styling in `index.css` supporting both Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) modes?
-6. Are there matching permissions in `firestore.rules`?
+1. List the folders that hold files, to a depth of 3, under each source root named in `structure.layers`.
+2. For each layer in the profile, record up to 5 key files.
+3. Add a row for any folder that has files but no layer. Mark its purpose as `TODO` and tell the user to resolve it in the profile.
+4. Set the line "Last full scan" to today's date.
+5. Keep the section "Skills flagged for review" if it exists.
 
-### Step 4: Scan Skills & Guidelines
-Search `.agents/skills/` and `AGENTS.md` to identify:
-- Which skills govern this component's design, database operations, or testing?
-- Are there specific rules (e.g., zero border-radius, bracketed buttons, 100% test coverage) that apply to it?
-
----
-
-## 4. Standardized Output Format
-
-Always format the search findings clearly using this template:
-
-```markdown
-### Repository Search Results: `<Component or Feature Name>`
-
-#### 1. Presence Summary
-- **Status:** [ PRESENT | PARTIALLY PRESENT | ABSENT ]
-- **Distribution Scope:** [ Web Only | Extension Only | Both Web & Extension | Documentation Only ]
-- **Overview:** <1-2 sentences summarizing what the component does and where it lives>
-
-#### 2. Declarations & Definitions
-- **Primary Definition:** [`<FileName>`](file:///path/to/file#L<start>-L<end>)
-- **Type:** [ React Functional Component | Custom Hook | Database Class Method | Utility Helper | CSS Rule ]
-
-#### 3. Mount Points & Usage Sites
-- **Parent / Mount Sites:**
-  - [`<ParentComponent.jsx>`](file:///path/to/parent): `<brief description of usage>`
-- **Database / API Connections:**
-  - `<db.js methods or API endpoints connected>`
-- **Translation / UI Config Keys:**
-  - `themeTranslations.js` / `uiConfig.jsx`: `<keys>`
-
-#### 4. Cross-Platform Parity Matrix
-| Surface | Present? | Location / Details |
-| :--- | :---: | :--- |
-| **Web (`teno-web`)** | Yes / No | `<file path & brief notes>` |
-| **Extension (`teno-extension`)** | Yes / No | `<file path & brief notes>` |
-| **Unit Tests (`teno-web/tests/`)** | Yes / No | `<test file path>` |
-| **Theme / Dual-Style CSS** | Yes / No | `<Minimalist & Modern styling details>` |
-| **Firestore Security Rules** | Yes / No | `<firestore.rules match block>` |
-| **Agent Skills / Guidelines** | Yes / No | `<governing skill names>` |
-
-#### 5. Key Implementation Notes & Observations
-- **Props / Interface:** `<notable props or configuration params>`
-- **Styling Details:** `<key classes, minimal vs modern treatment>`
-- **State & Subscriptions:** `<listeners, local state, or context hooks>`
-
-#### 6. Governing Skills & Rules
-- Mention any relevant skills from `.agents/skills/` (e.g. `maintain-minimalist-ui`, `review-responsive-design`, `review-db-structure`).
-```
-
----
-
-## 5. Delivery Mode (Chat vs. Markdown Document)
-
-- **Default (Chat Response):**
-  - Present the complete structured search report directly in the chat response using GitHub-style Markdown and clickable `file://` links.
-- **When Requested in Markdown File (`MD` / Artifact):**
-  - If the user explicitly asks for the results in a Markdown file (e.g., "give the results in MD", "save as report", "create markdown artifact"):
-    1. Write the structured report to an artifact file in the conversation artifact directory:
-       `<appDataDir>/brain/<conversation-id>/repo_search_<component_name>.md`
-    2. Provide a concise chat confirmation with a direct clickable link to the generated Markdown artifact.
+The map is a cache. It saves every later task from rescanning the repo. A stale map is worse than none, so refresh it after any structural change.

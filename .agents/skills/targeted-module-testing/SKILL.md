@@ -1,147 +1,108 @@
 ---
 name: targeted-module-testing
-description: >-
-  Use this skill whenever any code change is made to a module, component, context, utility, or endpoint in TeNo.
-  Ensures that targeted tests for the changed module are executed in teno-web, and that verification checks
-  and test synchronization are performed for both teno-web and teno-extension.
+description: Use after any change in a project that has a .agents/project-profile.yaml. Runs the verify, deploy and report stages. Runs lint, test and build commands, checks rule-enforcing tests, evaluates goal acceptance invariants, runs browser checks and a deploy loop only if enabled, and ends every task with a Post-Build Audit. Use it before you say a task is done, after every build, and whenever the user asks to verify, test, check, ship or deploy.
+compatibility: Needs file read, shell, and network access if deploy checks are enabled.
 ---
 
-# Targeted Module Testing & Verification (Web & Extension)
+# Verification, deploy and report
 
-This skill provides procedures for running fast, targeted tests against changed modules in the **TeNo** repository and keeping test suites and verification checks synchronized across both the **Web (`teno-web`)** and **Extension (`teno-extension`)** versions.
+Stages 5, 7 and the optional deploy stage of the pipeline. A change is not done until checks pass, goal acceptance invariants are verified, and the report is written.
 
-## Core Principles
+## Read first
 
-1. **Test on Every Web Change:** Even a single-line fix, minor refactor, or small parameter adjustment in `teno-web` must be validated by running the corresponding module test suite before moving forward.
-2. **Verify Every Extension Change:** Any change to `teno-extension` must undergo syntax and build verification to prevent broken popup bundles.
-3. **Synchronize Tests on Significant Changes:** Whenever new functionality is introduced, existing behavior is altered, or edge cases are added, corresponding test files in `teno-web/tests/` must be updated or created in tandem.
-4. **Targeted Execution:** Run only the relevant module's test suite during active development to get sub-second feedback loops rather than running entire suites.
-5. **100% Coverage Alignment:** TeNo's web test configuration (`teno-web/vite.config.js`) enforces strict code coverage expectations across lines, functions, branches, and statements.
+`.agents/project-profile.yaml`: sections `commands`, `verification` and `capabilities`. Use the commands exactly as written there. Do not substitute your own.
 
----
+## 1. Run the checks
 
-## When to Use This Skill
+| Check | Source | Pass when |
+|---|---|---|
+| Complete check | `commands.check` | exits 0 |
+| Lint | `commands.lint` | 0 errors, and 0 warnings if `verification.zero_warnings` |
+| Tests | `commands.test` | all pass |
+| One test file | `commands.test_single` with `{path}` | passes |
+| Build | `commands.build` | completes |
 
-Activate this skill:
-- Immediately after making any modification to source code (in `teno-web/src/`, `teno-web/api/`, `teno-extension/src/`, or configuration files).
-- When introducing a new module, component, context provider, hook, or database utility.
-- When modifying business logic, validation rules, or API contracts (such as label deletion options or share tokens).
-- When syncing components between `teno-web` and `teno-extension` (e.g., `LinkStorer.jsx`, `Reminders.jsx`, `Timer.jsx`).
-- Before staging and committing any changes under the `atomic-commits` skill.
+If `commands.check` is empty, run lint, test and build in that order. Empty commands are skipped. Say which ones you skipped.
 
----
+When blueprints exist (`.agents/blueprints/`), run `python3 .agents/skills/project-blueprints/scripts/blueprint.py verify` after the checks.
 
-## Repository Test & Verification Matrix
+Fix every failure at its cause. Do not edit a test or loosen a rule just to get a pass.
 
-### 1. `teno-web` Test Suite (Vitest + jsdom + RTL)
+## 2. Tests
 
-TeNo's primary automated test suite is located in `teno-web/tests/`:
+- Add a test for each new behavior. Update tests when visible copy changes.
+- Assert on roles, labels and test ids. Do not assert on class names or colors.
+- If `design.enforced_by` is set, that test or lint rule enforces the design rules. It must pass. Do not edit it to make a change pass unless the user agrees the rule should change. If the rule should change, change the profile through `sync-skills-and-docs`.
+- Know what your test environment fakes (timers, layout, device APIs). Note any behavior that only a real browser can confirm.
+- Cross-platform path assertions: When tests check CLI console output, file paths, or diffs, normalize path separators (`/` vs `\`) or use POSIX formatting (`Path.as_posix()`). Never assert hardcoded Unix slashes against raw host OS paths.
+- Windows execution: When spawning child processes or npm commands in tests on Windows, pass `shell=(sys.platform == "win32")` for batch scripts (`npm.cmd`), and avoid shell wildcard expansion in npm test script targets.
 
-| Changed Web Module Path | Target Test File Path | Runner Command (from `teno-web/`) |
-| :--- | :--- | :--- |
-| `src/components/<Name>.jsx` | `tests/components/<Name>.test.jsx` | `npx vitest run tests/components/<Name>.test.jsx` |
-| `src/<Name>Context.jsx` | `tests/context/<Name>Context.test.jsx`| `npx vitest run tests/context/<Name>Context.test.jsx` |
-| `src/FeatureFlagContext.jsx` | `tests/context/FeatureFlagContext.test.jsx` | `npx vitest run tests/context/FeatureFlagContext.test.jsx` |
-| `src/lib/db.js` | `tests/lib/db.test.js` | `npx vitest run tests/lib/db.test.js` |
-| `src/utils/<name>.{js,jsx}` | `tests/utils/<name>.test.js` | `npx vitest run tests/utils/<name>.test.js` |
-| `src/utils/featureFlags.js` | `tests/utils/featureFlags.test.js` | `npx vitest run tests/utils/featureFlags.test.js` |
-| `api/<endpoint>.js` | `tests/api/<endpoint>.test.js` | `npx vitest run tests/api/<endpoint>.test.js` |
-| All component tests | `tests/components/` | `npx vitest run tests/components` |
-| All context tests | `tests/context/` | `npx vitest run tests/context` |
-| Full web test suite | `tests/` | `npm test` |
+## 2b. Goal Acceptance Verification
 
-*Tip (Running from repository root):*
-```bash
-(cd teno-web && npx vitest run tests/components/LinkStorer.test.jsx)
+Automated tests exiting with code 0 does not prove that the user's objective was met.
+
+1. Read `.agents/work/CURRENT_GOAL.md`. Confirm that `# Current Goal:` and the acceptance invariants reflect the active task being verified.
+2. Evaluate each acceptance invariant listed under `Acceptance Invariants`:
+   - Inspect data flow, API contract, or rendered component behavior against the expected invariant.
+   - Confirm edge cases (zero states, invalid inputs, error handling) behave as intended.
+3. Record invariant status:
+   - Mark `[x]` for proven invariants.
+   - If an invariant fails, record the observed deviation in `CURRENT_GOAL.md`.
+   - This signal feeds directly into Stage 5a (Goal Loop) in `feature-delivery`.
+
+## 3. Browser checks (optional)
+
+Run only if `capabilities.browser_inspection.enabled` is true. Use the linked reference, if any, to run each sentence in `verification.browser_checks` against a build or preview.
+
+If the capability is off, do not skip silently. List the checks under "Not run" in the report so the user can do them by hand.
+
+## 3b. Reference checks
+
+Run `python3 .agents/skills/extend-pipeline/scripts/refs.py due --stage verify --paths <changed files>`. Apply each listed reference to the change. Run a bundled script only if the listing says allow_scripts is true. Otherwise list it under 'Not run'. If a reference has mode gate and reports a blocking finding, stop and ask the user. Report findings under 'Third party review' in the Post-Build Audit, with the reference name.
+
+## 4. Deploy (optional)
+
+Run only if `capabilities.deploy.enabled` is true, and only after step 1 passes. Never deploy a failing build.
+
+1. Run `capabilities.deploy.command` (or `commands.deploy`).
+2. Check success: the command exits 0, and `verify_url` returns HTTP 200 when it is set. For example `curl -s -o /dev/null -w "%{http_code}" <verify_url>`.
+3. On failure, if `on_failure` is `report`: stop. Show the failing output and the likely cause.
+4. On failure, if `on_failure` is `self-heal`: read the failing output. If a linked reference documents a log command, use it. Diagnose the root cause. Fix it in code or project config with your editing tools. Re-run `commands.check`. Deploy again. Stop after `max_attempts` tries (default 3) and report what you tried.
+
+Never change secrets, environment variables, hosting settings or billing during a self-heal loop. Ask the user instead.
+
+## 5. Post-Build Audit
+
+End every task with this section when `verification.post_build_report` is true. Fill it from what you actually observed. Do not pad it.
+
+When all invariants pass, update `.agents/work/CURRENT_GOAL.md`: set `Status: completed`. If part of a series of tasks, mark the current task completed in `Series Queue` and prepare `CURRENT_GOAL.md` to transition to the next task in `feature-delivery`.
+
+```markdown
+### Post-Build Audit: Open Questions & Known Issues
+- **Goal Invariants:** <all passed, or which invariants failed with evidence>
+- **Checks:** <what ran and the result. Not run: <what was skipped and why>>
+- **Try it:**
+  1. <manual step 1 to verify behavior>
+  2. <manual step 2 to verify behavior>
+  3. <manual step 3 to verify behavior>
+- **Known Issues:** <edge cases, quirks and limits you found>
+- **Open Questions:** <decisions that need the user>
+- **Rule Gaps:** Did this change work around a missing rule? <none, or missing convention to codify with incident-to-rule>
 ```
 
-### 2. `teno-extension` Verification Procedures
+Always include 3 to 5 clear manual steps under "Try it" for each changed behavior so the user can test the change.
 
-The browser extension sub-project (`teno-extension/`) consumes the shared database abstraction via the symlink `teno-extension/src/lib/db.js -> ../../teno-web/src/lib/db.js`.
+Look for known issues in these places, depending on the profile:
 
-Because `teno-extension` runs within the browser action popup sandbox, verification requires:
-1. **Shared Library Regression Testing:** Whenever modifying `db.js` or shared data utilities, run the web test suite (`npx vitest run tests/lib/db.test.js` in `teno-web`) to guarantee zero regressions.
-2. **Build & Syntax Verification:** Run a dry-run build or syntax validation to ensure no broken imports or unhandled JSX tokens:
-   ```bash
-   (cd teno-extension && npx vite build)
-   ```
-3. **Extension Sandbox Safety Checks:**
-   - Verify that no browser APIs (like `window.alert`, `window.confirm`, or unhandled `window.open`) crash the extension popup window.
-   - Verify that popup containers maintain strict bounded heights without causing double scrollbars.
-   - Verify that asynchronous Firestore listeners (`onSnapshot`) are cleaned up properly when tabs or popups unmount.
+- Always: behavior that tests cannot prove, and edge cases of the new code.
+- `responsive.enabled`: width limits, virtual keyboard overlap, safe areas and zoom.
+- `design.enabled`: legibility in every theme, focus visibility and icon clarity.
+- `data.storage` is set: storage quota, offline retries, migrations and idempotent writes.
+- Keyboard shortcuts were added: modifiers across operating systems, and capture while typing in inputs.
+- Rule gaps: check whether this task worked around an unwritten convention. If yes, name the convention and suggest running `incident-to-rule`.
 
----
+Open questions are choices the user should make: trade-offs, label or placement choices, and future schema changes.
 
-## Workflow Steps
+## 6. Finish
 
-### Step 1: Detect the Impact of the Change
-Determine whether the change affects:
-- **`teno-web` only:** Run the specific Vitest test file.
-- **`teno-extension` only:** Perform extension build and syntax verification.
-- **Both (Shared Logic / Components):**
-  - Run the `teno-web` unit test suite to validate business logic and contracts.
-  - Verify that the corresponding `teno-extension` component compiles cleanly.
-
-### Step 2: Update or Create Test Files (For Significant Changes)
-Update `teno-web/tests/` if any of the following apply:
-- **New Feature or Function:** Add unit tests covering expected inputs, outputs, rendered elements, and user interactions.
-- **New Logic Branch or Condition:** Add test cases for both truthy and falsy pathways (e.g. Minimalist vs Modern styling branches in `uiConfig`).
-- **Boundary & Edge Cases:** Test empty states, missing label references, invalid tokens, `null`/`undefined`, and unauthenticated states.
-- **Bug Fix:** Write a regression test that fails without the fix and passes with it.
-- **Altered Contract / Schema:** Update assertions reflecting the updated schema or return values without lowering test rigor.
-
-### Step 3: Run the Targeted Test
-Execute the targeted command in the terminal:
-```bash
-cd teno-web && npx vitest run <path/to/test-file>
-```
-Verify the output:
-- All test suites must report `✓ passed`.
-- Ensure execution time remains quick (typically < 1–2 seconds).
-
-### Step 4: Handle Failures Immediately
-If any test fails:
-1. Do not ignore the failure or proceed to another file.
-2. Read the assertion diff and stack trace carefully.
-3. Determine whether the implementation has a bug or the test assertion needs adjusting to the new contract.
-4. Correct the issue and re-run the targeted test until green.
-
----
-
-## Test Architecture & Mocking Standards
-
-`teno-web/tests/setup.js` automatically configures standard stubs and mocks before every test:
-1. **In-Memory `localStorage`:** Cleaned before each test (`localStorageMock.clear()`).
-2. **DOM Stubs:** `window.matchMedia`, `requestAnimationFrame`, `cancelAnimationFrame`, and `scrollIntoView`.
-3. **Firebase Mocks:**
-   - Client SDK entry point (`src/firebase.js`) is mocked globally to avoid initiating network sockets.
-   - Granular mocks for `firebase/auth` and `firebase/firestore` are hoisted and available via `vi.mocked()`.
-   - Never import real Firebase credentials into test files.
-
----
-
-## Handling Test Results & Artifacts
-
-Test execution can produce ephemeral artifacts:
-* `coverage/`: V8 code coverage reports.
-* `.vitest/`: Vitest cache.
-
-### Artifact Policy & Cleanup
-1. **Never Commit Execution Artifacts:** Coverage directories and caches are ephemeral and local-only. They must never be staged or committed.
-2. **Cleanup Command:**
-   ```bash
-   rm -rf teno-web/coverage teno-web/.vitest
-   ```
-
----
-
-## Testing & Verification Quality Checklist
-
-Before considering module testing complete:
-- [ ] Targeted module test executed in `teno-web` and passed (`0 errors`).
-- [ ] New functionality has corresponding test assertions in `teno-web/tests/`.
-- [ ] Extension component syntax and build verified (`teno-extension`).
-- [ ] Edge cases, error handlers, and empty states are covered.
-- [ ] No `test.skip`, `it.only`, or commented-out assertions left behind.
-- [ ] Transient test artifacts (`coverage/`, logs) pruned.
-- [ ] Ready for atomic commit via `atomic-commits` skill.
+Do not commit here. Hand off to `atomic-commits`.
