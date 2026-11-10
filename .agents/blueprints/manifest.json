@@ -1,0 +1,76 @@
+{
+  "analyzers": [
+    "auth",
+    "config",
+    "data",
+    "layout",
+    "tokens",
+    "ui"
+  ],
+  "areas": {
+    "config": {
+      "teno-extension/src/firebase.js": "0babfc064cd5c3c72f40b47a939993500b77561dfd549cbb7f2673ba68d1bd26",
+      "teno-web/api/delete-account.js": "520e166f127909eafcd2e962d72429cfecc1662dba27aadc1d7c32e3369fa756",
+      "teno-web/api/joinLabel.js": "b21aa0b3e187e7e058af4e53c21d650a3403b8c29bfefd17f5b8c84e98b4c0db",
+      "teno-web/src/firebase.js": "0babfc064cd5c3c72f40b47a939993500b77561dfd549cbb7f2673ba68d1bd26",
+      "teno-web/src/pages/SettingsPage.jsx": "49cc3fab24cd6dd17f9aa2a448b4813357afc1d1af74332db25eec617f4f682b",
+      "teno-web/src/utils/themeTranslations.js": "4321e1f9b6b7d55c3c8de32d63fd1ad2adef87fe71fc8c2b39517bf6c248761e",
+      "teno-web/tests/api/joinLabel.test.js": "5a593d5086c4993623cf94ca181bbf71f06e58b00fc8b620289981e906917b08"
+    },
+    "data": {
+      "teno-extension/src/App.jsx": "34b2ccc88986ec0e66c347d4be4f2a81f483977fd48c62d5e57b536f035b6b51",
+      "teno-extension/src/components/LinkStorer.jsx": "234990dad82d7373f7e0614af37ee370ea45d3448ffc3d09c6d781fe3b89393b",
+      "teno-extension/src/components/Terminal.jsx": "0eecddfc82e7735125af04b853eaf873ea694bc0f5b8c69c5e1826dd82e0173f",
+      "teno-web/src/App.jsx": "1d607b28d2e68896d4b0f972ecc4ea841f4622b4bcfb45b6a0edeb90cea59bfe",
+      "teno-web/src/ThemeContext.jsx": "636133fdf2b66f7bdbe9610e6659423e6bfc536e4684588826e6fa0fe68f86c6",
+      "teno-web/src/api/user.js": "e01ff126228ad85cc6538599173fd4e4bac7c976fbeac48a62dcb53eb8367426",
+      "teno-web/src/components/Header.jsx": "28668d2dffa8c138d1fc1fc01d3f9b69e00c49344bbc564d49b3c16397bf740d",
+      "teno-web/src/components/LinkStorer.jsx": "1f0ca0b8381d73433b90f291c03cdac9b9dc8e1e3449706fb105f485b204dcfc",
+      "teno-web/src/components/Terminal.jsx": "7225b95bf8052be6c645fc1b9de3e1d9ad858143f21e737c96c0a89059d86783",
+      "teno-web/src/components/TermsAgreementModal.jsx": "3aa41227342f41c4702c5dfde3aa99130384a6999a3a754c249ea80c02f236ec",
+      "teno-web/src/lib/db.js": "15da574c6ecd6b1d5e253540ab3b90895edf70a1fc6f6aa5a32d972d2518557a",
+      "teno-web/src/pages/DPDPPage.jsx": "748bffa00a1e72aa5fe6bf89718c708eb11d6e781c0d19b77de9efa23ab501de",
+      "teno-web/src/pages/LoginPage.jsx": "76d794f1b6d91a47758047d5707138838c19472686f53de6fa3c62f752c83dc6",
+      "teno-web/tests/context/ThemeContext.test.jsx": "fe155903697cb25017d01833f2bf5f15df687004f640d3c95f1f9a1ad72320ee",
+      "teno-web/tests/setup.js": "8611dc07fbe922b954d1cdd28fe094bbb211c232a1215ae79c8428db732a1022"
+    },
+    "layout": {
+      "teno-extension/index.html": "f05ac0f21ac25d1f03377431af757112cc1696fb9e703818b554e727ad0cb5d6",
+      "teno-extension/src/index.css": "ed547226f4ebaaa4f247d5a916e6281816130e558226b42501d92737ecf820cb",
+      "teno-web/index.html": "050a0c808884e2e6c545b2612ed2bbb552a481705fd35a44d71362f530ec0d77",
+      "teno-web/src/components/Header.jsx": "28668d2dffa8c138d1fc1fc01d3f9b69e00c49344bbc564d49b3c16397bf740d",
+      "teno-web/src/index.css": "dddeef764408a4ce57d9ad484244504206591e5dfd1d43bb97cc6b8b90842f5c"
+    },
+    "tokens": {
+      "teno-extension/src/index.css": "ed547226f4ebaaa4f247d5a916e6281816130e558226b42501d92737ecf820cb",
+      "teno-web/src/index.css": "dddeef764408a4ce57d9ad484244504206591e5dfd1d43bb97cc6b8b90842f5c"
+    },
+    "ui": {
+      "teno-extension/src/components/LinkStorer.jsx": "234990dad82d7373f7e0614af37ee370ea45d3448ffc3d09c6d781fe3b89393b",
+      "teno-extension/src/components/Reminders.jsx": "71ce4bce64ddbd4486c8b40e7f4c5f7a47de38738d1ece7b256ac54f1f7d5a9b",
+      "teno-web/src/components/ConfirmModal.jsx": "f721de697abeeb96c48c7202be3d8e702c037ae6fe9530f88a232b20025df32a",
+      "teno-web/src/components/Footer.jsx": "48a7065cc764b424d6211cfeea5cbd065555098ed31a3aaf34e778bc6c25c959",
+      "teno-web/src/components/GenerateInvite.jsx": "7c98682da421c27e6ec9011812bf695c5139e5559ceb4600262ad843083d0558",
+      "teno-web/src/components/Header.jsx": "28668d2dffa8c138d1fc1fc01d3f9b69e00c49344bbc564d49b3c16397bf740d",
+      "teno-web/src/components/LinkStorer.jsx": "1f0ca0b8381d73433b90f291c03cdac9b9dc8e1e3449706fb105f485b204dcfc",
+      "teno-web/src/components/LoadingScreen.jsx": "1debfbe563a9805aec9a70e3796facb59c5495162f1be59f660cfc27cb50abe8",
+      "teno-web/src/components/MembersModal.jsx": "1baf299c4f6ed3074ca3ee4547319cc7aef640d85db1fb8b3aebf29e02519e02",
+      "teno-web/src/components/PromptCard.jsx": "9d947d19f7a5bbe85f3e2a388dc314056bd88776507799bed4c170b1c57b73d1",
+      "teno-web/src/components/PromptEditorModal.jsx": "2de2530298a5a2bc70e79f14f41068fc0f77f4d2da3f544858543858b4e3e346",
+      "teno-web/src/components/PromptsTab.jsx": "060f09773267bbd16b4fa23ac561e0f02996cbeacf081c58106d9c3b01c09a8b",
+      "teno-web/src/components/Reminders.jsx": "fa28d01be8fb291073e6bc1980cc92bd03e2eb9754c1ec6267b4dfeec50dd0c9",
+      "teno-web/src/components/SEO.jsx": "61e35322ab5d65546bbdb609144b18cc9e4ed1da0f11faae6a968969ecca4806",
+      "teno-web/src/components/ShareModal.jsx": "10ad039c08b9ca2c950be0553729d9128f7d3d4b5d6ff47f439b8f199380692a",
+      "teno-web/src/components/SharedLabelGroup.jsx": "1b957fa67be4e97a354161c5f78688bd5f41a82f38c1101c507490f27f763198",
+      "teno-web/src/components/SharedLabelsTab.jsx": "6aa2fdabad7abf0ea9189f662ee786dcc25d0b3f343458c076c253a7ffc6afee",
+      "teno-web/src/components/Terminal.jsx": "7225b95bf8052be6c645fc1b9de3e1d9ad858143f21e737c96c0a89059d86783",
+      "teno-web/src/components/TermsAgreementModal.jsx": "3aa41227342f41c4702c5dfde3aa99130384a6999a3a754c249ea80c02f236ec",
+      "teno-web/src/components/Timer.jsx": "7c6eb371dc5e3da5544175320f61c0ed54f65fd37cb3cfa690ce890a65013584",
+      "teno-web/src/pages/DPDPPage.jsx": "748bffa00a1e72aa5fe6bf89718c708eb11d6e781c0d19b77de9efa23ab501de",
+      "teno-web/src/pages/SettingsPage.jsx": "49cc3fab24cd6dd17f9aa2a448b4813357afc1d1af74332db25eec617f4f682b",
+      "teno-web/tests/components/ConfirmModal.test.jsx": "74e001f3ebb1fecf01f7171778c6125170e1b8e8b1a8e4c89f9e412b8434fcc6",
+      "teno-web/tests/components/PromptEditorModal.test.jsx": "ed5e37135228bf1e2c4e69d7ecfe3b549a04cccdedbb6786a576ae1829528115"
+    }
+  },
+  "generator_version": "0.2.0"
+}
