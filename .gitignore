@@ -6,3 +6,5 @@ node_modules/
 dist/
 .agents/work/
 .agents/vendor/
+__pycache__/
+*.pyc
