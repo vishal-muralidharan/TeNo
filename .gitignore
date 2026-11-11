@@ -8,3 +8,5 @@ dist/
 .agents/vendor/
 __pycache__/
 *.pyc
+.env.*
+!.env.example
