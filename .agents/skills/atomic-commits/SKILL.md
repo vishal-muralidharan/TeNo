@@ -1,145 +1,110 @@
 ---
 name: atomic-commits
-description: >-
-  Use this skill to enforce atomic, function-scoped git commits during development in the TeNo codebase.
-  Ensures every change to a file or cohesive group of files contributing to a specific
-  function, step, or sub-module across teno-web and teno-extension is verified, tested, and committed
-  before moving on to the next function, module, or step.
+description: Use whenever you are about to commit code in a project that has a .agents/project-profile.yaml. Enforces small, single purpose commits whose message follows the project's own format, scopes and push policy. Validates the message with a script. Use it after finishing any cohesive unit of work, before starting the next one, and whenever the user says commit, save my work, or wrap up.
+compatibility: Needs file read, shell, git, Python 3, and PyYAML.
 ---
 
-# Atomic & Modular Git Commits
+# Atomic commits
 
-This skill provides step-by-step instructions for committing code changes in small, atomic, function-scoped increments across both the **Web (`teno-web`)** and **Extension (`teno-extension`)** versions of TeNo.
+Stage 5 of the pipeline. One functional unit per commit makes rollbacks, reviews and bisects easy. Mixed commits make all three hard.
 
-## Core Principle
+## Read first
 
-> **Rule:** Every functional change to a file or cohesive set of files must be committed before proceeding to the next function, next step, or next module.
+`.agents/project-profile.yaml`, section `git`. It sets the message format, allowed types, allowed scopes, the push policy and the staging policy. Do not assume any of them.
 
-Never accumulate changes across multiple unrelated functions, components, or sub-projects (`teno-web` vs `teno-extension`) into a single monolithic commit. Keeping commits modular and atomic ensures easy rollbacks, clear audit history, and reliable code reviews across the web app, browser extension, serverless API, and database rules.
+## Principles
 
-### Primacy of Skill-Defined Atomic Increments Over User-Provided Phases
+- **One unit per commit.** A unit is one function, step, module or file group that does one job. Do not batch unrelated changes because they were mentioned in the same prompt.
+- **The plan sets the boundaries, not the prompt.** If the user gave broad phases, decompose them into units first (see `audit-and-planning`) and commit each unit on its own.
+- **Never commit broken code.** The checks in the next section must pass first.
+- **Respect the push policy.** If `git.push` is `never`, never run `git push`, even to be helpful, unless the user's current message tells you to push. If it is `ask`, ask first. If it is `allowed`, push only when the work is done.
 
-> **Crucial Rule:** Irrespective of high-level phases, milestones, or grouped deliverables provided in a user prompt, the pre-implementation audit, execution plan, test verification, and git commits must ALWAYS follow the atomic standards of this skill (`atomic-commits`) and `audit-and-planning`, NOT the user's high-level phase groupings.
-* When a user presents instructions organized in broad phases (e.g. "Phase 1: DB & Rules", "Phase 2: Navigation & Card UI", "Phase 3: Editor Modal", "Phase 4: Collaboration & Integration"), you must decompose each phase into granular, atomic steps.
-* Each independent functional unit (schema rules, library methods, translations, UI components, modals, tabs) must be developed, tested, and committed on its own before moving to the next.
-* Never batch distinct functional units into a single commit merely because they were grouped under a single "Phase" in the user prompt. Skill-defined atomicity always takes precedence over user prompt formatting.
+## Workflow
 
----
+### 1. Find the boundary
 
-## When to Use This Skill
+State the single unit you just finished and list the files that belong to it. Leave out build output, caches, `.DS_Store` and anything in `.gitignore`.
 
-Activate this skill:
-- When implementing a new feature composed of multiple functions or steps.
-- When fixing bugs across one or more modules in `teno-web` or `teno-extension`.
-- When updating shared components (such as `LinkStorer.jsx` or `Reminders.jsx`) across web and extension.
-- When refactoring a database utility (`teno-web/src/lib/db.js` which is symlinked to `teno-extension/src/lib/db.js`).
-- After completing any cohesive unit of work and before starting work on the next component or function.
+### 2. Verify
 
----
+Run the cheapest commands that cover the change:
 
-## Web vs Extension Commit Separation
+- `commands.lint` and `commands.build`.
+- `commands.test_single` for each test you touched.
+- If only `commands.check` is set, run it.
 
-TeNo consists of two separate distribution surfaces:
-1. **`teno-web`**: Web application running in full browser tabs and mobile viewports.
-2. **`teno-extension`**: Browser extension popup running in constrained popup dimensions.
+Run the full `commands.check` before the last commit of a task. Fix failures before you stage anything. Apply the same zero warnings standard as `verification.zero_warnings`.
 
-### Multi-Target Commit Discipline:
-- **Never commingle Web and Extension changes in a single commit:** Even if a feature affects both versions (e.g. adding a delete confirmation option to `LinkStorer.jsx`), implement, test, and commit the `teno-web` changes first using the `web` or component scope. Then, implement and commit the `teno-extension` changes using the `extension` scope.
-- **Symlink Awareness (`teno-extension/src/lib`):** Changes to `teno-web/src/lib/db.js` affect both web and extension. Commit the core library change with its unit tests in `teno-web` before updating any extension consumer components that rely on the new API.
+Then run `git diff` and `git status`. Confirm that only intended changes are present.
 
----
+### 2b. Make each commit stand alone
 
-## Workflow Steps
+Every commit must pass the checks by itself, not only the last one. Two habits make that true:
 
-### Step 1: Identify the Functional Boundary
-- Define the single, cohesive unit of work just completed (e.g., adding an option to delete items when deleting a label in `teno-web`, updating popup scrolling behavior in `teno-extension`, updating serverless `joinLabel` handler).
-- Identify all files that directly contributed to this functional unit (implementation, tests, styles).
-- Ensure no unintended files (build outputs in `dist/`, `.DS_Store`, stray logs) are included.
+- **Order units by dependency.** Commit the file that is called before the file that calls it. For example, commit a check script before the `package.json` entry that runs it.
+- **Split shared files.** When 1 file serves 2 units (a manifest, a config, an index), stage only the hunks of the current unit with `git add -p`.
 
-### Step 2: Pre-Commit Verification
-Before staging files, verify that the changes are sound:
-1. **For `teno-web` changes:** Run the targeted Vitest test suite (`cd teno-web && npx vitest run tests/...`). Ensure all tests pass (`0 failures`).
-2. **For `teno-extension` changes:** Verify component syntax and test build (`cd teno-extension && npm run build` or syntax check).
-3. **Review Diff:** Run `git diff` or review unstaged changes to ensure only intentional modifications are present.
-4. **Check Status:** Run `git status` to see exact modified and untracked files.
+After a multi unit task, you can prove it with `git rebase -x "<commands.check>" <base-commit>`. It runs the check on every commit and stops at the first one that fails.
 
-### Step 3: Granular Staging
-Stage **only** the files relevant to the specific functional increment:
+### 3. Stage
+
+- If `git.stage` is `granular`: stage named paths only, with `git add <path> <path>`. Do not use `git add .` or `git add -A`.
+- If `git.stage` is `all`: `git add -A` is allowed after you read `git status`.
+
+### 4. Write the message
+
+Use the format in `git.commit_format`. Use a type from `git.types`.
+
+If `git.scopes` has entries, run the suggest_scope command with `--staged` before choosing a scope, show its top suggestions, and never guess:
+
 ```bash
-git add <path/to/file1> <path/to/file2>
-```
-- Avoid blanket `git add .` or `git add -A` unless all changed files strictly belong to that single functional unit.
-- If changes span both `teno-web` and `teno-extension`, stage and commit them separately.
-
-### Step 4: Craft a Semantic Commit Message (Single Line Only)
-Use the Semantic Commit format on **one line only**:
-```text
-<type>(<scope>): <comprehensive subject in present tense>
+python3 .agents/skills/atomic-commits/scripts/suggest_scope.py --profile .agents/project-profile.yaml --staged
 ```
 
-**Key Constraints:**
-- **Single-Line Only:** Never include multi-line bodies, footers, or line breaks in commit messages.
-- **Present Tense:** Write the subject in present tense (e.g. `add`, `update`, `fix`, `refactor`, `remove`, not `added`, `fixed`, `adding`).
+For unstaged files, pass `--files <files>`:
 
-**Allowed Types:**
-- `feat`: A new feature or function
-- `fix`: A bug fix
-- `test`: Adding or updating tests
-- `test-fix`: Fixing existing tests or test configurations
-- `refactor`: Code change that neither fixes a bug nor adds a feature
-- `style`: Formatting, CSS tweaks, missing semicolons, etc.
-- `docs`: Documentation only changes
-- `chore`: Maintenance, dependency updates, tooling
+```bash
+python3 .agents/skills/atomic-commits/scripts/suggest_scope.py --profile .agents/project-profile.yaml --files <files>
+```
 
-**Standard TeNo Scopes:**
-- `web`: Web application specific changes (`teno-web/`)
-- `extension`: Browser extension specific changes (`teno-extension/`)
-- `links`: Bookmarks and links module (`LinkStorer.jsx`)
-- `cart`: Saved items and reading/purchase cart module
-- `reminders`: Reminders and todo task manager module (`Reminders.jsx`)
-- `timer`: Productivity countdown timer module (`Timer.jsx`)
-- `terminal`: Terminal / command drawer component (`Terminal.jsx`)
-- `theme`: Dual-theme engine, CSS custom properties, Minimalist/Modern styling
-- `labels`: Unified label architecture, label sharing, invite tokens, RBAC
-- `db`: Database abstraction layer (`TeNoDatabase`, `db.js`)
-- `api`: Serverless API endpoints (`joinLabel.js`, `delete-account.js`)
-- `rules`: Firestore security rules (`firestore.rules`)
-- `migrations`: Database migration scripts or rollout docs (`migrations/`)
-- `settings`: Settings page, DPDP/GDPR export, account deletion flow
-- `skills`: Agent workflow skills (`.agents/skills/`)
-- `rules`: Agent guidelines (`AGENTS.md`)
+Pick a suggested scope. Show its top suggestions. Never guess. If none fits, do not invent one silently. Use the closest scope, finish the commit, and ask the user for confirmation to add a new scope so `sync-skills-and-docs` can add it to the profile.
 
-**Web vs Extension Commit Examples:**
-- `feat(web): add dual-mode label delete modal in LinkStorer`
-- `feat(extension): port dual-mode label delete modal to extension popup`
-- `fix(web): prevent scroll chaining on ShareModal in modern theme`
-- `fix(extension): constrain popup height and enable smooth scroll in tab pane`
-- `refactor(db): streamline unified label query subscription in TeNoDatabase`
-- `test(web): add unit tests for LinkStorer label deletion options`
+If `git.single_line` is true, write the subject line only. No body, no footer.
 
-### Step 5: Execute Commit & Verify Clean State
-1. Commit the staged changes using a single-line message:
-   ```bash
-   git commit -m "<type>(<scope>): <comprehensive subject in present tense>"
-   ```
-2. Verify that the commit was successfully recorded:
-   ```bash
-   git log -n 1 --oneline
-   ```
-3. Check working directory status:
-   ```bash
-   git status
-   ```
+Write the subject in the present tense, in lowercase, with no final period. Keep the line under 72 characters.
 
-### Step 6: Transition to Next Step
-Only after the commit is recorded and the workspace status for this unit is clean, proceed to work on the next function, step, or module.
+Check the message before you commit:
 
----
+```bash
+python3 .agents/skills/atomic-commits/scripts/check_commit_message.py --profile .agents/project-profile.yaml "feat(ui): add button"
+```
 
-## Anti-Patterns to Avoid
+If python3 is not found, use python or py -3.
 
-- ❌ **Batching by User Phases:** Committing multiple distinct components, database rules, or architectural layers together simply because a user prompt grouped them into a single "Phase" (e.g. committing DB rules, UI card, and navigation in one batch instead of atomic commits).
-- ❌ **Monolithic Web + Extension Commit:** Modifying `teno-web/src/components/LinkStorer.jsx` and `teno-extension/src/components/LinkStorer.jsx` together in one commit without separate verification.
-- ❌ **Premature Next Step:** Starting edits on Extension while uncommitted changes in Web are pending.
-- ❌ **Unverified Commit:** Committing web code without running Vitest, or committing extension code with syntax errors.
-- ❌ **Vague Commit Messages:** Using messages like `updates`, `fix bug`, `wip`, or `changes`.
+Fix every error it reports. Warnings are advice. Branch names and pull request titles use the same commit format as `git.commit_format`.
+
+### 5. Commit and confirm
+
+When a branch workflow state is active (`.agents/work/branch-state.json`), run the guard check before committing:
+
+```bash
+python3 .agents/skills/feature-delivery/scripts/branchflow.py guard
+```
+
+If this check fails, do not commit. You are on the default branch while a task branch is active. Switch to the task branch first.
+
+```bash
+git commit -m "<message>"
+git log -n 1 --oneline
+```
+
+Do not push unless the push policy and the user's request allow it.
+
+## Guardrails
+
+1. One unit per commit.
+2. Verification passes before staging, and each commit passes on its own.
+3. The message passes the checker.
+4. No build artifacts in any commit.
+5. No push unless allowed.
+6. Do not bypass the checks to save time.
