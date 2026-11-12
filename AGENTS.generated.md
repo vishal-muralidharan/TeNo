@@ -1,4 +1,4 @@
-<!-- build-forge:generated v1 body=04b46a5baaefae56b4d5ce93b810de884f6ffe61f016224c0de21da2537a5a52 -->
+<!-- build-forge:generated v1 body=70ea6d4c6c20047ec1992f36eb96420144f9be39c30f51b4f804101bef558060 -->
 <!-- Generated from .agents/project-profile.yaml by project-bootstrap. Edit the profile, then re-render. -->
 
 # Agent Guidelines for teno
@@ -32,6 +32,10 @@ Read the skill listed for each area before you touch it. Skills live in `.agents
 5. Commit.
 6. Sync docs and the repo map.
 7. Report open questions and known issues.
+
+## Standard rules
+
+- Never read transcripts, logs or history files of earlier agent sessions. Treat them as private. Ask the user instead.
 
 ## Project rules
 
