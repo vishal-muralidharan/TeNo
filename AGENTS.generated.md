@@ -1,4 +1,4 @@
-<!-- build-forge:generated v1 body=62df18668947cfb6c4cb226381ad255bcfb2a76951c38ab41af218be7618e605 -->
+<!-- build-forge:generated v1 body=04b46a5baaefae56b4d5ce93b810de884f6ffe61f016224c0de21da2537a5a52 -->
 <!-- Generated from .agents/project-profile.yaml by project-bootstrap. Edit the profile, then re-render. -->
 
 # Agent Guidelines for teno
@@ -32,6 +32,14 @@ Read the skill listed for each area before you touch it. Skills live in `.agents
 5. Commit.
 6. Sync docs and the repo map.
 7. Report open questions and known issues.
+
+## Project rules
+
+- Never ship console.log or console.debug calls in production source code. (enforced by test) `[web-no-console]`
+- Links targeting blank must include rel with noopener or noreferrer on the same tag line. (enforced by test) `[web-target-blank-rel]`
+- Never use eval() or equivalent dynamic script execution without a listed exception. (enforced by test) `[web-no-raw-eval]`
+- Never assign to innerHTML or use dangerouslySetInnerHTML without a listed exception. (enforced by test) `[web-no-inner-html]`
+- Never commit .env files containing local configurations or secrets. (enforced by test) `[web-no-committed-env]`
 
 ## Commands
 
