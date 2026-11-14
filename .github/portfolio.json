@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "public": true,
+  "title": "TeNo",
+  "tagline": "This is a website version for the TeNo side-panel extension, designed to extend the browser workflow with advanced management features...",
+  "description": "This is a website version for the TeNo side-panel extension, designed to extend the browser workflow with advanced management features for links, reminders, cart items, and timers. It provides a structured, keyboard-friendly interface for editing, organizing, labeling, and accessing saved content more efficiently.",
+  "status": "active",
+  "order": 0,
+  "stack": [
+    "React",
+    "Vite",
+    "Tailwind CSS",
+    "Firebase",
+    "Vercel",
+    "Browser extension"
+  ],
+  "tags": [],
+  "features": [
+    "Dual Theme System - Learn about the Minimalist vs Modern styling architecture.",
+    "Collaboration & Sharing - Discover the unified label architecture and role-based access control (RBAC).",
+    "Core Modules - Understand the primary functional tabs: Links, Cart, Reminders, Timer, and Prompts.",
+    "Settings & Compliance - Details on data export (GDPR/DPDP) and server-side account deletion."
+  ],
+  "links": {
+    "live": "https://te-no.vercel.app",
+    "repo": "https://github.com/vishal-muralidharan/TeNo"
+  },
+  "screenshots": [],
+  "overrides": {}
+}
