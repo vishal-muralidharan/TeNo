@@ -2,7 +2,7 @@
   "schema": 1,
   "public": true,
   "title": "TeNo",
-  "tagline": "This is a website version for the TeNo side-panel extension, designed to extend the browser workflow with advanced management features...",
+  "tagline": "Website version of the TeNo side-panel extension for links, reminders, cart items, and timers.",
   "description": "This is a website version for the TeNo side-panel extension, designed to extend the browser workflow with advanced management features for links, reminders, cart items, and timers. It provides a structured, keyboard-friendly interface for editing, organizing, labeling, and accessing saved content more efficiently.",
   "status": "active",
   "order": 0,
@@ -26,5 +26,7 @@
     "repo": "https://github.com/vishal-muralidharan/TeNo"
   },
   "screenshots": [],
-  "overrides": {}
+  "overrides": {
+    "tagline": "Website version of the TeNo side-panel extension for links, reminders, cart items, and timers."
+  }
 }
