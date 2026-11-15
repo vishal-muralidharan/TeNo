@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: |
+            teno-extension/package-lock.json
+            teno-web/package-lock.json
+      - name: Install (teno-extension)
+        working-directory: teno-extension
+        run: npm ci
+      - name: Build (teno-extension)
+        working-directory: teno-extension
+        env:
+          CI: "true"
+        run: npm run build
+      - name: Install (teno-web)
+        working-directory: teno-web
+        run: npm ci
+      - name: Test (teno-web)
+        working-directory: teno-web
+        env:
+          CI: "true"
+        run: npm run test
+      - name: Build (teno-web)
+        working-directory: teno-web
+        env:
+          CI: "true"
+        run: npm run build
