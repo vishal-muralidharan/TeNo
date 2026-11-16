@@ -2,7 +2,7 @@
 name: build-ui
 description: 'Use this skill whenever you build or change any UI in teno: screens, components, sheets, charts, copy. Covers shared components, tokens, required states, motion and accessibility.'
 ---
-<!-- build-forge:generated v1 body=76a6998aa2d35ce7eadce427bdf8104b8f0081edc8bd1d7d8d77ee593d14c9c5 -->
+<!-- build-forge:generated v1 body=0f9b3fa1bf051287efa24d1f5a4e872bad89f04bffa55b6d635f4af26c22bf3c -->
 
 <!-- Generated from .agents/project-profile.yaml by project-bootstrap. Edit the profile, then re-render. -->
 
@@ -41,9 +41,11 @@ Query codebase UI facts on demand:
 - Loading views must use skeleton blocks matching content shape with no layout shift. `[ui-state-loading-skeleton]`
 - Empty states must display an icon, 1 or 2 descriptive words, and an action. `[ui-state-empty-action]`
 - Error views must display a short message with an icon and role="alert". `[ui-state-error-alert]`
+- Never soften or break the Minimalist theme: zero border radius, bracketed text buttons, no graphical icons, lowercase text. `[dual-theme-minimalist-integrity]`
 
 ## Finish
 
 Run `cd teno-web && npm run test`.
+Check the screen at the widths listed in `review-responsive-design`.
 <!-- BEGIN CUSTOM: notes -->
 <!-- END CUSTOM: notes -->

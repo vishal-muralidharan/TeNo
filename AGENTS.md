@@ -1,225 +1,93 @@
-# Agent Development Guidelines & Routine (Web & Extension)
+<!-- build-forge:generated v1 body=7eac0010242ec8681273924ab6382a227dc3a2f0af84bcedf06f36fecdc8048b -->
+<!-- Generated from .agents/project-profile.yaml by project-bootstrap. Edit the profile, then re-render. -->
 
-This document defines the mandatory development workflows and standards that all AI agents and contributors must follow when working in the **TeNo** codebase across both the **Web (`teno-web`)** and **Extension (`teno-extension`)** versions.
+# Agent Guidelines for teno
 
----
+Minimalist focus browser and workspace application with web dashboard and Chrome extension. Stack: React, Vite, css, Firebase.
 
-## 1. Mandatory Development Principles
+Read the skill listed for each area before you touch it. Skills live in `.agents/skills`. Facts live in `.agents/project-profile.yaml`. Rule details live in the skills. Do not copy them here. If your agent does not load skills on its own, open the skill file named in the table.
 
-Every development task in this repository must strictly adhere to the following mandatory core principles:
+## Areas
 
-### Rule 1: Step-by-Step Atomic Commits Across Surfaces
-* **Skill Reference:** [.agents/skills/atomic-commits/SKILL.md](file:///.agents/skills/atomic-commits/SKILL.md)
-* **Rule:** Every change in a file or cohesive group of files that contribute to a similar function or step must be committed **before** moving on to the next function, module, or step.
-* **Primacy Over User Phases:** Irrespective of any high-level phases, milestones, or batches outlined in a user request, the plan, audit, and commits must happen as per the skill only and not as per the phases.
-* **Prohibited:** Accumulating changes across multiple distinct functions, components, or sub-projects (`teno-web` vs `teno-extension`) into a single batch commit. Always commit web changes (with tests) separately from extension changes.
+| Area | Skill |
+|---|---|
+| Run any task from start to finish | `feature-delivery` |
+| Turn an idea into a spec and milestones | `product-spec` |
+| Create the first working skeleton of a new app | `scaffold-app` |
+| Turn written rules into automatic checks | `rules-to-tests` |
+| Settings, privacy, terms, consent and account deletion | `legal-and-settings-pages` |
+| Any change | `audit-and-planning`, `repo-search` |
+| UI and tokens | `build-ui`, `maintain-design-system` |
+| Layout | `review-responsive-design` |
+| File placement and names | `review-directory-structure`, `file-folder-naming` |
+| Data and storage | `review-db-structure` |
+| Verify | `targeted-module-testing` |
+| Commit | `atomic-commits` |
+| Docs | `sync-skills-and-docs` |
 
-### Rule 2: Targeted Module Testing & Verification Synchronization
-* **Skill Reference:** [.agents/skills/targeted-module-testing/SKILL.md](file:///.agents/skills/targeted-module-testing/SKILL.md)
-* **Rule:** 
-  1. **Test Every Web Change:** Any changed module in `teno-web` must be tested using that specific module's test suite in `teno-web/tests/`, even when only a small or single-line change is made.
-  2. **Verify Every Extension Change:** Any change to `teno-extension` must undergo component build and syntax verification to prevent broken popup bundles.
-  3. **Update Tests on Significant Changes:** Whenever new functionality is introduced, contracts/APIs change, new branches/conditions are created, or modal/UI behaviors change, corresponding test files must be updated or added in the same step.
-  4. **Coverage Compliance:** `teno-web/vite.config.js` sets 100% coverage thresholds across lines, functions, branches, and statements. Never introduce uncovered branches.
-* **Prohibited:** Skipping tests because a change is deemed "minor", or committing significant code changes without accompanying test coverage.
+## Pipeline
 
-### Rule 3: Architecture & Multi-Package Placement
-* **Skill Reference:** [.agents/skills/review-directory-structure/SKILL.md](file:///.agents/skills/review-directory-structure/SKILL.md)
-* **Rule:** Every new or moved file must be positioned strictly within its designated architectural layer (`teno-web/src/components/`, `teno-web/src/pages/`, `teno-web/src/lib/`, `teno-web/src/utils/`, `teno-web/api/`, `teno-web/tests/`, `teno-extension/src/components/`, `teno-extension/src/pages/`, `teno-extension/public/`, or root Firebase configurations).
-* **Symlink Integrity:** `teno-extension/src/lib` is a symlink to `teno-web/src/lib`. Canonical database logic resides in `teno-web/src/lib/db.js` so both platforms stay synchronized.
-* **Root Cleanliness Policy:** The root directory is strictly reserved for `.gitignore`, `AGENTS.md`, `README.md`, `firebase.json`, `.firebaserc`, `firestore.rules`, `firestore.indexes.json`, and primary architectural subdirectories (`.agents/`, `docs/`, `migrations/`, `scripts/`, `teno-web/`, `teno-extension/`). Secondary configs, temporary logs, or scratch scripts must never reside loose in the root.
+1. Audit: search before you edit.
+2. Plan: small atomic steps.
+3. Build.
+4. Verify.
+5. Commit.
+6. Sync docs and the repo map.
+7. Report open questions and known issues.
 
-### Rule 4: File & Folder Naming Conventions
-* **Skill Reference:** [.agents/skills/file-folder-naming/SKILL.md](file:///.agents/skills/file-folder-naming/SKILL.md)
-* **Rule:** File and directory names must strictly adhere to casing standards: `PascalCase.jsx` for React components, page views, modals, and Context providers across both web and extension; `camelCase.js` for utilities, client libraries (`db.js`), and API wrappers; `camelCase.js` or `kebab-case.js` for serverless API endpoints; and mirrored `<ComponentName>.test.jsx` / `<name>.test.js` in `teno-web/tests/`. Maintain component naming symmetry between `teno-web` and `teno-extension` (e.g. `LinkStorer.jsx`).
+## Standard rules
 
-### Rule 5: Database Structure & Schema Integrity
-* **Skill Reference:** [.agents/skills/review-db-structure/SKILL.md](file:///.agents/skills/review-db-structure/SKILL.md)
-* **Rule:** Any reading, writing, modifying, or refactoring of Firestore collections, documents, fields, or security rules must strictly conform to the canonical database architecture (`docs/features/collaboration-and-sharing.md`), maintain `memberUids` denormalization across related collections (`links`, `cart_items`, `reminders`), guarantee non-undefined payloads, route client operations through `TeNoDatabase` (`src/lib/db.js`), ensure `firestore.rules` explicit permission parity for new collections/mutations, properly detach `onSnapshot` subscriptions in extension popups, and follow the pre-commit DB checklist.
+- Never read transcripts, logs or history files of earlier agent sessions. Treat them as private. Ask the user instead.
 
-### Rule 6: Responsive Mobile Design, Card Geometry & Dual-Theme System
-* **Skill Reference:** [.agents/skills/review-responsive-design/SKILL.md](file:///.agents/skills/review-responsive-design/SKILL.md) & [.agents/skills/maintain-minimalist-ui/SKILL.md](file:///.agents/skills/maintain-minimalist-ui/SKILL.md)
-* **Rule:** 
-  - **Web (`teno-web`):** Every UI component, page, modal, or form must support BOTH the **Minimalist** (`[data-style="minimal"]`) and **Modern** (`[data-style="modern"]`) styles as well as light/dark modes (all 4 theme permutations). Pure CSS custom properties (no Tailwind). All overlays and modals must implement dynamic viewport heights (`dvh`), bounded scroll containers (`max-height: 85dvh`, `overflow-y: auto`), safe-area insets (`env(safe-area-inset-*)`), ergonomic touch targets (minimum 44x44px), body scroll locking, and iOS Safari auto-zoom prevention (minimum 16px font on mobile inputs).
-  - **Card Geometry & Action Clearance:** Never squeeze multi-action entities (3+ action buttons or multi-line text) into compact 240px bookmark dimensions. Enforce grid column widths of `>= 350px` (e.g. `minmax(350px, 1fr)`) and explicit `min-height` (`>= 145px`).
-  - **Zero-Layout-Shift Transient Feedback:** Temporary feedback (`copied`, `saving...`) must never widen buttons or elongate cards; use reserved `min-width` or absolute status toasts.
-  - **Extension (`teno-extension`):** Layouts must fit within constrained popup dimensions (~400x550px) without outer window scrollbars or horizontal overflow. Prevent native `window.alert` / `window.confirm` dialogs that cause popup dismissal.
+## Project rules
 
-### Rule 7: Pre-Implementation Audit & Multi-Target Planning
-* **Skill Reference:** [.agents/skills/audit-and-planning/SKILL.md](file:///.agents/skills/audit-and-planning/SKILL.md) & [.agents/skills/repo-search/SKILL.md](file:///.agents/skills/repo-search/SKILL.md)
-* **Rule:** Before writing or modifying any code for a bug fix, feature, or refactor, you must first perform an audit of existing code across both `teno-web` and `teno-extension`, determine whether the scope is Web-only, Extension-only, or Both, diagnose verified root causes (for bugs) or requirements, layout reflow, immutability of historical versions, and 4-theme contrast (for features), and formulate a clear, step-by-step implementation plan composed of atomic, testable increments.
-* **Prohibited:** Writing or editing code prematurely without auditing the codebase, diagnosing the verified root cause, or having an explicit step-by-step implementation plan.
+- Never ship console.log or console.debug calls in production source code. (enforced by test) `[web-no-console]`
+- Links targeting blank must include rel with noopener or noreferrer on the same tag line. (enforced by test) `[web-target-blank-rel]`
+- Never use eval() or equivalent dynamic script execution without a listed exception. (enforced by test) `[web-no-raw-eval]`
+- Never assign to innerHTML or use dangerouslySetInnerHTML without a listed exception. (enforced by test) `[web-no-inner-html]`
+- Never commit .env files containing local configurations or secrets. (enforced by test) `[web-no-committed-env]`
+- Never use sed commands for file editing, building, or test hacks. `[zero-sed]`
+- Run cd teno-web && npm run test (vitest); all test suites must pass cleanly before committing. (enforced by test) `[vitest-zero-errors]`
 
-### Rule 8: Minimalist UI Element Integrity & Preservation
-* **Skill Reference:** [.agents/skills/maintain-minimalist-ui/SKILL.md](file:///.agents/skills/maintain-minimalist-ui/SKILL.md)
-* **Rule:** Whenever creating new components or modifying existing ones across `teno-web` and `teno-extension`, the Minimalist (`[data-style="minimal"]`) UI elements and brutalist/terminal aesthetic must be maintained strictly as is:
-  1. **Zero-Radius & Flat Elevation:** Enforce `--border-radius: 0px` and `--shadow-card: none` on all minimalist containers, inputs, buttons, and cards. Never apply `backdrop-filter: blur()` or soft drop shadows in minimal mode.
-  2. **Prohibition of Graphical Icons:** Never render Lucide or SVG icons in minimal mode (`ui.icons.*` must return `null` in minimal mode). Use ASCII brackets or text glyphs instead.
-  3. **ASCII Bracketed Actions & Badges:** All interactive actions, buttons, and status tags in minimal mode must be enclosed in ASCII brackets (e.g. `[ delete ]`, `[+ add_new]`, `[ yes ]`, `[ ↗ share ]`, `[shared]`).
-  4. **Action Button Hierarchy & Contrast:** Primary actions use solid inverted fill; secondary/alternative actions use crisp outlines (`border: 1px solid var(--text-primary); background: transparent;`); tertiary/cancel actions use muted borders. Never use low-contrast surface fills (like `--bg-surface-hover`) for resting static button states.
-  5. **Translation Dictionary Compliance:** All UI strings must be declared in `themeTranslations.js` (with separate minimal lowercase/bracketed and modern definitions) and consumed via `uiConfig.jsx`. Never hardcode raw strings or modern English in component JSX.
-  6. **Terminal Prefixes & Inversion:** Preserve terminal path prefixes (`> ./`), shell prompts (`$_ `), and monochrome high-contrast hover inversion.
-* **Prohibited:** Diluting or modernizing the minimalist interface with rounded pill buttons, soft shadows, unbracketed labels, low-contrast invisible resting buttons, or graphical icons in minimal mode.
+## Commands
 
-### Rule 9: Continuous Skill & Documentation Synchronization
-* **Skill Reference:** [.agents/skills/sync-skills-and-docs/SKILL.md](file:///.agents/skills/sync-skills-and-docs/SKILL.md)
-* **Rule:** Whenever introducing a new feature, module, page, modal, UI bracket/badge, database collection, or platform file, all agent skills (`.agents/skills/`), architecture guides (`docs/features/`, `README.md`), and developer guidelines (`AGENTS.md`) must be systematically audited and synchronized before concluding the feature. Follow the 6-phase synchronization workflow and post-feature synchronization checklist.
-* **Prohibited:** Concluding or merging a feature without synchronizing the directory structure, minimalist design dictionary, responsive card geometries, canonical database schemas, and documentation.
+| Task | Command |
+|---|---|
+| check | `cd teno-web && npm run test` |
+| test | `cd teno-web && npm run test` |
 
----
+## Git
 
-## 2. Standard Multi-Target Development Routine & Pipeline
+Format: `<type>(<scope>): <subject>`.
+Never run `git push` unless the user says to push.
 
-When fulfilling any user prompt or feature request, follow this complete, end-to-end development pipeline across two mandatory stages:
+### Scope guide
 
-```text
-══════════════════════════════════════════════════════════════════════════════
-STAGE A: ATOMIC IMPLEMENTATION CYCLE (Repeat for each functional step)
-══════════════════════════════════════════════════════════════════════════════
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 0. Pre-Implementation Audit & Scope Determination                          │
-│    - Discover usages & cross-platform parity via repo-search skill         │
-│    - Determine target: Web-only, Extension-only, Both                     │
-│    - Diagnose root causes & requirements via audit-and-planning skill      │
-│    - Formulate atomic, step-by-step implementation plan                    │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 1. Scope Functional Unit & Review Structure / Naming                       │
-│    - Isolate single cohesive step or function                              │
-│    - Verify architectural layer via review-directory-structure skill       │
-│    - Verify casing via file-folder-naming skill (PascalCase / camelCase)   │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 2. Implement & Synchronize Tests                                           │
-│    - Write / edit module code in target sub-project                        │
-│    - On web: Verify dual-theme (minimal/modern) & maintain-minimalist-ui   │
-│    - Enforce card geometry (>= 350px width, >= 145px height) & zero shift  │
-│    - On extension: Verify popup bounds (~400x550px) & clean compilation   │
-│    - Synchronize / add unit tests in teno-web/tests/                       │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 3. Execute Targeted Module Tests & Verifications                           │
-│    - Run module test runner in teno-web (targeted-module-testing skill)    │
-│    - Verify extension compilation if extension touched (vite build)        │
-│    - Fix any regressions immediately until 100% green                      │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 4. Atomic Git Commit (Single-Line Semantic Commit)                         │
-│    - Stage only relevant files (atomic-commits skill)                      │
-│    - Commit using: <type>(<scope>): <present tense>                        │
-│    - Confirm commit with git log -n 1 --oneline                            │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 5. Iterate or Transition to Synchronization Pipeline                       │
-│    - If more units/steps remain: Return to Step 1                          │
-│    - If all functional code & tests are committed: Proceed to Stage B      │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-══════════════════════════════════════════════════════════════════════════════
-STAGE B: FEATURE CONCLUSION & SYNCHRONIZATION PIPELINE (sync-skills-and-docs)
-══════════════════════════════════════════════════════════════════════════════
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 6. Execute Systematic 6-Phase Skill & Documentation Synchronization Audit  │
-│    Phase 1: review-directory-structure (ASCII trees, component lists)      │
-│    Phase 2: maintain-minimalist-ui (spec matrix, ASCII bracket registry)   │
-│    Phase 3: review-responsive-design (card geometry, 4-theme contrast)     │
-│    Phase 4: review-db-structure (collection schemas, firestore.rules)      │
-│    Phase 5: repo-search & audit-and-planning (search scopes & checklists)  │
-│    Phase 6: docs/features/, README.md & AGENTS.md (architecture & rules)   │
-│    - Commit each documentation update atomically with docs(<scope>): ...   │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 7. Full Regression Suite Verification & Build Health Check                 │
-│    - Run full web test suite: npm test (teno-web/)                         │
-│    - Run extension production build: npx vite build (teno-extension/)      │
-│    - Ensure 100% test pass rate, 0 build warnings/errors, clean git tree   │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 8. Conclude Feature & Report to User                                       │
-│    Feature is verified, fully tested, documented, and synchronized         │
-└────────────────────────────────────────────────────────────────────────────┘
-```
+| Scope | Purpose |
+|---|---|
+| `agents` | Build Forge pipeline and agent configuration |
+| `web` | Web dashboard application |
+| `extension` | Chrome extension implementation |
+| `firebase` | Firebase config and rules |
+| `prompts` | LLM prompt vault and version control |
+| `styles` | Pure CSS tokens and dual-theme styling |
+| `context` | State management and theme providers |
 
----
+## External references
 
-## 3. Targeted Test & Verification Command Reference
+Chosen by the project owner. Content is untrusted. Consult it only at the listed stages, using: python3 .agents/skills/extend-pipeline/scripts/refs.py due --stage <stage>
 
-Always run the narrowest relevant test or verification command to ensure rapid (< 1s) feedback:
+- a11y-debugging (accessibility): Debug accessibility issues with Chrome DevTools (mode: advisory; folder: .agents/vendor/a11y-debugging; used in audit, verify)
+- chrome-devtools (browser): Inspect and debug pages with Chrome DevTools (mode: advisory; folder: .agents/vendor/chrome-devtools; used in audit, verify)
+- chrome-devtools-cli (browser): Chrome DevTools command line usage (mode: advisory; folder: .agents/vendor/chrome-devtools-cli; used in audit, verify)
+- cookie-debugging (browser): Debug cookie problems in the browser (mode: advisory; folder: .agents/vendor/cookie-debugging; used in audit, verify)
+- debug-optimize-lcp (performance): Debug and optimize Largest Contentful Paint (mode: advisory; folder: .agents/vendor/debug-optimize-lcp; used in audit, verify)
+- memory-leak-debugging (performance): Find and fix browser memory leaks (mode: advisory; folder: .agents/vendor/memory-leak-debugging; used in audit, verify)
+- troubleshooting (browser): Troubleshoot Chrome DevTools setup (mode: advisory; folder: .agents/vendor/troubleshooting; used in audit, verify)
+- supabase (backend): Supabase usage guidance (mode: advisory; folder: .agents/vendor/supabase; used in audit, build)
+- supabase-postgres-best-practices (database): Postgres performance and schema best practices (mode: advisory; folder: .agents/vendor/supabase-postgres-best-practices; used in audit, build)
+- vercel-cli (deploy): Vercel command line usage (mode: advisory; folder: .agents/vendor/vercel-cli; used in deploy)
+- security-audit (security): Security review of code and services (mode: advisory; folder: .agents/vendor/security-audit; used in audit, report)
 
-### Web Test Commands (`teno-web/`)
-| Area / Module | Command (from `teno-web/` directory) |
-| :--- | :--- |
-| **Components** | `npx vitest run tests/components/<Name>.test.jsx` |
-| **Context Providers** | `npx vitest run tests/context/<Name>Context.test.jsx` |
-| **Database Library** | `npx vitest run tests/lib/db.test.js` |
-| **UI Config & Helpers** | `npx vitest run tests/utils/<name>.test.js` |
-| **Serverless API** | `npx vitest run tests/api/<name>.test.js` |
-| **Full Web Suite** | `npm test` |
-
-*From repository root:*
-```bash
-(cd teno-web && npx vitest run tests/components/LinkStorer.test.jsx)
-```
-
-### Extension Verification Commands (`teno-extension/`)
-| Check Type | Command (from repository root) |
-| :--- | :--- |
-| **Extension Build Check** | `(cd teno-extension && npx vite build)` |
-| **Shared DB Logic Test** | `(cd teno-web && npx vitest run tests/lib/db.test.js)` |
-
----
-
-## 4. Single-Line Semantic Commit Standards
-
-Every commit message must follow the Semantic Commit format on **one line only**:
-```text
-<type>(<scope>): <comprehensive subject in present tense>
-```
-
-* **Single-Line Only:** Do not include multi-line bodies or footers in commit messages.
-* **Present Tense:** Write the subject in present tense (e.g. `add`, `update`, `fix`, `refactor`, `remove`, not `added`, `fixed`, `adding`).
-* **Types:** `feat`, `fix`, `test`, `test-fix`, `refactor`, `style`, `docs`, `chore`
-* **TeNo Scopes:** `web`, `extension`, `links`, `cart`, `reminders`, `timer`, `terminal`, `theme`, `minimal`, `ui`, `auth`, `labels`, `db`, `api`, `rules`, `migrations`, `settings`, `skills`
-* **Examples:**
-  * `feat(web): provide option to delete items when deleting a label`
-  * `feat(extension): port label delete confirmation modal to popup layout`
-  * `fix(links): use icon.horse for all favicons to guarantee 200 OK responses`
-  * `test(components): update LinkStorer test assertions for dual-mode label delete modal`
-  * `style(minimal): preserve bracketed action buttons and zero radius on share modal`
-  * `style(theme): adjust glassmorphic background blur in modern dark theme`
-  * `refactor(db): optimize query subscriptions in TeNoDatabase`
-
----
-
-## 5. Strict Guardrails
-
-1. **Never batch unrelated work:** If Task A modifies `teno-web/src/components/LinkStorer.jsx` and Task B modifies `teno-extension/src/components/LinkStorer.jsx`, complete and commit Task A (with tests) first before touching Task B.
-2. **Never leave tests red:** A commit must represent a working, passing state.
-3. **Never skip test updates on significant changes:** New features or modified contracts without tests are considered incomplete.
-4. **Never break dual-theme symmetry on web:** Every web UI feature must function seamlessly in both Minimalist (`[data-style="minimal"]`) and Modern (`[data-style="modern"]`) styles.
-5. **Never exceed popup viewport bounds on extension:** Extension popup UI must not trigger horizontal scrollbars or overflow the ~400x550px window.
-6. **Always use single-line semantic commit:** Never create multi-line commit messages or omit the `<type>(<scope>):` prefix.
-7. **Never pollute root directory:** Never place secondary configs, loose scripts, temporary debug logs, or test execution artifacts in the root directory.
-8. **Never start coding without prior audit and plan:** Always search existing implementations across both web and extension, diagnose root cause, and establish an atomic step-by-step plan before making edits.
-9. **Never break or dilute Minimalist UI elements:** When creating new components or modifying existing ones, strictly preserve the minimalist terminal/brutalist design (0px radius, flat elevation, bracketed actions, terminal prefixes, absence of graphical icons, lowercase typography, and `uiConfig.jsx`/`themeTranslations.js` integration). Never leak modern styling into minimalist mode.
-10. **Never compromise action button contrast in any theme:** Always audit action buttons across all 4 theme permutations (minimal dark/light, modern dark/light). Secondary/alternative buttons must use crisp outline borders (`border: 1px solid var(--text-primary)`). Never use low-contrast surface fills (like `--bg-surface-hover`) for resting static button states.
-11. **Never cause layout shift on transient feedback:** Status transitions (`copied`, `saving...`) must never widen buttons or elongate containing cards. Reserve fixed `min-width` on buttons or use absolute non-displacing toasts.
-12. **Never allow editing of historical/archived versions:** In versioned entities or historical views, non-current records must remain strictly read-only with locked inputs and disabled/hidden mutation controls.
-13. **Never squeeze multi-action cards into compact bookmark widths:** Entities with multi-action bars or multi-line content must use scalable columns (minimum `>= 350px`) and explicit minimum heights (`>= 145px`) to guarantee action clearance.
-14. **Never conclude a feature without skill & documentation synchronization:** Every newly introduced component, collection, bracketed action, or card geometry must be audited and registered across `.agents/skills/` and `docs/features/`.
-
+<!-- BEGIN CUSTOM: notes -->
+<!-- END CUSTOM: notes -->

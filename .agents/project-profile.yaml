@@ -21,7 +21,32 @@ design:
   component_dirs:
   - teno-web/src/components
 responsive:
-  enabled: false
+  enabled: true
+  min_width: 320
+  max_width: 2560
+  touch_target_px: 44
+  breakpoints:
+  - from: 320
+    layout: mobile dashboard, single column, bracketed actions, 16px font inputs
+  - from: 600
+    layout: horizontal phone and tablet adjustments
+  - from: 900
+    layout: multi-column desktop dashboard
+  - from: 1200
+    layout: expanded desktop layout, dual-theme display
+data:
+  storage: Google Cloud Firestore in Datastore/Native mode shared across teno-web and teno-extension
+  schema_source: firestore.rules
+  invariants:
+  - Unified label architecture groups links, cart, reminders, and prompts.
+  - Shared labels synchronize member access via denormalized memberUids.
+  - Private user items are isolated under /users/{userId}.
+  - Prompt vault maintains immutable version history and prompt tags.
+  - Zero undefined field values allowed in Firestore payloads.
+  protected:
+  - Label memberUids and permissions
+  - User settings and private subcollections
+  - Prompt version schemas
 commands:
   check: cd teno-web && npm run test
   test: cd teno-web && npm run test
@@ -68,10 +93,27 @@ git:
     - firestore.rules
     - firestore.indexes.json
     purpose: Firebase config and rules
+  - name: prompts
+    paths:
+    - teno-web/src/components/PromptsTab.jsx
+    - teno-web/src/components/PromptCard.jsx
+    - teno-web/src/components/PromptEditorModal.jsx
+    purpose: LLM prompt vault and version control
+  - name: styles
+    paths:
+    - teno-web/src/index.css
+    - teno-extension/src/index.css
+    purpose: Pure CSS tokens and dual-theme styling
+  - name: context
+    paths:
+    - teno-web/src/ThemeContext.jsx
+    - teno-web/src/FeatureFlagContext.jsx
+    purpose: State management and theme providers
 docs:
+  readme: README.md
+  agents_file: AGENTS.md
   skills_dir: .agents/skills
-  repo_map: README.md
-  agents_file: AGENTS.generated.md
+  repo_map: .agents/repo-map.md
 blueprints:
   dir: .agents/blueprints
   enabled: true
@@ -359,6 +401,34 @@ rules:
   - path: teno-web/.env.local
     reason: Pre-existing violation recorded on web-hazards pack apply
   pack: web-hazards@1
+- id: zero-sed
+  area: verify
+  text: Never use sed commands for file editing, building, or test hacks.
+  enforced_by: manual
+- id: vitest-zero-errors
+  area: verify
+  text: Run cd teno-web && npm run test (vitest); all test suites must pass cleanly before committing.
+  enforced_by: test
+- id: dual-theme-minimalist-integrity
+  area: design
+  text: "Never soften or break the Minimalist theme: zero border radius, bracketed text buttons, no graphical icons, lowercase text."
+  enforced_by: manual
+- id: mobile-ios-input-16px
+  area: responsive
+  text: Form inputs must enforce at least 16px font-size on mobile viewports (< 600px) to prevent iOS Safari auto-zoom.
+  enforced_by: manual
+- id: extension-popup-no-outer-scroll
+  area: responsive
+  text: Outer popup must enforce overflow hidden; only dedicated inner tab panes may scroll.
+  enforced_by: manual
+- id: member-uids-denormalization
+  area: data
+  text: Shared labels must maintain denormalized memberUids arrays across parent labels and child items.
+  enforced_by: manual
+- id: firestore-no-undefined
+  area: data
+  text: Never write undefined to Firestore; sanitize payloads before writing.
+  enforced_by: manual
 quality_gates:
 - Navigate through the entire interface using only the Tab and Shift+Tab keys.
 - Inspect focus outlines in high contrast mode.
