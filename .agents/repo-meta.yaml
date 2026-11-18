@@ -1,4 +1,10 @@
 style: showcase
-description: ''
-homepage: ''
-topics: []
+description: "Dual-theme productivity command center web application and Manifest V3 browser extension built with React and Firebase. Features multi-tab organization for saved links, reading and wishlist cart tracking, desktop notification reminders, and a version-controlled AI prompt vault with keyboard navigation and real-time cloud synchronization."
+homepage: ""
+topics:
+  - react
+  - vite
+  - tailwindcss
+  - firebase
+  - vercel
+  - browser-extension
