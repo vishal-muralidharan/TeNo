@@ -54,8 +54,14 @@ structure:
   layers:
   - path: teno-web/src
     purpose: Web application components, contexts, and pages
+  - path: teno-web/api
+    purpose: Web serverless functions and API routes
+  - path: teno-web/sm
+    purpose: Screen-space typing caret module
   - path: teno-extension/src
     purpose: Chrome extension popup and background scripts
+  - path: teno-extension/sm
+    purpose: Extension typing caret module
   - path: migrations
     purpose: Database schema and migration scripts
   root_allowed:
