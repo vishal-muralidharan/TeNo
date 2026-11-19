@@ -2,7 +2,7 @@
 name: review-directory-structure
 description: Use this skill to place new files or move files in teno. Describes each source layer and the root cleanliness rule.
 ---
-<!-- build-forge:generated v1 body=a821df5fc10d2214194d23b32a93c8a4b8f45ac28567e07797aee4d8c52764e2 -->
+<!-- build-forge:generated v1 body=1a0b37188a17d87205c16dd1f3ac9a9ed1104e73acf7a71bb1fcca9bfe176494 -->
 
 <!-- Generated from .agents/project-profile.yaml by project-bootstrap. Edit the profile, then re-render. -->
 
@@ -11,7 +11,10 @@ description: Use this skill to place new files or move files in teno. Describes 
 | Path | Purpose |
 |---|---|
 | `teno-web/src` | Web application components, contexts, and pages |
+| `teno-web/api` | Web serverless functions and API routes |
+| `teno-web/sm` | Screen-space typing caret module |
 | `teno-extension/src` | Chrome extension popup and background scripts |
+| `teno-extension/sm` | Extension typing caret module |
 | `migrations` | Database schema and migration scripts |
 
 Tests: live in a tests folder.
