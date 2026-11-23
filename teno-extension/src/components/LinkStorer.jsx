@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, where, setDoc } from 'firebase/firestore';
 import { ExternalLink, MoreVertical, Trash2, Globe, Star, Edit2, ChevronUp, ChevronDown, Copy } from 'lucide-react';
@@ -224,7 +224,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
     setIsSubmitting(false);
   };
 
-  const handleOpen = (e, link, newWindow = false) => {
+  const handleOpen = useCallback((e, link, newWindow = false) => {
     if (e && e.preventDefault) {
       e.preventDefault();
       e.stopPropagation();
@@ -248,7 +248,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
       }
     }
     setActiveMenu(null);
-  };
+  }, [collectionName, onLinkOpen]);
 
   const toggleFavorite = async (id, currentFav) => {
     if (dbApi) {
@@ -475,7 +475,7 @@ export default function LinkStorer({ collectionName = 'saved_links', title = 'Sa
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [flattenedDisplay, isActive]);
+  }, [flattenedDisplay, handleOpen, isActive]);
 
   const performSectionReorder = async (secKey, newIds) => {
     if (!dbApi) return;
