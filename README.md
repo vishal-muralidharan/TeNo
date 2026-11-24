@@ -33,8 +33,8 @@ Dual-theme productivity command center and browser extension for managing links,
 ### Install
 
 ```bash
-cd teno-web && npm install
-cd ../teno-extension && npm install
+cd teno-web && npm ci
+cd ../teno-extension && npm ci
 ```
 
 ### Environment Variables
@@ -88,12 +88,16 @@ In `teno-web`:
 
 - `npm run dev`: start the Vite development server.
 - `npm run test`: run the Vitest test suite.
+- `npm run lint`: run ESLint code analysis.
 - `npm run build`: compile the production web client.
+- `npm run preview`: preview the production build locally.
 
 In `teno-extension`:
 
 - `npm run dev`: run Vite in watch mode for the extension.
+- `npm run lint`: run ESLint code analysis.
 - `npm run build`: build the production extension bundle.
+- `npm run preview`: preview the extension build locally.
 
 ## Tests
 
