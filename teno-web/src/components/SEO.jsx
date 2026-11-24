@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 export default function SEO({ title, description, url }) {
   const defaultTitle = "TeNo | Link Manager";
   const defaultDescription = "A personal link management and collaboration tool.";
-  const siteUrl = "https://teno.example.com"; // [TODO: confirm production URL]
+  const siteUrl = typeof window !== 'undefined' && window.location ? window.location.origin : '';
   
   const seo = {
     title: title ? `${title} | TeNo` : defaultTitle,
